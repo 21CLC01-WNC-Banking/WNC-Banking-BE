@@ -56,7 +56,7 @@ func (service *AuthService) Register(ctx *gin.Context, registerRequest model.Reg
 	if err != nil {
 		return err
 	}
-	newCustomer := &entity.Customer{
+	newCustomer := &entity.User{
 		Email:       registerRequest.Email,
 		Name:        registerRequest.Name,
 		PhoneNumber: registerRequest.PhoneNumber,
@@ -79,7 +79,7 @@ func (service *AuthService) Register(ctx *gin.Context, registerRequest model.Reg
 	return nil
 }
 
-func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.Customer, error) {
+func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.User, error) {
 	// validate captcha
 	isValid, err := google_recaptcha.ValidateRecaptcha(ctx, loginRequest.RecaptchaToken)
 	if err != nil || !isValid {
@@ -138,7 +138,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 			RefreshToken: refreshToken,
 		})
 		if err != nil {
-			return &entity.Customer{}, err
+			return &entity.User{}, err
 		}
 	} else {
 		// Update the existing refresh token
@@ -147,7 +147,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 			RefreshToken: refreshToken,
 		})
 		if err != nil {
-			return &entity.Customer{}, err
+			return &entity.User{}, err
 		}
 	}
 

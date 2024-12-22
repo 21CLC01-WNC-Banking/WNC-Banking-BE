@@ -24,17 +24,20 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	customerRepository := repositoryimplement.NewCustomerRepository(db)
 	authenticationRepository := repositoryimplement.NewAuthenticationRepository(db)
 	passwordEncoder := beanimplement.NewBcryptPasswordEncoder()
-	redisCLient := beanimplement.NewRedisService()
+	redisClient := beanimplement.NewRedisService()
 	accountRepository := repositoryimplement.NewAccountRepository(db)
 	coreService := serviceimplement.NewCoreService()
 	accountService := serviceimplement.NewAccountService(accountRepository, customerRepository, coreService)
-	mailCLient := beanimplement.NewMailClient()
-	authService := serviceimplement.NewAuthService(customerRepository, authenticationRepository, passwordEncoder, redisCLient, accountService, mailCLient)
+	mailClient := beanimplement.NewMailClient()
+	authService := serviceimplement.NewAuthService(customerRepository, authenticationRepository, passwordEncoder, redisClient, accountService, mailClient)
 	authHandler := v1.NewAuthHandler(authService)
 	coreHandler := v1.NewCoreHandler(coreService)
 	accountHandler := v1.NewAccountHandler(accountService)
-	authMiddleware := middleware.NewAuthMiddleware(authService)
-	server := http.NewServer(authHandler, coreHandler, accountHandler, authMiddleware)
+	staffHandler := v1.NewStaffHandler(authService)
+	roleRepository := repositoryimplement.NewRoleRepository(db)
+	roleService := serviceimplement.NewRoleService(roleRepository)
+	authMiddleware := middleware.NewAuthMiddleware(authService, roleService)
+	server := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware)
 	apiContainer := controller.NewApiContainer(server)
 	return apiContainer
 }
@@ -47,11 +50,11 @@ var container = wire.NewSet(controller.NewApiContainer)
 var serverSet = wire.NewSet(http.NewServer)
 
 // handler === controller | with service and repository layers to form 3 layers architecture
-var handlerSet = wire.NewSet(v1.NewAuthHandler, v1.NewCoreHandler, v1.NewAccountHandler)
+var handlerSet = wire.NewSet(v1.NewAuthHandler, v1.NewCoreHandler, v1.NewAccountHandler, v1.NewStaffHandler)
 
-var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.NewAccountService, serviceimplement.NewCoreService)
+var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.NewAccountService, serviceimplement.NewCoreService, serviceimplement.NewRoleService)
 
-var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository)
+var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository, repositoryimplement.NewRoleRepository)
 
 var middlewareSet = wire.NewSet(middleware.NewAuthMiddleware)
 

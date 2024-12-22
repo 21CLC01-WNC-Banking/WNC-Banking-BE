@@ -1,23 +1,25 @@
 package middleware
 
 import (
-	"net/http"
-
+	"fmt"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/constants"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/jwt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type AuthMiddleware struct {
 	authService service.AuthService
+	roleService service.RoleService
 }
 
-func NewAuthMiddleware(authService service.AuthService) *AuthMiddleware {
+func NewAuthMiddleware(authService service.AuthService, roleService service.RoleService) *AuthMiddleware {
 	return &AuthMiddleware{
 		authService: authService,
+		roleService: roleService,
 	}
 }
 
@@ -35,6 +37,12 @@ func getRefreshToken(c *gin.Context) (token string) {
 		return ""
 	}
 	return token
+}
+
+func GetUserIdHelper(c *gin.Context) int64 {
+	userId, _ := c.Get("userId")
+
+	return userId.(int64)
 }
 
 func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
@@ -56,8 +64,8 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 	if err == nil {
 		// If the access token is valid, extract customer ID and proceed
 		if payload, ok := claims.Payload.(map[string]interface{}); ok {
-			customerId := int64(payload["id"].(float64))
-			c.Set("customerId", customerId)
+			userId := int64(payload["id"].(float64))
+			c.Set("userId", userId)
 			c.Next()
 			return
 		}
@@ -89,10 +97,10 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 			))
 			return
 		}
-		customerId := int64(payload["id"].(float64))
+		userId := int64(payload["id"].(float64))
 
 		// Check if the refresh token exists and is still valid in the database
-		refreshTokenEntity, err := a.authService.ValidateRefreshToken(c, customerId)
+		refreshTokenEntity, err := a.authService.ValidateRefreshToken(c, userId)
 		if err != nil || refreshTokenEntity == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
 				httpcommon.Error{
@@ -105,7 +113,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 
 		// Generate a new access token
 		newAccessToken, err := jwt.GenerateToken(constants.ACCESS_TOKEN_DURATION, jwtSecret, map[string]interface{}{
-			"id": customerId,
+			"id": userId,
 		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
@@ -129,7 +137,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 		)
 
 		// Proceed with the customer ID set in the context
-		c.Set("customerId", customerId)
+		c.Set("userId", userId)
 		c.Next()
 		return
 	}
@@ -141,4 +149,26 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 			Code:    httpcommon.ErrorResponseCode.Unauthorized,
 		},
 	))
+}
+
+func (a *AuthMiddleware) StaffRequired(c *gin.Context) {
+	userId := GetUserIdHelper(c)
+	fmt.Println(userId)
+	role, err := a.roleService.GetRoleByUserId(c, userId)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+			},
+		))
+	}
+	if role.Name != "staff" {
+		c.AbortWithStatusJSON(http.StatusForbidden, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: httpcommon.ErrorResponseCode.Forbidden,
+				Code:    httpcommon.ErrorResponseCode.Forbidden,
+			},
+		))
+		return
+	}
 }

@@ -250,51 +250,8 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-entity_Customer"
+                            "$ref": "#/definitions/httpcommon.HttpResponse-entity_User"
                         }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/register": {
-            "post": {
-                "description": "Register to account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auths"
-                ],
-                "summary": "Register",
-                "parameters": [
-                    {
-                        "description": "Auth payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.RegisterRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -354,10 +311,53 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/staff/register-customer": {
+            "post": {
+                "description": "Staff register customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "Register customer",
+                "parameters": [
+                    {
+                        "description": "Auth payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "entity.Customer": {
+        "entity.User": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -380,6 +380,9 @@ const docTemplate = `{
                 },
                 "phoneNumber": {
                     "type": "string"
+                },
+                "role_id": {
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -415,11 +418,11 @@ const docTemplate = `{
                 }
             }
         },
-        "httpcommon.HttpResponse-entity_Customer": {
+        "httpcommon.HttpResponse-entity_User": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/entity.Customer"
+                    "$ref": "#/definitions/entity.User"
                 },
                 "errors": {
                     "type": "array",

@@ -19,7 +19,7 @@ func NewCustomerRepository(db database.Db) repository.CustomerRepository {
 	return &CustomerRepository{db: db}
 }
 
-func (repo *CustomerRepository) CreateCommand(ctx context.Context, customer *entity.Customer) error {
+func (repo *CustomerRepository) CreateCommand(ctx context.Context, customer *entity.User) error {
 	// Insert the new customer
 	insertQuery := `INSERT INTO users(email, name, phone_number, password) VALUES (:email, :name, :phone_number, :password)`
 	_, err := repo.db.NamedExecContext(ctx, insertQuery, customer)
@@ -29,8 +29,8 @@ func (repo *CustomerRepository) CreateCommand(ctx context.Context, customer *ent
 	return nil
 }
 
-func (repo *CustomerRepository) GetOneByEmailQuery(ctx context.Context, email string) (*entity.Customer, error) {
-	var customer entity.Customer
+func (repo *CustomerRepository) GetOneByEmailQuery(ctx context.Context, email string) (*entity.User, error) {
+	var customer entity.User
 	query := "SELECT * FROM users WHERE email = ?"
 	err := repo.db.QueryRowxContext(ctx, query, email).StructScan(&customer)
 	if err != nil {
@@ -42,8 +42,8 @@ func (repo *CustomerRepository) GetOneByEmailQuery(ctx context.Context, email st
 	return &customer, nil
 }
 
-func (repo *CustomerRepository) GetOneByIdQuery(ctx context.Context, id int64) (*entity.Customer, error) {
-	var customer entity.Customer
+func (repo *CustomerRepository) GetOneByIdQuery(ctx context.Context, id int64) (*entity.User, error) {
+	var customer entity.User
 	query := "SELECT * FROM users WHERE id = ?"
 	err := repo.db.QueryRowxContext(ctx, query, id).StructScan(&customer)
 	if err != nil {
@@ -56,7 +56,7 @@ func (repo *CustomerRepository) GetOneByIdQuery(ctx context.Context, id int64) (
 }
 
 func (repo *CustomerRepository) GetIdByEmailQuery(ctx context.Context, email string) (int64, error) {
-	var customer entity.Customer
+	var customer entity.User
 	query := "SELECT * FROM users WHERE email = ?"
 	err := repo.db.QueryRowxContext(ctx, query, email).StructScan(&customer)
 	if err != nil {
@@ -78,8 +78,8 @@ func (repo *CustomerRepository) UpdatePasswordByIdQuery(ctx context.Context, id 
 	return nil
 }
 
-func (repo *CustomerRepository) GetCustomerByAccountNumberQuery(ctx context.Context, number string) (*entity.Customer, error) {
-	var customer entity.Customer
+func (repo *CustomerRepository) GetCustomerByAccountNumberQuery(ctx context.Context, number string) (*entity.User, error) {
+	var customer entity.User
 	query := `
 				SELECT users.* FROM users 
 				JOIN accounts ON users.id = accounts.customer_id AND accounts.number = ?
