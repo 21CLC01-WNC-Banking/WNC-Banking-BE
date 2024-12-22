@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
-	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
 	"github.com/jmoiron/sqlx"
 )
@@ -46,9 +45,6 @@ func (repo *AuthenticationRepository) GetOneByCustomerIdQuery(ctx context.Contex
 	`
 	err := repo.db.GetContext(ctx, &authentication, query, customerId)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return nil, nil
-		}
 		return nil, err
 	}
 	return &authentication, nil

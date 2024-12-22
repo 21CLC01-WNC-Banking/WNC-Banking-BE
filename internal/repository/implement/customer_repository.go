@@ -3,8 +3,6 @@ package repositoryimplement
 import (
 	"context"
 
-	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
-
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
@@ -21,7 +19,7 @@ func NewCustomerRepository(db database.Db) repository.CustomerRepository {
 
 func (repo *CustomerRepository) CreateCommand(ctx context.Context, customer *entity.Customer) error {
 	// Insert the new customer
-	insertQuery := `INSERT INTO users(email, name, phone_number, password) VALUES (:email, :name, :phone_number, :password)`
+	insertQuery := `INSERT INTO users(email, name, role_id, phone_number, password) VALUES (:email, :name, :role_id, :phone_number, :password)`
 	_, err := repo.db.NamedExecContext(ctx, insertQuery, customer)
 	if err != nil {
 		return err
@@ -34,9 +32,6 @@ func (repo *CustomerRepository) GetOneByEmailQuery(ctx context.Context, email st
 	query := "SELECT * FROM users WHERE email = ?"
 	err := repo.db.QueryRowxContext(ctx, query, email).StructScan(&customer)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return nil, nil
-		}
 		return nil, err
 	}
 	return &customer, nil
@@ -47,9 +42,6 @@ func (repo *CustomerRepository) GetOneByIdQuery(ctx context.Context, id int64) (
 	query := "SELECT * FROM users WHERE id = ?"
 	err := repo.db.QueryRowxContext(ctx, query, id).StructScan(&customer)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return nil, nil
-		}
 		return nil, err
 	}
 	return &customer, nil
@@ -60,9 +52,6 @@ func (repo *CustomerRepository) GetIdByEmailQuery(ctx context.Context, email str
 	query := "SELECT * FROM users WHERE email = ?"
 	err := repo.db.QueryRowxContext(ctx, query, email).StructScan(&customer)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return 0, nil
-		}
 		return 0, err
 	}
 	return customer.ID, nil

@@ -2,47 +2,28 @@ package serviceimplement
 
 import (
 	"errors"
-	"fmt"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
+	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/generate_number_code"
 	"github.com/gin-gonic/gin"
-	"math/rand"
 )
 
 type AccountService struct {
 	accountRepository  repository.AccountRepository
 	customerRepository repository.CustomerRepository
-	CoreService        service.CoreService
 }
 
-func NewAccountService(accountRepo repository.AccountRepository, customerRepo repository.CustomerRepository, coreService service.CoreService) service.AccountService {
-	return &AccountService{accountRepository: accountRepo, customerRepository: customerRepo, CoreService: coreService}
-}
-
-func (service *AccountService) generateAccountNumber(ctx *gin.Context) (string, error) {
-	for {
-		accountNumber := fmt.Sprintf("%012d", rand.Int63n(1000000000000)) // 12-digit number with leading zeros
-
-		// Check for unique
-		existsAccount, err := service.accountRepository.GetOneByNumberQuery(ctx, accountNumber)
-		if err != nil {
-			return "", err
-		}
-		if existsAccount == nil {
-			return accountNumber, nil
-		}
-	}
+func NewAccountService(accountRepo repository.AccountRepository, customerRepo repository.CustomerRepository) service.AccountService {
+	return &AccountService{accountRepository: accountRepo, customerRepository: customerRepo}
 }
 
 func (service *AccountService) AddNewAccount(ctx *gin.Context, customerId int64) error {
 
-	newNumber, err := service.generateAccountNumber(ctx)
-	if err != nil {
-		return err
-	}
-	err = service.accountRepository.CreateCommand(ctx, &entity.Account{
+	newNumber := generate_number_code.GenerateRandomNumber(12)
+
+	err := service.accountRepository.CreateCommand(ctx, &entity.Account{
 		CustomerID: customerId,
 		Number:     newNumber,
 		Balance:    0,
@@ -53,84 +34,48 @@ func (service *AccountService) AddNewAccount(ctx *gin.Context, customerId int64)
 	return nil
 }
 
-func (service *AccountService) InternalTransfer(ctx *gin.Context, transferReq model.InternalTransferRequest) error {
-	//get customer and check info
-	customerId, exists := ctx.Get("customerId")
-	if !exists {
-		return errors.New("customer not exists")
-	}
-
-	//check customerId
-	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId.(int64))
-	if err != nil {
-		return err
-	}
-	if sourceCustomer == nil {
-		return errors.New("customer not exists")
-	}
-
-	//get account by customerId and check sourceNumber
-	sourceAccount, err := service.accountRepository.GetOneByCustomerIdQuery(ctx, customerId.(int64))
-	if err != nil {
-		return err
-	}
-	if sourceAccount == nil {
-		return errors.New("source account not exists")
-	}
-	if sourceAccount.Number != transferReq.SourceAccountNumber {
-		return errors.New("source account not match")
-	}
-
-	//check targetNumber
-	targetAccount, err := service.accountRepository.GetOneByNumberQuery(ctx, transferReq.TargetAccountNumber)
-	if err != nil {
-		return err
-	}
-	if targetAccount == nil {
-		return errors.New("target account not exists")
-	}
-	//estimate fee
-	fee, err := service.CoreService.EstimateTransferFee(ctx, transferReq.Amount)
-	if err != nil {
-		return err
-	}
-
-	//check is source fee and change balance
-	checkFee := *transferReq.IsSourceFee
-	if checkFee {
-		totalDeduction := transferReq.Amount + fee
-		if sourceAccount.Balance < totalDeduction {
-			return errors.New("insufficient balance in source account")
-		}
-		sourceAccount.Balance -= totalDeduction
-		targetAccount.Balance += transferReq.Amount
-	} else {
-		if sourceAccount.Balance < transferReq.Amount {
-			return errors.New("insufficient balance in source account")
-		}
-		sourceAccount.Balance -= transferReq.Amount
-		targetAccount.Balance += transferReq.Amount - fee
-	}
-
-	//update to DB
-	err = service.accountRepository.UpdateCommand(ctx, *sourceAccount)
-	if err != nil {
-		return err
-	}
-	err = service.accountRepository.UpdateCommand(ctx, *targetAccount)
-	if err != nil {
-		return err
-	}
-
-	//Save to history, notify, response history
-
-	return nil
-}
-
 func (service *AccountService) GetCustomerByAccountNumber(ctx *gin.Context, accountNumber string) (*entity.Customer, error) {
 	customer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, accountNumber)
 	if err != nil {
 		return nil, err
 	}
 	return customer, nil
+}
+
+func (service *AccountService) UpdateBalanceByAccountNumber(ctx *gin.Context, balance int64, number string) error {
+	account, err := service.accountRepository.GetOneByNumberQuery(ctx, number)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return errors.New("account not found")
+		}
+		return err
+	}
+	account.Balance = balance
+	err = service.accountRepository.UpdateCommand(ctx, *account)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (service *AccountService) GetAccountByCustomerId(ctx *gin.Context, customerId int64) (*entity.Account, error) {
+	account, err := service.accountRepository.GetOneByCustomerIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("account not found")
+		}
+		return nil, err
+	}
+	return account, nil
+}
+
+func (service *AccountService) GetAccountByNumber(ctx *gin.Context, number string) (*entity.Account, error) {
+	account, err := service.accountRepository.GetOneByNumberQuery(ctx, number)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("account not found")
+		}
+		return nil, err
+	}
+	return account, nil
 }

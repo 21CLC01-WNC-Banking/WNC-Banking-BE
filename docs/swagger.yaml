@@ -15,6 +15,39 @@ definitions:
         type: string
       phoneNumber:
         type: string
+      role_id:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  entity.Transaction:
+    properties:
+      amount:
+        type: integer
+      bank_id:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_source_fee:
+        type: boolean
+      source_account_number:
+        type: string
+      source_balance:
+        type: integer
+      status:
+        type: string
+      target_account_number:
+        type: string
+      target_balance:
+        type: integer
+      type:
+        type: string
       updatedAt:
         type: string
     type: object
@@ -48,6 +81,17 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-entity_Transaction:
+    properties:
+      data:
+        $ref: '#/definitions/entity.Transaction'
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-int64:
     properties:
       data:
@@ -70,6 +114,17 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-string:
+    properties:
+      data:
+        type: string
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   model.GetCustomerNameByAccountNumberResponse:
     properties:
       name:
@@ -77,20 +132,13 @@ definitions:
     type: object
   model.InternalTransferRequest:
     properties:
-      amount:
-        minimum: 0
-        type: integer
-      isSourceFee:
-        type: boolean
-      sourceAccountNumber:
+      otp:
         type: string
-      targetAccountNumber:
+      transactionId:
         type: string
     required:
-    - amount
-    - isSourceFee
-    - sourceAccountNumber
-    - targetAccountNumber
+    - otp
+    - transactionId
     type: object
   model.LoginRequest:
     properties:
@@ -108,6 +156,29 @@ definitions:
     - email
     - password
     - recaptchaToken
+    type: object
+  model.PreInternalTransferRequest:
+    properties:
+      amount:
+        minimum: 0
+        type: integer
+      description:
+        type: string
+      isSourceFee:
+        type: boolean
+      sourceAccountNumber:
+        type: string
+      targetAccountNumber:
+        type: string
+      type:
+        type: string
+    required:
+    - amount
+    - description
+    - isSourceFee
+    - sourceAccountNumber
+    - targetAccountNumber
+    - type
     type: object
   model.RegisterRequest:
     properties:
@@ -199,34 +270,6 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Get Customer Name by Account Number
-      tags:
-      - Accounts
-  /account/internal-transfer:
-    post:
-      consumes:
-      - application/json
-      description: Transfer from internal account to internal account
-      parameters:
-      - description: Account payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/model.InternalTransferRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Transfer
       tags:
       - Accounts
   /auth/forgot-password:
@@ -400,4 +443,64 @@ paths:
       summary: EstimateTransferFee
       tags:
       - Cores
+  /transaction/internal-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP and transaction from internal account to internal account
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.InternalTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-entity_Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Transaction
+      tags:
+      - Transaction
+  /transaction/pre-internal-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Pre Transaction from internal account to internal account
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PreInternalTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Transaction
+      tags:
+      - Transaction
 swagger: "2.0"
