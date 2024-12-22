@@ -2,6 +2,7 @@ package serviceimplement
 
 import (
 	"errors"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
@@ -34,7 +35,7 @@ func (service *AccountService) AddNewAccount(ctx *gin.Context, customerId int64)
 	return nil
 }
 
-func (service *AccountService) GetCustomerByAccountNumber(ctx *gin.Context, accountNumber string) (*entity.Customer, error) {
+func (service *AccountService) GetCustomerByAccountNumber(ctx *gin.Context, accountNumber string) (*entity.User, error) {
 	customer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, accountNumber)
 	if err != nil {
 		return nil, err

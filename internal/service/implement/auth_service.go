@@ -3,6 +3,7 @@ package serviceimplement
 import (
 	"database/sql"
 	"errors"
+
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
@@ -47,7 +48,7 @@ func NewAuthService(customerRepository repository.CustomerRepository,
 
 func (service *AuthService) Register(ctx *gin.Context, registerRequest model.RegisterRequest) error {
 	existsCustomer, err := service.customerRepository.GetOneByEmailQuery(ctx, registerRequest.Email)
-	if err != nil {
+	if err != nil && err.Error() != httpcommon.ErrorMessage.SqlxNoRow {
 		return err
 	}
 	if existsCustomer != nil {
@@ -57,7 +58,7 @@ func (service *AuthService) Register(ctx *gin.Context, registerRequest model.Reg
 	if err != nil {
 		return err
 	}
-	newCustomer := &entity.Customer{
+	newCustomer := &entity.User{
 		Email:       registerRequest.Email,
 		Name:        registerRequest.Name,
 		PhoneNumber: registerRequest.PhoneNumber,
@@ -81,7 +82,7 @@ func (service *AuthService) Register(ctx *gin.Context, registerRequest model.Reg
 	return nil
 }
 
-func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.Customer, error) {
+func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.User, error) {
 	// validate captcha
 	isValid, err := google_recaptcha.ValidateRecaptcha(ctx, loginRequest.RecaptchaToken)
 	if err != nil || !isValid {

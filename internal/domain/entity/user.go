@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-type Customer struct {
+type User struct {
 	ID          int64      `db:"id" json:"id,omitempty"`
 	Email       string     `db:"email" json:"email,omitempty"`
 	Name        string     `db:"name" json:"name,omitempty"`

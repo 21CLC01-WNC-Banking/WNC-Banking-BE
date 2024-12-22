@@ -7,13 +7,12 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func MapRoutes(router *gin.Engine, authHandler *AuthHandler, coreHandler *CoreHandler, accountHandler *AccountHandler, transactionHandler *TransactionHandler, authMiddleware *middleware.AuthMiddleware) {
+func MapRoutes(router *gin.Engine, authHandler *AuthHandler, coreHandler *CoreHandler, accountHandler *AccountHandler, authMiddleware *middleware.AuthMiddleware, staffHandler *StaffHandler, transactionHandler *TransactionHandler) {
 	router.Use(middleware.CorsMiddleware())
 	v1 := router.Group("/api/v1")
 	{
 		customers := v1.Group("/auth")
 		{
-			customers.POST("/register", authHandler.Register)
 			customers.POST("/login", authHandler.Login)
 			customers.POST("/forgot-password/otp", authHandler.SendOTPToMail)
 			customers.POST("/forgot-password/verify-otp", authHandler.VerifyOTP)
@@ -27,6 +26,15 @@ func MapRoutes(router *gin.Engine, authHandler *AuthHandler, coreHandler *CoreHa
 		{
 			accounts.GET("/customer-name", authMiddleware.VerifyToken, accountHandler.GetCustomerNameByAccountNumber)
 		}
+		staff := v1.Group("/staff")
+		{
+			staff.POST("/register-customer",
+				authMiddleware.VerifyToken,
+				authMiddleware.StaffRequired,
+				staffHandler.RegisterCustomer,
+			)
+		}
+
 		transactions := v1.Group("/transaction")
 		{
 			transactions.POST("/pre-internal-transfer", authMiddleware.VerifyToken, transactionHandler.PreInternalTransfer)
