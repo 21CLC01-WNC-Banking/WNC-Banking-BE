@@ -33,7 +33,7 @@ func (handler *StaffHandler) RegisterCustomer(ctx *gin.Context) {
 	if err := validation.BindJsonAndValidate(ctx, &registerRequest); err != nil {
 		return
 	}
-
+	
 	err := handler.authService.Register(ctx, registerRequest)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{

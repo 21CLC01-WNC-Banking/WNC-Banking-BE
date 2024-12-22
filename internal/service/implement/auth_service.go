@@ -48,7 +48,7 @@ func NewAuthService(customerRepository repository.CustomerRepository,
 
 func (service *AuthService) Register(ctx *gin.Context, registerRequest model.RegisterRequest) error {
 	existsCustomer, err := service.customerRepository.GetOneByEmailQuery(ctx, registerRequest.Email)
-	if err != nil {
+	if err != nil && err.Error() != httpcommon.ErrorMessage.SqlxNoRow {
 		return err
 	}
 	if existsCustomer != nil {
