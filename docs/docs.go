@@ -50,49 +50,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/account/internal-transfer": {
-            "post": {
-                "description": "Transfer from internal account to internal account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Accounts"
-                ],
-                "summary": "Transfer",
-                "parameters": [
-                    {
-                        "description": "Account payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.InternalTransferRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/forgot-password": {
             "post": {
                 "description": "Set a new password after OTP verification",
@@ -354,9 +311,148 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/transaction/internal-transfer": {
+            "post": {
+                "description": "Verify OTP and transaction from internal account to internal account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.InternalTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-entity_Transaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/pre-internal-transfer": {
+            "post": {
+                "description": "Pre Transaction from internal account to internal account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PreInternalTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "entity.Transaction": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "bank_id": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_source_fee": {
+                    "type": "boolean"
+                },
+                "source_account_number": {
+                    "type": "string"
+                },
+                "source_balance": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "target_account_number": {
+                    "type": "string"
+                },
+                "target_balance": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.User": {
             "type": "object",
             "properties": {
@@ -407,6 +503,23 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {},
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "httpcommon.HttpResponse-entity_Transaction": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entity.Transaction"
+                },
                 "errors": {
                     "type": "array",
                     "items": {
@@ -469,6 +582,23 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-string": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "model.GetCustomerNameByAccountNumberResponse": {
             "type": "object",
             "properties": {
@@ -480,23 +610,14 @@ const docTemplate = `{
         "model.InternalTransferRequest": {
             "type": "object",
             "required": [
-                "amount",
-                "isSourceFee",
-                "sourceAccountNumber",
-                "targetAccountNumber"
+                "otp",
+                "transactionId"
             ],
             "properties": {
-                "amount": {
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "isSourceFee": {
-                    "type": "boolean"
-                },
-                "sourceAccountNumber": {
+                "otp": {
                     "type": "string"
                 },
-                "targetAccountNumber": {
+                "transactionId": {
                     "type": "string"
                 }
             }
@@ -520,6 +641,38 @@ const docTemplate = `{
                     "minLength": 8
                 },
                 "recaptchaToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PreInternalTransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description",
+                "isSourceFee",
+                "sourceAccountNumber",
+                "targetAccountNumber",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "description": {
+                    "type": "string"
+                },
+                "isSourceFee": {
+                    "type": "boolean"
+                },
+                "sourceAccountNumber": {
+                    "type": "string"
+                },
+                "targetAccountNumber": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

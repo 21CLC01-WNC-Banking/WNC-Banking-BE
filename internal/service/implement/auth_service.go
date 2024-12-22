@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 
+	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -61,6 +63,7 @@ func (service *AuthService) Register(ctx *gin.Context, registerRequest model.Reg
 		Name:        registerRequest.Name,
 		PhoneNumber: registerRequest.PhoneNumber,
 		Password:    string(hashPW),
+		RoleId:      1,
 	}
 	err = service.customerRepository.CreateCommand(ctx, newCustomer)
 	if err != nil {
@@ -88,10 +91,10 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 
 	existsCustomer, err := service.customerRepository.GetOneByEmailQuery(ctx, loginRequest.Email)
 	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("Email not found")
+		}
 		return nil, err
-	}
-	if existsCustomer == nil {
-		return nil, errors.New("Email not found")
 	}
 	checkPw := service.passwordEncoder.Compare(existsCustomer.Password, loginRequest.Password)
 	if checkPw == false {
@@ -138,7 +141,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 			RefreshToken: refreshToken,
 		})
 		if err != nil {
-			return &entity.User{}, err
+			return nil, err
 		}
 	} else {
 		// Update the existing refresh token
@@ -147,7 +150,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 			RefreshToken: refreshToken,
 		})
 		if err != nil {
-			return &entity.User{}, err
+			return nil, err
 		}
 	}
 

@@ -13,20 +13,22 @@ import (
 )
 
 type Server struct {
-	authHandler    *v1.AuthHandler
-	coreHandler    *v1.CoreHandler
-	accountHandler *v1.AccountHandler
-	staffHandler   *v1.StaffHandler
-	authMiddleware *middleware.AuthMiddleware
+	authHandler        *v1.AuthHandler
+	coreHandler        *v1.CoreHandler
+	accountHandler     *v1.AccountHandler
+	staffHandler       *v1.StaffHandler
+	authMiddleware     *middleware.AuthMiddleware
+	transactionHandler *v1.TransactionHandler
 }
 
-func NewServer(authHandler *v1.AuthHandler, coreHandler *v1.CoreHandler, accountHandler *v1.AccountHandler, staffHandler *v1.StaffHandler, authMiddleware *middleware.AuthMiddleware) *Server {
+func NewServer(authHandler *v1.AuthHandler, coreHandler *v1.CoreHandler, accountHandler *v1.AccountHandler, staffHandler *v1.StaffHandler, authMiddleware *middleware.AuthMiddleware, transactionHandler *v1.TransactionHandler) *Server {
 	return &Server{
-		authHandler:    authHandler,
-		authMiddleware: authMiddleware,
-		coreHandler:    coreHandler,
-		accountHandler: accountHandler,
-		staffHandler:   staffHandler,
+		authHandler:        authHandler,
+		authMiddleware:     authMiddleware,
+		coreHandler:        coreHandler,
+		accountHandler:     accountHandler,
+		staffHandler:       staffHandler,
+		transactionHandler: transactionHandler,
 	}
 }
 
@@ -38,7 +40,7 @@ func (s *Server) Run() {
 		Handler: router,
 	}
 
-	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler)
+	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler)
 	err := httpServerInstance.ListenAndServe()
 	if err != nil {
 		return

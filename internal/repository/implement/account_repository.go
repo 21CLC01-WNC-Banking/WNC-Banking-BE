@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
-	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
 	"github.com/jmoiron/sqlx"
 )
@@ -43,9 +42,6 @@ func (repo *AccountRepository) GetOneByNumberQuery(ctx context.Context, number s
 	query := "SELECT * FROM accounts WHERE number = ?"
 	err := repo.db.QueryRowxContext(ctx, query, number).StructScan(&account)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return nil, nil
-		}
 		return nil, err
 	}
 	return &account, nil
@@ -56,9 +52,6 @@ func (repo *AccountRepository) GetOneByCustomerIdQuery(ctx context.Context, cust
 	query := "SELECT * FROM accounts WHERE customer_id = ?"
 	err := repo.db.QueryRowxContext(ctx, query, customerId).StructScan(&account)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return nil, nil
-		}
 		return nil, err
 	}
 	return &account, nil

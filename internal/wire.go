@@ -30,6 +30,7 @@ var handlerSet = wire.NewSet(
 	v1.NewCoreHandler,
 	v1.NewAccountHandler,
 	v1.NewStaffHandler,
+	v1.NewTransactionHandler,
 )
 
 var serviceSet = wire.NewSet(
@@ -37,6 +38,7 @@ var serviceSet = wire.NewSet(
 	serviceimplement.NewAccountService,
 	serviceimplement.NewCoreService,
 	serviceimplement.NewRoleService,
+	serviceimplement.NewTransactionService,
 )
 
 var repositorySet = wire.NewSet(
@@ -44,6 +46,7 @@ var repositorySet = wire.NewSet(
 	repositoryimplement.NewAuthenticationRepository,
 	repositoryimplement.NewAccountRepository,
 	repositoryimplement.NewRoleRepository,
+	repositoryimplement.NewTransactionRepository,
 )
 
 var middlewareSet = wire.NewSet(
