@@ -8,5 +8,5 @@ type Authentication struct {
 	RefreshToken string     `db:"refresh_token" json:"refreshToken"`
 	CreatedAt    *time.Time `db:"created_at" json:"createdAt"`
 	UpdatedAt    *time.Time `db:"updated_at" json:"updatedAt"`
-	DeleteddAt   *time.Time `db:"deleted_at" json:"deleteddAt"`
+	DeletedAt    *time.Time `db:"deleted_at" json:"deletedAt"`
 }

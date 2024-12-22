@@ -20,7 +20,7 @@ func NewSavedReceiverRepository(db database.Db) repository.SavedReceiverReposito
 }
 
 func (repo *SavedReceiverRepository) CreateCommand(ctx context.Context, savedReceiver *entity.SavedReceiver) error {
-	insertQuery := `INSERT INTO saved_receivers(customer_id, receiver_account_number, receiver_nickname, bank_id) VALUES (:customer_id, :receiver_account_number, :balance)`
+	insertQuery := `INSERT INTO saved_receivers(customer_id, receiver_account_number, receiver_nickname, bank_id) VALUES (:customer_id, :receiver_account_number, :receiver_nickname, :bank_id)`
 	_, err := repo.db.NamedExecContext(ctx, insertQuery, savedReceiver)
 	if err != nil {
 		return err

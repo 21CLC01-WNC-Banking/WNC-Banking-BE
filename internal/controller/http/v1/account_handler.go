@@ -22,32 +22,6 @@ func NewAccountHandler(accountService service.AccountService, savedReceiverServi
 	}
 }
 
-// @Summary Transfer
-// @Description Transfer from internal account to internal account
-// @Tags Accounts
-// @Accept json
-// @Param request body model.InternalTransferRequest true "Account payload"
-// @Produce  json
-// @Router /account/internal-transfer [post]
-// @Success 204 "No Content"
-// @Failure 400 {object} httpcommon.HttpResponse[any]
-// @Failure 500 {object} httpcommon.HttpResponse[any]
-func (handler *AccountHandler) InternalTransfer(ctx *gin.Context) {
-	var transfer model.InternalTransferRequest
-
-	if err := validation.BindJsonAndValidate(ctx, &transfer); err != nil {
-		return
-	}
-	err := handler.accountService.InternalTransfer(ctx, transfer)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
-			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
-		}))
-		return
-	}
-	ctx.AbortWithStatus(204)
-}
-
 // @Summary Get Customer Name by Account Number
 // @Description Get Customer Name by Account Number
 // @Tags Accounts
@@ -70,6 +44,15 @@ func (handler *AccountHandler) GetCustomerNameByAccountNumber(ctx *gin.Context) 
 	}))
 }
 
+// @Summary Add Internal Receiver
+// @Description Add a new internal receiver
+// @Tags Receivers
+// @Accept  json
+// @Produce  json
+// @Param receiver body model.InternalReceiver true "Internal Receiver Payload"
+// @Success 204 "No Content"
+// @Failure 500 {object} httpcommon.HttpResponse[any] "Internal Server Error"
+// @Router /account/add-internal-receiver [post]
 func (handler *AccountHandler) AddInternalReceiver(ctx *gin.Context) {
 	var receiver model.InternalReceiver
 
