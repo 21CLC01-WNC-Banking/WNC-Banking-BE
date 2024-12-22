@@ -48,7 +48,7 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 	}
 
 	//get customer and check info
-	customerId, exists := ctx.Get("userId")
+	customerId, exists := ctx.Get("customerId")
 	if !exists {
 		return "", errors.New("customer not exists")
 	}
@@ -189,7 +189,7 @@ func (service *TransactionService) verifyOTP(ctx *gin.Context, transferReq model
 
 func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferReq model.InternalTransferRequest) (*entity.Transaction, error) {
 	//get customer and check exists account
-	customerId, exists := ctx.Get("userId")
+	customerId, exists := ctx.Get("customerId")
 	if !exists {
 		return nil, errors.New("customer not exists")
 	}

@@ -56,8 +56,8 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 	if err == nil {
 		// If the access token is valid, extract customer ID and proceed
 		if payload, ok := claims.Payload.(map[string]interface{}); ok {
-			userId := int64(payload["id"].(float64))
-			c.Set("userId", userId)
+			customerId := int64(payload["id"].(float64))
+			c.Set("customerId", customerId)
 			c.Next()
 			return
 		}
@@ -89,10 +89,10 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 			))
 			return
 		}
-		userId := int64(payload["id"].(float64))
+		customerId := int64(payload["id"].(float64))
 
 		// Check if the refresh token exists and is still valid in the database
-		refreshTokenEntity, err := a.authService.ValidateRefreshToken(c, userId)
+		refreshTokenEntity, err := a.authService.ValidateRefreshToken(c, customerId)
 		if err != nil || refreshTokenEntity == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
 				httpcommon.Error{
@@ -105,7 +105,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 
 		// Generate a new access token
 		newAccessToken, err := jwt.GenerateToken(constants.ACCESS_TOKEN_DURATION, jwtSecret, map[string]interface{}{
-			"id": userId,
+			"id": customerId,
 		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
@@ -129,7 +129,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 		)
 
 		// Proceed with the customer ID set in the context
-		c.Set("userId", userId)
+		c.Set("customerId", customerId)
 		c.Next()
 		return
 	}
