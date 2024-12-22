@@ -27,6 +27,7 @@ func MapRoutes(router *gin.Engine, authHandler *AuthHandler, coreHandler *CoreHa
 		{
 			accounts.POST("/internal-transfer", authMiddleware.VerifyToken, accountHandler.InternalTransfer)
 			accounts.GET("/customer-name", authMiddleware.VerifyToken, accountHandler.GetCustomerNameByAccountNumber)
+			accounts.POST("/add-internal-receiver", authMiddleware.VerifyToken, accountHandler.AddInternalReceiver)
 		}
 	}
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

@@ -3,12 +3,13 @@ package serviceimplement
 import (
 	"errors"
 	"fmt"
+	"math/rand"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/gin-gonic/gin"
-	"math/rand"
 )
 
 type AccountService struct {

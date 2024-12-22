@@ -35,12 +35,14 @@ var serviceSet = wire.NewSet(
 	serviceimplement.NewAuthService,
 	serviceimplement.NewAccountService,
 	serviceimplement.NewCoreService,
+	serviceimplement.NewSavedReceiverService,
 )
 
 var repositorySet = wire.NewSet(
 	repositoryimplement.NewCustomerRepository,
 	repositoryimplement.NewAuthenticationRepository,
 	repositoryimplement.NewAccountRepository,
+	repositoryimplement.NewSavedReceiverRepository,
 )
 
 var middlewareSet = wire.NewSet(
