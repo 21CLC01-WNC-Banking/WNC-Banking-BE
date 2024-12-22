@@ -8,4 +8,5 @@ import (
 
 type SavedReceiverRepository interface {
 	CreateCommand(ctx context.Context, savedReceiver *entity.SavedReceiver) error
+	ExistsByAccountNumberAndBankID(ctx context.Context, accountNumber string, bankID *int64) (bool, error)
 }

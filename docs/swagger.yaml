@@ -1,25 +1,4 @@
 definitions:
-  entity.Customer:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        type: string
-      email:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      password:
-        type: string
-      phoneNumber:
-        type: string
-      role_id:
-        type: integer
-      updatedAt:
-        type: string
-    type: object
   entity.Transaction:
     properties:
       amount:
@@ -51,6 +30,61 @@ definitions:
       updatedAt:
         type: string
     type: object
+  entity.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      phoneNumber:
+        type: string
+      role_id:
+        type: integer
+<<<<<<< HEAD
+      updatedAt:
+        type: string
+    type: object
+  entity.Transaction:
+    properties:
+      amount:
+        type: integer
+      bank_id:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_source_fee:
+        type: boolean
+      source_account_number:
+        type: string
+      source_balance:
+        type: integer
+      status:
+        type: string
+      target_account_number:
+        type: string
+      target_balance:
+        type: integer
+      type:
+        type: string
+=======
+>>>>>>> ba2695bf658169a35875022d9c0fbd9006d07794
+      updatedAt:
+        type: string
+    type: object
   httpcommon.Error:
     properties:
       code:
@@ -70,10 +104,21 @@ definitions:
       success:
         type: boolean
     type: object
-  httpcommon.HttpResponse-entity_Customer:
+  httpcommon.HttpResponse-entity_Transaction:
     properties:
       data:
-        $ref: '#/definitions/entity.Customer'
+        $ref: '#/definitions/entity.Transaction'
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
+  httpcommon.HttpResponse-entity_User:
+    properties:
+      data:
+        $ref: '#/definitions/entity.User'
       errors:
         items:
           $ref: '#/definitions/httpcommon.Error'
@@ -132,6 +177,7 @@ definitions:
     type: object
   model.InternalReceiver:
     properties:
+<<<<<<< HEAD
       receiverAccountNumber:
         type: string
       receiverNickname:
@@ -147,6 +193,13 @@ definitions:
       transactionId:
         type: string
     required:
+=======
+      otp:
+        type: string
+      transactionId:
+        type: string
+    required:
+>>>>>>> ba2695bf658169a35875022d9c0fbd9006d07794
     - otp
     - transactionId
     type: object
@@ -408,7 +461,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-entity_Customer'
+            $ref: '#/definitions/httpcommon.HttpResponse-entity_User'
         "400":
           description: Bad Request
           schema:
@@ -418,34 +471,6 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Login
-      tags:
-      - Auths
-  /auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Register to account
-      parameters:
-      - description: Auth payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/model.RegisterRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Register
       tags:
       - Auths
   /core/estimate-transfer-fee:
@@ -477,6 +502,37 @@ paths:
       summary: EstimateTransferFee
       tags:
       - Cores
+<<<<<<< HEAD
+=======
+  /staff/register-customer:
+    post:
+      consumes:
+      - application/json
+      description: Staff register customer
+      parameters:
+      - description: Auth payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Register customer
+      tags:
+      - Staff
+>>>>>>> ba2695bf658169a35875022d9c0fbd9006d07794
   /transaction/internal-transfer:
     post:
       consumes:

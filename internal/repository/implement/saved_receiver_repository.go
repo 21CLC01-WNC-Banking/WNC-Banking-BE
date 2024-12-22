@@ -27,3 +27,15 @@ func (repo *SavedReceiverRepository) CreateCommand(ctx context.Context, savedRec
 	}
 	return nil
 }
+
+func (repo *SavedReceiverRepository) ExistsByAccountNumberAndBankID(ctx context.Context, accountNumber string, bankID *int64) (bool, error) {
+	var exists bool
+	query := `
+		SELECT EXISTS(
+			SELECT 1 FROM saved_receivers
+			WHERE receiver_account_number = ? AND (bank_id = ? OR (? IS NULL AND bank_id IS NULL))
+		)
+	`
+	err := repo.db.QueryRowContext(ctx, query, accountNumber, bankID, bankID).Scan(&exists)
+	return exists, err
+}

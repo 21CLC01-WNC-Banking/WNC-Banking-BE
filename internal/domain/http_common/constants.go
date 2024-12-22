@@ -8,6 +8,7 @@ type errorResponseCode struct {
 	InvalidDataType     string
 	InvalidUserInfo     string
 	Unauthorized        string
+	Forbidden           string
 }
 
 var ErrorResponseCode = errorResponseCode{
@@ -18,6 +19,7 @@ var ErrorResponseCode = errorResponseCode{
 	InvalidDataType:     "INVALID_DATA_TYPE",
 	InvalidUserInfo:     "INVALID_USER_INFO",
 	Unauthorized:        "UNAUTHORIZED",
+	Forbidden:           "FORBIDDEN",
 }
 
 type customValidationErrCode map[string]string

@@ -53,7 +53,7 @@ func (handler *AuthHandler) Register(ctx *gin.Context) {
 // @Param request body model.LoginRequest true "Auth payload"
 // @Produce  json
 // @Router /auth/login [post]
-// @Success 200 {object} httpcommon.HttpResponse[entity.Customer]
+// @Success 200 {object} httpcommon.HttpResponse[entity.User]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *AuthHandler) Login(ctx *gin.Context) {
@@ -74,7 +74,7 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, httpcommon.NewSuccessResponse[entity.Customer](&entity.Customer{
+	ctx.JSON(200, httpcommon.NewSuccessResponse[entity.User](&entity.User{
 		Email: customer.Email,
 	}))
 }

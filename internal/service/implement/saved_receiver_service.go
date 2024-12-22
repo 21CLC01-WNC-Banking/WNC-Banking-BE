@@ -12,19 +12,39 @@ import (
 
 type SavedReceiverService struct {
 	savedReceiverRepository repository.SavedReceiverRepository
+	accountService          service.AccountService
 }
 
-func NewSavedReceiverService(savedReceiverRepository repository.SavedReceiverRepository) service.SavedReceiverService {
-	return &SavedReceiverService{savedReceiverRepository: savedReceiverRepository}
+func NewSavedReceiverService(savedReceiverRepository repository.SavedReceiverRepository, accountService service.AccountService) service.SavedReceiverService {
+	return &SavedReceiverService{
+		savedReceiverRepository: savedReceiverRepository,
+		accountService:          accountService,
+	}
 }
 
 func (service *SavedReceiverService) AddInternalReceiver(ctx *gin.Context, receiver model.InternalReceiver) error {
-	customerId, exists := ctx.Get("customerId")
+	customerId, exists := ctx.Get("userId")
 	if !exists {
 		return errors.New("customer not exists")
 	}
 
-	err := service.savedReceiverRepository.CreateCommand(ctx, &entity.SavedReceiver{
+	account, err := service.accountService.GetAccountByCustomerId(ctx, customerId.(int64))
+	if err != nil {
+		return err
+	}
+	if account.Number == receiver.ReceiverAccountNumber {
+		return errors.New("cannot add yourself as receiver")
+	}
+
+	exists, err = service.existsByAccountNumberAndBankID(ctx, receiver.ReceiverAccountNumber, nil)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.New("receiver already exists")
+	}
+
+	err = service.savedReceiverRepository.CreateCommand(ctx, &entity.SavedReceiver{
 		CustomerId:            customerId.(int64),
 		ReceiverAccountNumber: receiver.ReceiverAccountNumber,
 		ReceiverNickname:      receiver.ReceiverNickname,
@@ -38,4 +58,8 @@ func (service *SavedReceiverService) AddInternalReceiver(ctx *gin.Context, recei
 
 func (service *SavedReceiverService) AddExternalReceiver(ctx *gin.Context, receiver model.ExternalReceiver) error {
 	panic("unimplemented")
+}
+
+func (service *SavedReceiverService) existsByAccountNumberAndBankID(ctx *gin.Context, accountNumber string, bankID *int64) (bool, error) {
+	return service.savedReceiverRepository.ExistsByAccountNumberAndBankID(ctx, accountNumber, bankID)
 }
