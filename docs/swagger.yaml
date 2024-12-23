@@ -143,16 +143,6 @@ definitions:
       name:
         type: string
     type: object
-  model.InternalReceiver:
-    properties:
-      receiverAccountNumber:
-        type: string
-      receiverNickname:
-        type: string
-    required:
-    - receiverAccountNumber
-    - receiverNickname
-    type: object
   model.InternalTransferRequest:
     properties:
       otp:
@@ -203,6 +193,18 @@ definitions:
     - targetAccountNumber
     - type
     type: object
+  model.Receiver:
+    properties:
+      bankId:
+        type: integer
+      receiverAccountNumber:
+        type: string
+      receiverNickname:
+        type: string
+    required:
+    - receiverAccountNumber
+    - receiverNickname
+    type: object
   model.RegisterRequest:
     properties:
       email:
@@ -229,11 +231,14 @@ definitions:
     type: object
   model.SavedReceiverResponse:
     properties:
+      id:
+        type: integer
       receiverAccountNumber:
         type: string
       receiverNickname:
         type: string
     required:
+    - id
     - receiverAccountNumber
     - receiverNickname
     type: object
@@ -300,7 +305,7 @@ paths:
         name: receiver
         required: true
         schema:
-          $ref: '#/definitions/model.InternalReceiver'
+          $ref: '#/definitions/model.Receiver'
       produces:
       - application/json
       responses:

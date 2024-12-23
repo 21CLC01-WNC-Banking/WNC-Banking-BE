@@ -41,7 +41,7 @@ func (repo *SavedReceiverRepository) ExistsByAccountNumberAndBankID(ctx context.
 	return exists, err
 }
 
-func (repo *SavedReceiverRepository) GetAllQuery(ctx context.Context, userId int64) (*[]entity.SavedReceiver, error) {
+func (repo *SavedReceiverRepository) GetAllByCustomerIdQuery(ctx context.Context, userId int64) (*[]entity.SavedReceiver, error) {
 	var receivers []entity.SavedReceiver
 	query := `SELECT * FROM saved_receivers WHERE customer_id = ?`
 	err := repo.db.SelectContext(ctx, &receivers, query, userId)

@@ -1,17 +1,13 @@
 package model
 
-type InternalReceiver struct {
-	ReceiverAccountNumber string `json:"receiverAccountNumber" binding:"required"`
-	ReceiverNickname      string `json:"receiverNickname" binding:"required"`
-}
-
-type ExternalReceiver struct {
-	BankCode              int64  `json:"bankCode" binding:"required"`
+type Receiver struct {
+	BankId                int64  `json:"bankId"`
 	ReceiverAccountNumber string `json:"receiverAccountNumber" binding:"required"`
 	ReceiverNickname      string `json:"receiverNickname" binding:"required"`
 }
 
 type SavedReceiverResponse struct {
+	ID                    int64  `json:"id" binding:"required"`
 	ReceiverAccountNumber string `json:"receiverAccountNumber" binding:"required"`
 	ReceiverNickname      string `json:"receiverNickname" binding:"required"`
 }

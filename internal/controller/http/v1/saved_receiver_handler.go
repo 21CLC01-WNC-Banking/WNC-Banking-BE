@@ -26,17 +26,17 @@ func NewSavedReceiverHandler(savedReceiverService service.SavedReceiverService) 
 // @Tags Receivers
 // @Accept  json
 // @Produce  json
-// @Param receiver body model.InternalReceiver true "Internal Receiver Payload"
+// @Param receiver body model.Receiver true "Internal Receiver Payload"
 // @Success 204 "No Content"
 // @Failure 500 {object} httpcommon.HttpResponse[any] "Internal Server Error"
 // @Router /account/add-internal-receiver [post]
-func (handler *SavedReceiverHandler) AddInternalReceiver(ctx *gin.Context) {
-	var receiver model.InternalReceiver
+func (handler *SavedReceiverHandler) AddReceiver(ctx *gin.Context) {
+	var receiver model.Receiver
 
 	if err := validation.BindJsonAndValidate(ctx, &receiver); err != nil {
 		return
 	}
-	err := handler.savedReceiverService.AddInternalReceiver(ctx, receiver)
+	err := handler.savedReceiverService.AddReceiver(ctx, receiver)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
 			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,

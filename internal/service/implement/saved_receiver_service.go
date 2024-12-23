@@ -22,7 +22,7 @@ func NewSavedReceiverService(savedReceiverRepository repository.SavedReceiverRep
 	}
 }
 
-func (service *SavedReceiverService) AddInternalReceiver(ctx *gin.Context, receiver model.InternalReceiver) error {
+func (service *SavedReceiverService) AddReceiver(ctx *gin.Context, receiver model.Receiver) error {
 	userId, exists := ctx.Get("userId")
 	if !exists {
 		return errors.New("customer not exists")
@@ -56,10 +56,6 @@ func (service *SavedReceiverService) AddInternalReceiver(ctx *gin.Context, recei
 	return nil
 }
 
-func (service *SavedReceiverService) AddExternalReceiver(ctx *gin.Context, receiver model.ExternalReceiver) error {
-	panic("unimplemented")
-}
-
 func (service *SavedReceiverService) existsByAccountNumberAndBankID(ctx *gin.Context, accountNumber string, bankID *int64) (bool, error) {
 	return service.savedReceiverRepository.ExistsByAccountNumberAndBankID(ctx, accountNumber, bankID)
 }
@@ -70,13 +66,14 @@ func (service *SavedReceiverService) GetAllReceivers(ctx *gin.Context) (*[]model
 		return nil, errors.New("customer not exists")
 	}
 
-	savedReceivers, err := service.savedReceiverRepository.GetAllQuery(ctx, userId.(int64))
+	savedReceivers, err := service.savedReceiverRepository.GetAllByCustomerIdQuery(ctx, userId.(int64))
 	if err != nil {
 		return nil, err
 	}
 	var response []model.SavedReceiverResponse
 	for _, receiver := range *savedReceivers {
 		response = append(response, model.SavedReceiverResponse{
+			ID:                    receiver.ID,
 			ReceiverAccountNumber: receiver.ReceiverAccountNumber,
 			ReceiverNickname:      receiver.ReceiverNickname,
 		})

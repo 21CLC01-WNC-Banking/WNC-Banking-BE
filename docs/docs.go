@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.InternalReceiver"
+                            "$ref": "#/definitions/model.Receiver"
                         }
                     }
                 ],
@@ -825,21 +825,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.InternalReceiver": {
-            "type": "object",
-            "required": [
-                "receiverAccountNumber",
-                "receiverNickname"
-            ],
-            "properties": {
-                "receiverAccountNumber": {
-                    "type": "string"
-                },
-                "receiverNickname": {
-                    "type": "string"
-                }
-            }
-        },
         "model.InternalTransferRequest": {
             "type": "object",
             "required": [
@@ -910,6 +895,24 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Receiver": {
+            "type": "object",
+            "required": [
+                "receiverAccountNumber",
+                "receiverNickname"
+            ],
+            "properties": {
+                "bankId": {
+                    "type": "integer"
+                },
+                "receiverAccountNumber": {
+                    "type": "string"
+                },
+                "receiverNickname": {
+                    "type": "string"
+                }
+            }
+        },
         "model.RegisterRequest": {
             "type": "object",
             "required": [
@@ -944,10 +947,14 @@ const docTemplate = `{
         "model.SavedReceiverResponse": {
             "type": "object",
             "required": [
+                "id",
                 "receiverAccountNumber",
                 "receiverNickname"
             ],
             "properties": {
+                "id": {
+                    "type": "integer"
+                },
                 "receiverAccountNumber": {
                     "type": "string"
                 },
