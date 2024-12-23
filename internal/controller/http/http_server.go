@@ -13,22 +13,31 @@ import (
 )
 
 type Server struct {
-	authHandler        *v1.AuthHandler
-	coreHandler        *v1.CoreHandler
-	accountHandler     *v1.AccountHandler
-	staffHandler       *v1.StaffHandler
-	authMiddleware     *middleware.AuthMiddleware
-	transactionHandler *v1.TransactionHandler
+	authHandler          *v1.AuthHandler
+	coreHandler          *v1.CoreHandler
+	accountHandler       *v1.AccountHandler
+	staffHandler         *v1.StaffHandler
+	authMiddleware       *middleware.AuthMiddleware
+	transactionHandler   *v1.TransactionHandler
+	savedReceiverHandler *v1.SavedReceiverHandler
 }
 
-func NewServer(authHandler *v1.AuthHandler, coreHandler *v1.CoreHandler, accountHandler *v1.AccountHandler, staffHandler *v1.StaffHandler, authMiddleware *middleware.AuthMiddleware, transactionHandler *v1.TransactionHandler) *Server {
+func NewServer(authHandler *v1.AuthHandler,
+	coreHandler *v1.CoreHandler,
+	accountHandler *v1.AccountHandler,
+	staffHandler *v1.StaffHandler,
+	authMiddleware *middleware.AuthMiddleware,
+	transactionHandler *v1.TransactionHandler,
+	savedReceiverHandler *v1.SavedReceiverHandler,
+) *Server {
 	return &Server{
-		authHandler:        authHandler,
-		authMiddleware:     authMiddleware,
-		coreHandler:        coreHandler,
-		accountHandler:     accountHandler,
-		staffHandler:       staffHandler,
-		transactionHandler: transactionHandler,
+		authHandler:          authHandler,
+		authMiddleware:       authMiddleware,
+		coreHandler:          coreHandler,
+		accountHandler:       accountHandler,
+		staffHandler:         staffHandler,
+		transactionHandler:   transactionHandler,
+		savedReceiverHandler: savedReceiverHandler,
 	}
 }
 
@@ -40,7 +49,7 @@ func (s *Server) Run() {
 		Handler: router,
 	}
 
-	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler)
+	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler, s.savedReceiverHandler)
 	err := httpServerInstance.ListenAndServe()
 	if err != nil {
 		return

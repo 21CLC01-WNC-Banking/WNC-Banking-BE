@@ -31,6 +31,7 @@ var handlerSet = wire.NewSet(
 	v1.NewAccountHandler,
 	v1.NewStaffHandler,
 	v1.NewTransactionHandler,
+	v1.NewSavedReceiverHandler,
 )
 
 var serviceSet = wire.NewSet(

@@ -7,7 +7,15 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func MapRoutes(router *gin.Engine, authHandler *AuthHandler, coreHandler *CoreHandler, accountHandler *AccountHandler, authMiddleware *middleware.AuthMiddleware, staffHandler *StaffHandler, transactionHandler *TransactionHandler) {
+func MapRoutes(router *gin.Engine,
+	authHandler *AuthHandler,
+	coreHandler *CoreHandler,
+	accountHandler *AccountHandler,
+	authMiddleware *middleware.AuthMiddleware,
+	staffHandler *StaffHandler,
+	transactionHandler *TransactionHandler,
+	savedReceiverHandler *SavedReceiverHandler,
+) {
 	router.Use(middleware.CorsMiddleware())
 	v1 := router.Group("/api/v1")
 	{
@@ -26,7 +34,6 @@ func MapRoutes(router *gin.Engine, authHandler *AuthHandler, coreHandler *CoreHa
 		accounts := v1.Group("/account")
 		{
 			accounts.GET("/customer-name", authMiddleware.VerifyToken, accountHandler.GetCustomerNameByAccountNumber)
-			accounts.POST("/add-internal-receiver", authMiddleware.VerifyToken, accountHandler.AddInternalReceiver)
 		}
 		staff := v1.Group("/staff")
 		{
@@ -40,6 +47,13 @@ func MapRoutes(router *gin.Engine, authHandler *AuthHandler, coreHandler *CoreHa
 		{
 			transactions.POST("/pre-internal-transfer", authMiddleware.VerifyToken, transactionHandler.PreInternalTransfer)
 			transactions.POST("/internal-transfer", authMiddleware.VerifyToken, transactionHandler.InternalTransfer)
+		}
+		savedReceiver := v1.Group("/saved-receiver")
+		{
+			savedReceiver.POST("/add-internal", authMiddleware.VerifyToken, savedReceiverHandler.AddInternalReceiver)
+			savedReceiver.GET("/", authMiddleware.VerifyToken, savedReceiverHandler.GetAllReceivers)
+			savedReceiver.PUT("/:id", authMiddleware.VerifyToken, savedReceiverHandler.RenameReceiver)
+			savedReceiver.DELETE("/:id", authMiddleware.VerifyToken, savedReceiverHandler.DeleteReceiver)
 		}
 	}
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

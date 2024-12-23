@@ -8,4 +8,7 @@ import (
 type SavedReceiverService interface {
 	AddInternalReceiver(ctx *gin.Context, receiver model.InternalReceiver) error
 	AddExternalReceiver(ctx *gin.Context, receiver model.ExternalReceiver) error
+	GetAllReceivers(ctx *gin.Context) (*[]model.SavedReceiverResponse, error)
+	UpdateNickname(ctx *gin.Context, id int64, newNickname string) error
+	DeleteReceiver(ctx *gin.Context, id int64) error
 }

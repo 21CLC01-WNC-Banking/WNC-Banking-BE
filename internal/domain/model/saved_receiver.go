@@ -10,3 +10,12 @@ type ExternalReceiver struct {
 	ReceiverAccountNumber string `json:"receiverAccountNumber" binding:"required"`
 	ReceiverNickname      string `json:"receiverNickname" binding:"required"`
 }
+
+type SavedReceiverResponse struct {
+	ReceiverAccountNumber string `json:"receiverAccountNumber" binding:"required"`
+	ReceiverNickname      string `json:"receiverNickname" binding:"required"`
+}
+
+type UpdateReceiverRequest struct {
+	NewNickname string `json:"newNickname" binding:"required"`
+}

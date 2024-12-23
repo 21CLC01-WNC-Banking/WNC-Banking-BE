@@ -48,40 +48,6 @@ definitions:
         type: string
       role_id:
         type: integer
-<<<<<<< HEAD
-      updatedAt:
-        type: string
-    type: object
-  entity.Transaction:
-    properties:
-      amount:
-        type: integer
-      bank_id:
-        type: integer
-      createdAt:
-        type: string
-      deletedAt:
-        type: string
-      description:
-        type: string
-      id:
-        type: string
-      is_source_fee:
-        type: boolean
-      source_account_number:
-        type: string
-      source_balance:
-        type: integer
-      status:
-        type: string
-      target_account_number:
-        type: string
-      target_balance:
-        type: integer
-      type:
-        type: string
-=======
->>>>>>> ba2695bf658169a35875022d9c0fbd9006d07794
       updatedAt:
         type: string
     type: object
@@ -104,6 +70,19 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-array_model_SavedReceiverResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.SavedReceiverResponse'
+        type: array
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-entity_Transaction:
     properties:
       data:
@@ -119,17 +98,6 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/entity.User'
-      errors:
-        items:
-          $ref: '#/definitions/httpcommon.Error'
-        type: array
-      success:
-        type: boolean
-    type: object
-  httpcommon.HttpResponse-entity_Transaction:
-    properties:
-      data:
-        $ref: '#/definitions/entity.Transaction'
       errors:
         items:
           $ref: '#/definitions/httpcommon.Error'
@@ -177,7 +145,6 @@ definitions:
     type: object
   model.InternalReceiver:
     properties:
-<<<<<<< HEAD
       receiverAccountNumber:
         type: string
       receiverNickname:
@@ -193,13 +160,6 @@ definitions:
       transactionId:
         type: string
     required:
-=======
-      otp:
-        type: string
-      transactionId:
-        type: string
-    required:
->>>>>>> ba2695bf658169a35875022d9c0fbd9006d07794
     - otp
     - transactionId
     type: object
@@ -267,6 +227,16 @@ definitions:
     - password
     - phoneNumber
     type: object
+  model.SavedReceiverResponse:
+    properties:
+      receiverAccountNumber:
+        type: string
+      receiverNickname:
+        type: string
+    required:
+    - receiverAccountNumber
+    - receiverNickname
+    type: object
   model.SendOTPRequest:
     properties:
       email:
@@ -294,6 +264,13 @@ definitions:
     - email
     - otp
     - password
+    type: object
+  model.UpdateReceiverRequest:
+    properties:
+      newNickname:
+        type: string
+    required:
+    - newNickname
     type: object
   model.VerifyOTPRequest:
     properties:
@@ -473,6 +450,34 @@ paths:
       summary: Login
       tags:
       - Auths
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register to account
+      parameters:
+      - description: Auth payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Register
+      tags:
+      - Auths
   /core/estimate-transfer-fee:
     get:
       consumes:
@@ -502,8 +507,84 @@ paths:
       summary: EstimateTransferFee
       tags:
       - Cores
-<<<<<<< HEAD
-=======
+  /saved-receiver:
+    get:
+      consumes:
+      - application/json
+      description: Fetches all saved receivers for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-array_model_SavedReceiverResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get all saved receivers
+      tags:
+      - Receivers
+  /saved-receiver/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a saved receiver by receiver ID
+      parameters:
+      - description: Receiver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Delete a saved receiver
+      tags:
+      - Receivers
+    put:
+      consumes:
+      - application/json
+      description: Renames a saved receiver's nickname by receiver ID
+      parameters:
+      - description: Receiver ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Request body for renaming the receiver
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateReceiverRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Rename a saved receiver
+      tags:
+      - Receivers
   /staff/register-customer:
     post:
       consumes:
@@ -532,7 +613,6 @@ paths:
       summary: Register customer
       tags:
       - Staff
->>>>>>> ba2695bf658169a35875022d9c0fbd9006d07794
   /transaction/internal-transfer:
     post:
       consumes:

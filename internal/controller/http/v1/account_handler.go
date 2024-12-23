@@ -6,7 +6,6 @@ import (
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,29 +41,4 @@ func (handler *AccountHandler) GetCustomerNameByAccountNumber(ctx *gin.Context) 
 	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&model.GetCustomerNameByAccountNumberResponse{
 		Name: customer.Name,
 	}))
-}
-
-// @Summary Add Internal Receiver
-// @Description Add a new internal receiver
-// @Tags Receivers
-// @Accept  json
-// @Produce  json
-// @Param receiver body model.InternalReceiver true "Internal Receiver Payload"
-// @Success 204 "No Content"
-// @Failure 500 {object} httpcommon.HttpResponse[any] "Internal Server Error"
-// @Router /account/add-internal-receiver [post]
-func (handler *AccountHandler) AddInternalReceiver(ctx *gin.Context) {
-	var receiver model.InternalReceiver
-
-	if err := validation.BindJsonAndValidate(ctx, &receiver); err != nil {
-		return
-	}
-	err := handler.savedReceiverService.AddInternalReceiver(ctx, receiver)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
-			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
-		}))
-		return
-	}
-	ctx.AbortWithStatus(204)
 }
