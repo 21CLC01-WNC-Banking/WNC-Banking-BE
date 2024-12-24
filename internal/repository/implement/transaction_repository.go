@@ -31,6 +31,19 @@ func (repo *TransactionRepository) CreateCommand(ctx context.Context, transactio
 	return nil
 }
 
+func (repo *TransactionRepository) UpdateBalancesCommand(ctx context.Context, transaction *entity.Transaction) error {
+	query := `UPDATE transactions 
+			  SET source_balance = :source_balance,
+			  target_balance = :target_balance
+			  WHERE id = :id`
+
+	_, err := repo.db.NamedExecContext(ctx, query, transaction)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (repo *TransactionRepository) UpdateStatusCommand(ctx context.Context, transaction *entity.Transaction) error {
 	query := `UPDATE transactions SET status = :status WHERE id = :id`
 	_, err := repo.db.NamedExecContext(ctx, query, transaction)

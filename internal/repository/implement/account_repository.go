@@ -28,14 +28,28 @@ func (repo *AccountRepository) CreateCommand(ctx context.Context, account *entit
 	return nil
 }
 
-func (repo *AccountRepository) UpdateCommand(ctx context.Context, account entity.Account) error {
+func (repo *AccountRepository) UpdateBalanceCommand(ctx context.Context, number string, amount int64) (int64, error) {
 	query := `
 	UPDATE accounts
-	SET balance = :balance
-	WHERE number = :number
+	SET balance = balance + ?
+	WHERE number = ?
 	`
-	_, err := repo.db.NamedExecContext(ctx, query, account)
-	return err
+
+	_, err := repo.db.ExecContext(ctx, query, amount, number)
+	if err != nil {
+		return 0, err
+	}
+	var newBalance int64
+	selectQuery := `
+	SELECT balance
+	FROM accounts
+	WHERE number = ?
+	`
+	err = repo.db.GetContext(ctx, &newBalance, selectQuery, number)
+	if err != nil {
+		return 0, err
+	}
+	return newBalance, nil
 }
 
 func (repo *AccountRepository) GetOneByNumberQuery(ctx context.Context, number string) (*entity.Account, error) {

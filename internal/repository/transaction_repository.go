@@ -9,4 +9,5 @@ type TransactionRepository interface {
 	CreateCommand(ctx context.Context, transaction *entity.Transaction) error
 	GetTransactionBySourceNumberAndIdQuery(ctx context.Context, sourceNumber string, id string) (*entity.Transaction, error)
 	UpdateStatusCommand(ctx context.Context, transaction *entity.Transaction) error
+	UpdateBalancesCommand(ctx context.Context, transaction *entity.Transaction) error
 }
