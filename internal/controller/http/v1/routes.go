@@ -50,7 +50,7 @@ func MapRoutes(router *gin.Engine,
 		}
 		savedReceiver := v1.Group("/saved-receiver")
 		{
-			savedReceiver.POST("/add-internal", authMiddleware.VerifyToken, savedReceiverHandler.AddReceiver)
+			savedReceiver.POST("/", authMiddleware.VerifyToken, savedReceiverHandler.AddReceiver)
 			savedReceiver.GET("/", authMiddleware.VerifyToken, savedReceiverHandler.GetAllReceivers)
 			savedReceiver.PUT("/:id", authMiddleware.VerifyToken, savedReceiverHandler.RenameReceiver)
 			savedReceiver.DELETE("/:id", authMiddleware.VerifyToken, savedReceiverHandler.DeleteReceiver)
