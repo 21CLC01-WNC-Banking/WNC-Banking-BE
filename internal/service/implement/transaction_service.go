@@ -48,7 +48,7 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 	}
 
 	//get customer and check info
-	customerId, exists := ctx.Get("customerId")
+	customerId, exists := ctx.Get("userId")
 	if !exists {
 		return "", errors.New("customer not exists")
 	}
@@ -94,14 +94,14 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 		if sourceAccount.Balance < totalDeduction {
 			return "", errors.New("insufficient balance in source account")
 		}
-		sourceAccount.Balance -= totalDeduction
-		targetAccount.Balance += transferReq.Amount
+		sourceAccount.Balance = -(totalDeduction)
+		targetAccount.Balance = transferReq.Amount
 	} else {
 		if sourceAccount.Balance < transferReq.Amount {
 			return "", errors.New("insufficient balance in source account")
 		}
-		sourceAccount.Balance -= transferReq.Amount
-		targetAccount.Balance += transferReq.Amount - fee
+		sourceAccount.Balance = -(transferReq.Amount)
+		targetAccount.Balance = transferReq.Amount - fee
 	}
 	//generate id
 	transactionId := generate_number_code.GenerateRandomNumber(10)
@@ -189,7 +189,7 @@ func (service *TransactionService) verifyOTP(ctx *gin.Context, transferReq model
 
 func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferReq model.InternalTransferRequest) (*entity.Transaction, error) {
 	//get customer and check exists account
-	customerId, exists := ctx.Get("customerId")
+	customerId, exists := ctx.Get("userId")
 	if !exists {
 		return nil, errors.New("customer not exists")
 	}
@@ -211,21 +211,28 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	if err != nil {
 		return nil, err
 	}
-	existsTransaction.Status = "success"
 
 	//update to DB
-	//transaction
-	err = service.transactionRepository.UpdateStatusCommand(ctx, existsTransaction)
+	//balance for source and target
+	newSourceBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
+	if err != nil {
+		return nil, err
+	}
+	newTargetBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.TargetBalance, existsTransaction.TargetAccountNumber)
 	if err != nil {
 		return nil, err
 	}
 
-	//balance for source and target
-	err = service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
+	existsTransaction.Status = "success"
+	existsTransaction.SourceBalance = newSourceBalance
+	existsTransaction.TargetBalance = newTargetBalance
+
+	//transaction
+	err = service.transactionRepository.UpdateBalancesCommand(ctx, existsTransaction)
 	if err != nil {
 		return nil, err
 	}
-	err = service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.TargetBalance, existsTransaction.TargetAccountNumber)
+	err = service.transactionRepository.UpdateStatusCommand(ctx, existsTransaction)
 	if err != nil {
 		return nil, err
 	}

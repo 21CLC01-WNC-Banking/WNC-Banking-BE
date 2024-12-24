@@ -43,20 +43,19 @@ func (service *AccountService) GetCustomerByAccountNumber(ctx *gin.Context, acco
 	return customer, nil
 }
 
-func (service *AccountService) UpdateBalanceByAccountNumber(ctx *gin.Context, balance int64, number string) error {
-	account, err := service.accountRepository.GetOneByNumberQuery(ctx, number)
+func (service *AccountService) UpdateBalanceByAccountNumber(ctx *gin.Context, amount int64, number string) (int64, error) {
+	_, err := service.accountRepository.GetOneByNumberQuery(ctx, number)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return errors.New("account not found")
+			return 0, errors.New("account not found")
 		}
-		return err
+		return 0, err
 	}
-	account.Balance = balance
-	err = service.accountRepository.UpdateCommand(ctx, *account)
+	newBalance, err := service.accountRepository.UpdateBalanceCommand(ctx, number, amount)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return newBalance, nil
 }
 
 func (service *AccountService) GetAccountByCustomerId(ctx *gin.Context, customerId int64) (*entity.Account, error) {
