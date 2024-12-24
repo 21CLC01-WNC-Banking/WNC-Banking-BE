@@ -262,49 +262,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register": {
-            "post": {
-                "description": "Register to account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Auths"
-                ],
-                "summary": "Register",
-                "parameters": [
-                    {
-                        "description": "Auth payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.RegisterRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    }
-                }
-            }
-        },
         "/core/estimate-transfer-fee": {
             "get": {
                 "description": "Estimate the internal transfer fee",
@@ -553,6 +510,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/staff/transactions-by-account": {
+            "get": {
+                "description": "Get transactions by account number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "Get transactions by account number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account payload",
+                        "name": "accountNumber",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/transaction/internal-transfer": {
             "post": {
                 "description": "Verify OTP and transaction from internal account to internal account",
@@ -755,6 +756,26 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-array_model_GetTransactionsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GetTransactionsResponse"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-array_model_SavedReceiverResponse": {
             "type": "object",
             "properties": {
@@ -863,11 +884,11 @@ const docTemplate = `{
         "model.AddAmountToAccountRequest": {
             "type": "object",
             "required": [
-                "account_number",
+                "accountNumber",
                 "amount"
             ],
             "properties": {
-                "account_number": {
+                "accountNumber": {
                     "type": "string"
                 },
                 "amount": {
@@ -879,6 +900,29 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.GetTransactionsResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "balance": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

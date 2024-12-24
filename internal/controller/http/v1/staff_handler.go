@@ -70,3 +70,25 @@ func (handler *StaffHandler) AddAmountToAccount(ctx *gin.Context) {
 	}
 	ctx.AbortWithStatus(204)
 }
+
+// @Summary Get transactions by account number
+// @Description Get transactions by account number
+// @Tags Staff
+// @Accept json
+// @Param accountNumber query string true "Account payload"
+// @Produce  json
+// @Router /staff/transactions-by-account [get]
+// @Success 200 {object} httpcommon.HttpResponse[[]model.GetTransactionsResponse]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *StaffHandler) GetTransactionsByAccountNumber(ctx *gin.Context) {
+	accountNumber := ctx.Query("accountNumber")
+	transactions, err := handler.staffService.GetTransactionsByAccountNumber(ctx, accountNumber)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InvalidRequest,
+		}))
+		return
+	}
+	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&transactions))
+}

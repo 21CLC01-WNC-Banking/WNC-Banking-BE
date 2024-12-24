@@ -46,6 +46,11 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.StaffRequired,
 				staffHandler.AddAmountToAccount,
 			)
+			staff.GET("/transactions-by-account",
+				authMiddleware.VerifyToken,
+				authMiddleware.StaffRequired,
+				staffHandler.GetTransactionsByAccountNumber,
+			)
 		}
 		transactions := v1.Group("/transaction")
 		{
