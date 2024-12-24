@@ -15,6 +15,43 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/account/add-internal-receiver": {
+            "post": {
+                "description": "Add a new internal receiver",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Receivers"
+                ],
+                "summary": "Add Internal Receiver",
+                "parameters": [
+                    {
+                        "description": "Internal Receiver Payload",
+                        "name": "receiver",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Receiver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/account/customer-name": {
             "get": {
                 "description": "Get Customer Name by Account Number",
@@ -225,6 +262,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/register": {
+            "post": {
+                "description": "Register to account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auths"
+                ],
+                "summary": "Register",
+                "parameters": [
+                    {
+                        "description": "Auth payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/core/estimate-transfer-fee": {
             "get": {
                 "description": "Estimate the internal transfer fee",
@@ -253,6 +333,124 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/httpcommon.HttpResponse-int64"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/saved-receiver": {
+            "get": {
+                "description": "Fetches all saved receivers for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Receivers"
+                ],
+                "summary": "Get all saved receivers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_SavedReceiverResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/saved-receiver/{id}": {
+            "put": {
+                "description": "Renames a saved receiver's nickname by receiver ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Receivers"
+                ],
+                "summary": "Rename a saved receiver",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Receiver ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body for renaming the receiver",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.UpdateReceiverRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a saved receiver by receiver ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Receivers"
+                ],
+                "summary": "Delete a saved receiver",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Receiver ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -514,6 +712,26 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-array_model_SavedReceiverResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SavedReceiverResponse"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-entity_Transaction": {
             "type": "object",
             "properties": {
@@ -677,6 +895,24 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Receiver": {
+            "type": "object",
+            "required": [
+                "receiverAccountNumber",
+                "receiverNickname"
+            ],
+            "properties": {
+                "bankId": {
+                    "type": "integer"
+                },
+                "receiverAccountNumber": {
+                    "type": "string"
+                },
+                "receiverNickname": {
+                    "type": "string"
+                }
+            }
+        },
         "model.RegisterRequest": {
             "type": "object",
             "required": [
@@ -705,6 +941,25 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 10
+                }
+            }
+        },
+        "model.SavedReceiverResponse": {
+            "type": "object",
+            "required": [
+                "id",
+                "receiverAccountNumber",
+                "receiverNickname"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "receiverAccountNumber": {
+                    "type": "string"
+                },
+                "receiverNickname": {
+                    "type": "string"
                 }
             }
         },
@@ -743,6 +998,17 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 8
+                }
+            }
+        },
+        "model.UpdateReceiverRequest": {
+            "type": "object",
+            "required": [
+                "newNickname"
+            ],
+            "properties": {
+                "newNickname": {
+                    "type": "string"
                 }
             }
         },

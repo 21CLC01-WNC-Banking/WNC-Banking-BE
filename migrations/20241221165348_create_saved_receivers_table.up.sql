@@ -1,0 +1,13 @@
+CREATE TABLE saved_receivers (
+   id INT AUTO_INCREMENT PRIMARY KEY,
+   customer_id INT,
+   receiver_account_number VARCHAR(255) NOT NULL,
+   receiver_nickname VARCHAR(255) NOT NULL,
+   bank_id INT,
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+   CONSTRAINT fk_customer_id FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+   CONSTRAINT fk_bank_id FOREIGN KEY (bank_id) REFERENCES partner_banks(id) ON DELETE SET NULL ON UPDATE CASCADE
+);

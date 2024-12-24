@@ -19,6 +19,33 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
 
+// @Summary Register
+// @Description Register to account
+// @Tags Auths
+// @Accept json
+// @Param request body model.RegisterRequest true "Auth payload"
+// @Produce  json
+// @Router /auth/register [post]
+// @Success 204 "No Content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AuthHandler) Register(ctx *gin.Context) {
+	var registerRequest model.RegisterRequest
+
+	if err := validation.BindJsonAndValidate(ctx, &registerRequest); err != nil {
+		return
+	}
+
+	err := handler.authService.Register(ctx, registerRequest)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	ctx.AbortWithStatus(204)
+}
+
 // @Summary Login
 // @Description Login to account
 // @Tags Auths

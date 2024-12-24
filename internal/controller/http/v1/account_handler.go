@@ -1,19 +1,24 @@
 package v1
 
 import (
+	"net/http"
+
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type AccountHandler struct {
-	accountService service.AccountService
+	accountService       service.AccountService
+	savedReceiverService service.SavedReceiverService
 }
 
-func NewAccountHandler(accountService service.AccountService) *AccountHandler {
-	return &AccountHandler{accountService: accountService}
+func NewAccountHandler(accountService service.AccountService, savedReceiverService service.SavedReceiverService) *AccountHandler {
+	return &AccountHandler{
+		accountService:       accountService,
+		savedReceiverService: savedReceiverService,
+	}
 }
 
 // @Summary Get Customer Name by Account Number
