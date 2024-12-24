@@ -8,4 +8,5 @@ import (
 type StaffService interface {
 	RegisterCustomer(ctx *gin.Context, customerRequest model.RegisterRequest) error
 	AddAmountToAccount(ctx *gin.Context, request *model.AddAmountToAccountRequest) error
+	GetTransactionsByAccountNumber(ctx *gin.Context, accountNumber string) ([]model.GetTransactionsResponse, error)
 }

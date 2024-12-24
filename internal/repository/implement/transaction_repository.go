@@ -66,3 +66,23 @@ func (repo *TransactionRepository) GetTransactionBySourceNumberAndIdQuery(ctx co
 	}
 	return &transaction, nil
 }
+
+func (repo *TransactionRepository) GetTransactionByAccountNumber(ctx context.Context, accountNumber string) ([]entity.Transaction, error) {
+	query := `
+		SELECT 
+			id, source_account_number, target_account_number, amount, bank_id, 
+			type, description, status, is_source_fee, source_balance, 
+			target_balance, created_at, updated_at, deleted_at
+		FROM transactions
+		WHERE source_account_number = ? OR target_account_number = ? AND status = "success"
+		ORDER BY created_at DESC
+	`
+
+	var transactions []entity.Transaction
+	err := repo.db.SelectContext(ctx, &transactions, query, accountNumber, accountNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
+}

@@ -70,6 +70,19 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-array_model_GetTransactionsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.GetTransactionsResponse'
+        type: array
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-array_model_SavedReceiverResponse:
     properties:
       data:
@@ -140,17 +153,32 @@ definitions:
     type: object
   model.AddAmountToAccountRequest:
     properties:
-      account_number:
+      accountNumber:
         type: string
       amount:
         type: integer
     required:
-    - account_number
+    - accountNumber
     - amount
     type: object
   model.GetCustomerNameByAccountNumberResponse:
     properties:
       name:
+        type: string
+    type: object
+  model.GetTransactionsResponse:
+    properties:
+      amount:
+        type: integer
+      balance:
+        type: integer
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      type:
         type: string
     type: object
   model.InternalTransferRequest:
@@ -465,34 +493,6 @@ paths:
       summary: Login
       tags:
       - Auths
-  /auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Register to account
-      parameters:
-      - description: Auth payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/model.RegisterRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Register
-      tags:
-      - Auths
   /core/estimate-transfer-fee:
     get:
       consumes:
@@ -654,6 +654,35 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Register customer
+      tags:
+      - Staff
+  /staff/transactions-by-account:
+    get:
+      consumes:
+      - application/json
+      description: Get transactions by account number
+      parameters:
+      - description: Account payload
+        in: query
+        name: accountNumber
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get transactions by account number
       tags:
       - Staff
   /transaction/internal-transfer:
