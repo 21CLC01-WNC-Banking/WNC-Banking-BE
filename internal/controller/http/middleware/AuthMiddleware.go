@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/constants"
@@ -153,7 +152,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 
 func (a *AuthMiddleware) StaffRequired(c *gin.Context) {
 	userId := GetUserIdHelper(c)
-	fmt.Println(userId)
+
 	role, err := a.roleService.GetRoleByUserId(c, userId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(

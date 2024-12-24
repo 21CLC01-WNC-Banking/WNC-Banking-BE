@@ -456,6 +456,49 @@
                 }
             }
         },
+        "/staff/add-amount": {
+            "post": {
+                "description": "Add amount to account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "Add amount to account",
+                "parameters": [
+                    {
+                        "description": "AddAmount payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.AddAmountToAccountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/staff/register-customer": {
             "post": {
                 "description": "Staff register customer",
@@ -803,6 +846,21 @@
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "model.AddAmountToAccountRequest": {
+            "type": "object",
+            "required": [
+                "account_number",
+                "amount"
+            ],
+            "properties": {
+                "account_number": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "integer"
                 }
             }
         },

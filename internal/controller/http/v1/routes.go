@@ -21,7 +21,6 @@ func MapRoutes(router *gin.Engine,
 	{
 		customers := v1.Group("/auth")
 		{
-			customers.POST("/register", authHandler.Register)
 			customers.POST("/login", authHandler.Login)
 			customers.POST("/forgot-password/otp", authHandler.SendOTPToMail)
 			customers.POST("/forgot-password/verify-otp", authHandler.VerifyOTP)
@@ -41,6 +40,11 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.VerifyToken,
 				authMiddleware.StaffRequired,
 				staffHandler.RegisterCustomer,
+			)
+			staff.POST("/add-amount",
+				authMiddleware.VerifyToken,
+				authMiddleware.StaffRequired,
+				staffHandler.AddAmountToAccount,
 			)
 		}
 		transactions := v1.Group("/transaction")

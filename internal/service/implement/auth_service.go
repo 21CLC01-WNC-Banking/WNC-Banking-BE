@@ -46,42 +46,6 @@ func NewAuthService(customerRepository repository.CustomerRepository,
 	}
 }
 
-func (service *AuthService) Register(ctx *gin.Context, registerRequest model.RegisterRequest) error {
-	existsCustomer, err := service.customerRepository.GetOneByEmailQuery(ctx, registerRequest.Email)
-	if err != nil && err.Error() != httpcommon.ErrorMessage.SqlxNoRow {
-		return err
-	}
-	if existsCustomer != nil {
-		return errors.New("Email have already registered")
-	}
-	hashPW, err := service.passwordEncoder.Encrypt(registerRequest.Password)
-	if err != nil {
-		return err
-	}
-	newCustomer := &entity.User{
-		Email:       registerRequest.Email,
-		Name:        registerRequest.Name,
-		PhoneNumber: registerRequest.PhoneNumber,
-		Password:    string(hashPW),
-		RoleId:      1,
-	}
-	err = service.customerRepository.CreateCommand(ctx, newCustomer)
-	if err != nil {
-		return err
-	}
-
-	// auto create an account
-	currentCustomer, err := service.customerRepository.GetOneByEmailQuery(ctx, registerRequest.Email)
-	if err != nil {
-		return err
-	}
-	err = service.accountService.AddNewAccount(ctx, currentCustomer.ID)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.User, error) {
 	// validate captcha
 	isValid, err := google_recaptcha.ValidateRecaptcha(ctx, loginRequest.RecaptchaToken)

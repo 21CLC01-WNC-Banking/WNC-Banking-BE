@@ -5,6 +5,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/generate_number_code"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -16,7 +17,10 @@ func NewTransactionRepository(db database.Db) repository.TransactionRepository {
 	return &TransactionRepository{db: db}
 }
 
-func (repo *TransactionRepository) CreateCommand(ctx context.Context, transaction *entity.Transaction) error {
+func (repo *TransactionRepository) CreateCommand(ctx context.Context, transaction *entity.Transaction) (string, error) {
+	transactionId := generate_number_code.GenerateRandomNumber(10)
+
+	transaction.Id = transactionId
 	//insert new transaction
 	insertQuery := `INSERT INTO transactions(id, source_account_number, target_account_number,
 											amount, bank_id, type, description, status, is_source_fee,
@@ -26,9 +30,9 @@ func (repo *TransactionRepository) CreateCommand(ctx context.Context, transactio
 											 :is_source_fee, :source_balance, :target_balance)`
 	_, err := repo.db.NamedExecContext(ctx, insertQuery, transaction)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return transactionId, err
 }
 
 func (repo *TransactionRepository) UpdateBalancesCommand(ctx context.Context, transaction *entity.Transaction) error {

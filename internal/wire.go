@@ -41,6 +41,7 @@ var serviceSet = wire.NewSet(
 	serviceimplement.NewRoleService,
 	serviceimplement.NewTransactionService,
 	serviceimplement.NewSavedReceiverService,
+	serviceimplement.NewStaffService,
 )
 
 var repositorySet = wire.NewSet(
