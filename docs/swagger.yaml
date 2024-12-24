@@ -138,6 +138,16 @@ definitions:
       success:
         type: boolean
     type: object
+  model.AddAmountToAccountRequest:
+    properties:
+      account_number:
+        type: string
+      amount:
+        type: integer
+    required:
+    - account_number
+    - amount
+    type: object
   model.GetCustomerNameByAccountNumberResponse:
     properties:
       name:
@@ -590,6 +600,34 @@ paths:
       summary: Rename a saved receiver
       tags:
       - Receivers
+  /staff/add-amount:
+    post:
+      consumes:
+      - application/json
+      description: Add amount to account
+      parameters:
+      - description: AddAmount payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AddAmountToAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Add amount to account
+      tags:
+      - Staff
   /staff/register-customer:
     post:
       consumes:

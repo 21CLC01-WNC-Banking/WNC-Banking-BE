@@ -9,7 +9,6 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/constants"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/generate_number_code"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/mail"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/redis"
 	"github.com/gin-gonic/gin"
@@ -103,12 +102,9 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 		sourceAccount.Balance = -(transferReq.Amount)
 		targetAccount.Balance = transferReq.Amount - fee
 	}
-	//generate id
-	transactionId := generate_number_code.GenerateRandomNumber(10)
 
 	//store transaction
 	transaction := &entity.Transaction{
-		Id:                  transactionId,
 		SourceAccountNumber: sourceAccount.Number,
 		TargetAccountNumber: targetAccount.Number,
 		Amount:              transferReq.Amount,
@@ -121,14 +117,14 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 		TargetBalance:       targetAccount.Balance,
 	}
 
-	//send OTP
-	err = service.SendOTPToEmail(ctx, sourceCustomer.Email, transactionId)
+	//save transaction
+	transactionId, err := service.transactionRepository.CreateCommand(ctx, transaction)
 	if err != nil {
 		return "", err
 	}
 
-	//save transaction
-	err = service.transactionRepository.CreateCommand(ctx, transaction)
+	//send OTP
+	err = service.SendOTPToEmail(ctx, sourceCustomer.Email, transactionId)
 	if err != nil {
 		return "", err
 	}
