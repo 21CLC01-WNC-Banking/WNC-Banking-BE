@@ -2,6 +2,8 @@ package serviceimplement
 
 import (
 	"errors"
+	"strconv"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
@@ -12,7 +14,6 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/mail"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/redis"
 	"github.com/gin-gonic/gin"
-	"strconv"
 )
 
 type TransactionService struct {
@@ -149,7 +150,8 @@ func (service *TransactionService) SendOTPToEmail(ctx *gin.Context, email string
 	}
 
 	// send otp to user email
-	err = service.mailClient.SendEmail(ctx, email, "OTP verify transfer", otp, constants.VERIFY_TRANSFER, constants.VERIFY_TRANSFER_EXP_TIME)
+	emailBody := service.mailClient.GenerateOTPBody(email, otp, constants.VERIFY_TRANSFER, constants.VERIFY_TRANSFER_EXP_TIME)
+	err = service.mailClient.SendEmail(ctx, email, "OTP verify transfer", emailBody)
 	if err != nil {
 		return err
 	}

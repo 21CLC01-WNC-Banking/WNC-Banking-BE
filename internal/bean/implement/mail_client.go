@@ -32,9 +32,7 @@ func NewMailClient() bean.MailClient {
 	}
 }
 
-func (m *MailClient) SendEmail(ctx context.Context, to string, subject string, code string, context string, ttl time.Duration) error {
-	message := gomail.NewMessage()
-
+func (m *MailClient) GenerateOTPBody(to, code, context string, ttl time.Duration) string {
 	contextMessage := fmt.Sprintf("Nhập lại mã sau để %s:", context)
 
 	body := fmt.Sprintf(`
@@ -52,6 +50,11 @@ func (m *MailClient) SendEmail(ctx context.Context, to string, subject string, c
 			<p>Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.</p>
 		</body>
 		</html>`, to, contextMessage, code, ttl/time.Minute)
+	return body
+}
+
+func (m *MailClient) SendEmail(ctx context.Context, to, subject, body string) error {
+	message := gomail.NewMessage()
 
 	message.SetHeader("From", m.from)
 	message.SetHeader("To", to)
