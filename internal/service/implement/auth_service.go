@@ -158,7 +158,8 @@ func (service *AuthService) SendOTPToEmail(ctx *gin.Context, sendOTPRequest mode
 	}
 
 	// send otp to user email
-	err = service.mailCLient.SendEmail(ctx, sendOTPRequest.Email, "OTP reset password", otp, constants.FORGOT_PASSWORD, constants.RESET_PASSWORD_EXP_TIME)
+	emailBody := service.mailCLient.GenerateOTPBody(sendOTPRequest.Email, otp, constants.FORGOT_PASSWORD, constants.RESET_PASSWORD_EXP_TIME)
+	err = service.mailCLient.SendEmail(ctx, sendOTPRequest.Email, "OTP reset password", emailBody)
 	if err != nil {
 		return err
 	}

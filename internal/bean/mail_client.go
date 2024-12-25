@@ -6,5 +6,6 @@ import (
 )
 
 type MailClient interface {
-	SendEmail(ctx context.Context, to, subject, code, context string, ttl time.Duration) error
+	GenerateOTPBody(to, code, context string, ttl time.Duration) string
+	SendEmail(ctx context.Context, to, subject, body string) error
 }
