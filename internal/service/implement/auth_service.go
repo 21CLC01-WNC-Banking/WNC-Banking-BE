@@ -46,28 +46,28 @@ func NewAuthService(customerRepository repository.CustomerRepository,
 	}
 }
 
-func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.User, error) {
+func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.User, string, error) {
 	// validate captcha
 	isValid, err := google_recaptcha.ValidateRecaptcha(ctx, loginRequest.RecaptchaToken)
 	if err != nil || !isValid {
-		return nil, err
+		return nil, "", err
 	}
 
 	existsCustomer, err := service.customerRepository.GetOneByEmailQuery(ctx, loginRequest.Email)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return nil, errors.New("Email not found")
+			return nil, "", errors.New("Email not found")
 		}
-		return nil, err
+		return nil, "", err
 	}
 	checkPw := service.passwordEncoder.Compare(existsCustomer.Password, loginRequest.Password)
 	if checkPw == false {
-		return nil, errors.New("invalid password")
+		return nil, "", errors.New("invalid password")
 	}
 
 	jwtSecret, err := env.GetEnv("JWT_SECRET")
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	accessToken, err := jwt.GenerateToken(constants.ACCESS_TOKEN_DURATION, jwtSecret, map[string]interface{}{
 		"id": existsCustomer.ID,
@@ -89,13 +89,13 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 		"id": existsCustomer.ID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	// Check if a refresh token already exists
 	existingRefreshToken, err := service.authenticationRepository.GetOneByCustomerIdQuery(ctx, existsCustomer.ID)
 	if err != nil && err != sql.ErrNoRows {
-		return nil, err
+		return nil, "", err
 	}
 
 	if existingRefreshToken == nil {
@@ -105,7 +105,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 			RefreshToken: refreshToken,
 		})
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	} else {
 		// Update the existing refresh token
@@ -114,7 +114,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 			RefreshToken: refreshToken,
 		})
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	}
 
@@ -128,8 +128,11 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 		false,
 		true,
 	)
-
-	return existsCustomer, nil
+	accountNumber, err := service.accountService.GetAccountByCustomerId(ctx, existsCustomer.ID)
+	if err != nil {
+		return nil, "", err
+	}
+	return existsCustomer, accountNumber.Number, nil
 }
 
 func (service *AuthService) ValidateRefreshToken(ctx *gin.Context, customerId int64) (*entity.Authentication, error) {

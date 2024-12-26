@@ -3,7 +3,6 @@ package v1
 import (
 	"net/http"
 
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
@@ -26,7 +25,7 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 // @Param request body model.LoginRequest true "Auth payload"
 // @Produce  json
 // @Router /auth/login [post]
-// @Success 200 {object} httpcommon.HttpResponse[entity.User]
+// @Success 200 {object} httpcommon.HttpResponse[model.LoginResponse]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *AuthHandler) Login(ctx *gin.Context) {
@@ -36,7 +35,7 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	customer, err := handler.authService.Login(ctx, loginRequest)
+	customer, accountNumber, err := handler.authService.Login(ctx, loginRequest)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
@@ -47,8 +46,9 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, httpcommon.NewSuccessResponse[entity.User](&entity.User{
-		Email: customer.Email,
+	ctx.JSON(200, httpcommon.NewSuccessResponse[model.LoginResponse](&model.LoginResponse{
+		Email:         customer.Email,
+		AccountNumber: accountNumber,
 	}))
 }
 
