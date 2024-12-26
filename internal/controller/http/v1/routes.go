@@ -33,6 +33,7 @@ func MapRoutes(router *gin.Engine,
 		accounts := v1.Group("/account")
 		{
 			accounts.GET("/customer-name", authMiddleware.VerifyToken, accountHandler.GetCustomerNameByAccountNumber)
+			accounts.GET("/", authMiddleware.VerifyToken, accountHandler.GetAccountByCustomerId)
 		}
 		staff := v1.Group("/staff")
 		{

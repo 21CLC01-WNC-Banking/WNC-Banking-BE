@@ -32,8 +32,3 @@ type SetPasswordRequest struct {
 	OTP      string `json:"otp" binding:"required,min=6,max=6"`
 	Password string `json:"password" binding:"required,min=8,max=255"`
 }
-
-type LoginResponse struct {
-	Email         string `json:"email" binding:"required,email,min=10,max=255"`
-	AccountNumber string `json:"accountNumber" binding:"required"`
-}
