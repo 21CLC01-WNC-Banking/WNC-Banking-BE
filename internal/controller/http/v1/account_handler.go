@@ -15,10 +15,11 @@ type AccountHandler struct {
 	authService          service.AuthService
 }
 
-func NewAccountHandler(accountService service.AccountService, savedReceiverService service.SavedReceiverService) *AccountHandler {
+func NewAccountHandler(accountService service.AccountService, savedReceiverService service.SavedReceiverService, authService service.AuthService) *AccountHandler {
 	return &AccountHandler{
 		accountService:       accountService,
 		savedReceiverService: savedReceiverService,
+		authService:          authService,
 	}
 }
 
