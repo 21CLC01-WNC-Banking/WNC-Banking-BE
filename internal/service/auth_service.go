@@ -13,5 +13,5 @@ type AuthService interface {
 	SendOTPToEmail(ctx *gin.Context, sendOTPRequest model.SendOTPRequest) error
 	VerifyOTP(ctx *gin.Context, verifyOTPRequest model.VerifyOTPRequest) error
 	SetPassword(ctx *gin.Context, setPasswordRequest model.SetPasswordRequest) error
-	GetUserById(ctx *gin.Context) (*entity.User, error)
+	GetUserById(ctx *gin.Context, userId int64) (*entity.User, error)
 }

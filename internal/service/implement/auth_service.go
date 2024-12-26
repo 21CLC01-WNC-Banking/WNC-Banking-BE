@@ -221,12 +221,7 @@ func (service *AuthService) SetPassword(ctx *gin.Context, setPasswordRequest mod
 	return nil
 }
 
-func (service *AuthService) GetUserById(ctx *gin.Context) (*entity.User, error) {
-	//get customer and check info
-	userId, exists := ctx.Get("userId")
-	if !exists {
-		return nil, errors.New("user not exists")
-	}
-	return service.customerRepository.GetOneByIdQuery(ctx, userId.(int64))
+func (service *AuthService) GetUserById(ctx *gin.Context, userId int64) (*entity.User, error) {
+	return service.customerRepository.GetOneByIdQuery(ctx, userId)
 
 }
