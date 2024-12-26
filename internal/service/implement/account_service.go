@@ -23,11 +23,11 @@ func NewAccountService(accountRepo repository.AccountRepository, customerRepo re
 func (service *AccountService) AddNewAccount(ctx *gin.Context, customerId int64) error {
 
 	newNumber := generate_number_code.GenerateRandomNumber(12)
-
+	var balance int64 = 0
 	err := service.accountRepository.CreateCommand(ctx, &entity.Account{
 		CustomerID: customerId,
 		Number:     newNumber,
-		Balance:    0,
+		Balance:    &balance,
 	})
 	if err != nil {
 		return err
