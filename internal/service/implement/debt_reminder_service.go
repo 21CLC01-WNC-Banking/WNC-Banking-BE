@@ -60,12 +60,12 @@ func (service *DebtReminderService) AddNewDebtReminder(ctx *gin.Context, debtReq
 	}
 
 	//check targetNumber
-	targetAccount, err := service.accountService.GetAccountByNumber(ctx, debtReq.TargetAccountNumber)
+	_, err = service.accountService.GetAccountByNumber(ctx, debtReq.TargetAccountNumber)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
 			return errors.New("target account not found")
 		}
 		return err
 	}
-
+	return nil
 }

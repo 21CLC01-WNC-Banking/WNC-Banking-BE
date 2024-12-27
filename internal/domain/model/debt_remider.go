@@ -5,4 +5,5 @@ type DebtReminderRequest struct {
 	TargetAccountNumber string `json:"targetAccountNumber" binding:"required"`
 	Amount              int64  `json:"amount" binding:"required,min=0"`
 	Description         string `json:"description" binding:"required"`
+	Type                string `json:"type" binding:"required"`
 }

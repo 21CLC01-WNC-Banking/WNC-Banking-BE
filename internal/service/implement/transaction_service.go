@@ -2,6 +2,7 @@ package serviceimplement
 
 import (
 	"errors"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"strconv"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
@@ -42,45 +43,12 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 }
 
 func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transferReq model.PreInternalTransferRequest) (string, error) {
-	//check input account number
-	if transferReq.SourceAccountNumber == transferReq.TargetAccountNumber {
-		return "", errors.New("source account number can not equal to target account number")
-	}
-
-	//get customer and check info
-	customerId, exists := ctx.Get("userId")
-	if !exists {
-		return "", errors.New("customer not exists")
-	}
-
-	//check customerId
-	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId.(int64))
+	//verify info
+	sourceCustomer, sourceAccount, targetAccount, err := service.verifyTransactionInfo(ctx, transferReq.SourceAccountNumber, transferReq.TargetAccountNumber)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return "", errors.New("customer not found")
-		}
 		return "", err
 	}
-	//get account by customerId and check sourceNumber
-	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId.(int64))
-	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return "", errors.New("source account not found")
-		}
-		return "", err
-	}
-	if sourceAccount.Number != transferReq.SourceAccountNumber {
-		return "", errors.New("source account not match")
-	}
 
-	//check targetNumber
-	targetAccount, err := service.accountService.GetAccountByNumber(ctx, transferReq.TargetAccountNumber)
-	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return "", errors.New("target account not found")
-		}
-		return "", err
-	}
 	//estimate fee
 	fee, err := service.coreService.EstimateTransferFee(ctx, transferReq.Amount)
 	if err != nil {
@@ -187,11 +155,8 @@ func (service *TransactionService) verifyOTP(ctx *gin.Context, transferReq model
 
 func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferReq model.InternalTransferRequest) (*entity.Transaction, error) {
 	//get customer and check exists account
-	customerId, exists := ctx.Get("userId")
-	if !exists {
-		return nil, errors.New("customer not exists")
-	}
-	existsAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId.(int64))
+	customerId := middleware.GetUserIdHelper(ctx)
+	existsAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
 		return nil, err
 	}
@@ -237,4 +202,81 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 
 	// notify, response history
 	return existsTransaction, nil
+}
+
+func (service *TransactionService) verifyTransactionInfo(ctx *gin.Context, sourceAccountNumber string, targetAccountNumber string) (*entity.User, *entity.Account, *entity.Account, error) {
+	//check input account number
+	if sourceAccountNumber == targetAccountNumber {
+		return nil, nil, nil, errors.New("source account number can not equal to target account number")
+	}
+
+	//get customer and check info
+	customerId := middleware.GetUserIdHelper(ctx)
+	//check customerId
+	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, nil, nil, errors.New("customer not found")
+		}
+		return nil, nil, nil, err
+	}
+	//get account by customerId and check sourceNumber
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.ID)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, nil, nil, errors.New("source account not found")
+		}
+		return nil, nil, nil, err
+	}
+	if sourceAccount.Number != sourceAccountNumber {
+		return nil, nil, nil, errors.New("source account not match")
+	}
+
+	//check targetNumber
+	targetAccount, err := service.accountService.GetAccountByNumber(ctx, targetAccountNumber)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, nil, nil, errors.New("target account not found")
+		}
+		return nil, nil, nil, err
+	}
+	return sourceCustomer, sourceAccount, targetAccount, nil
+}
+
+func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminder model.DebtReminderRequest) error {
+	//verify info
+	_, sourceAccount, targetAccount, err := service.verifyTransactionInfo(ctx, debtReminder.SourceAccountNumber, debtReminder.TargetAccountNumber)
+	if err != nil {
+		return err
+	}
+
+	//estimate fee
+	fee, err := service.coreService.EstimateTransferFee(ctx, debtReminder.Amount)
+	if err != nil {
+		return err
+	}
+
+	*sourceAccount.Balance = debtReminder.Amount
+	*targetAccount.Balance = -(debtReminder.Amount + fee)
+	falseStatus := false
+	//store transaction
+	transaction := &entity.Transaction{
+		SourceAccountNumber: sourceAccount.Number,
+		TargetAccountNumber: targetAccount.Number,
+		Amount:              debtReminder.Amount,
+		BankId:              nil,
+		Type:                debtReminder.Type,
+		Description:         debtReminder.Description,
+		Status:              "pending",
+		IsSourceFee:         &falseStatus,
+		SourceBalance:       *sourceAccount.Balance,
+		TargetBalance:       *targetAccount.Balance,
+	}
+
+	//save transaction
+	_, err = service.transactionRepository.CreateCommand(ctx, transaction)
+	if err != nil {
+		return err
+	}
+	return nil
 }
