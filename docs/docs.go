@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/account/add-internal-receiver": {
+        "/account/add-receiver": {
             "post": {
-                "description": "Add a new internal receiver",
+                "description": "Add a new receiver",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,10 +27,10 @@ const docTemplate = `{
                 "tags": [
                     "Receivers"
                 ],
-                "summary": "Add Internal Receiver",
+                "summary": "Add Receiver",
                 "parameters": [
                     {
-                        "description": "Internal Receiver Payload",
+                        "description": "Receiver Payload",
                         "name": "receiver",
                         "in": "body",
                         "required": true,
@@ -914,6 +914,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "createdAt": {
+                    "type": "string"
+                },
+                "customerName": {
                     "type": "string"
                 },
                 "description": {
