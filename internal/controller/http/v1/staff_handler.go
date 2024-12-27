@@ -1,12 +1,13 @@
 package v1
 
 import (
+	"net/http"
+
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type StaffHandler struct {
@@ -78,7 +79,7 @@ func (handler *StaffHandler) AddAmountToAccount(ctx *gin.Context) {
 // @Param accountNumber query string true "Account payload"
 // @Produce  json
 // @Router /staff/transactions-by-account [get]
-// @Success 200 {object} httpcommon.HttpResponse[[]model.GetTransactionsResponse]
+// @Success 200 {object} httpcommon.HttpResponse[[]model.GetTransactionsByCustomerResponse]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *StaffHandler) GetTransactionsByAccountNumber(ctx *gin.Context) {

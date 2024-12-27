@@ -536,7 +536,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsResponse"
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse"
                         }
                     },
                     "400": {
@@ -756,13 +756,13 @@ const docTemplate = `{
                 }
             }
         },
-        "httpcommon.HttpResponse-array_model_GetTransactionsResponse": {
+        "httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.GetTransactionsResponse"
+                        "$ref": "#/definitions/model.GetTransactionsByCustomerResponse"
                     }
                 },
                 "errors": {
@@ -904,6 +904,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.GetTransactionsByCustomerResponse": {
+            "type": "object",
+            "properties": {
+                "customerName": {
+                    "type": "string"
+                },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GetTransactionsResponse"
+                    }
+                }
+            }
+        },
         "model.GetTransactionsResponse": {
             "type": "object",
             "properties": {
@@ -914,9 +928,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "createdAt": {
-                    "type": "string"
-                },
-                "customerName": {
                     "type": "string"
                 },
                 "description": {

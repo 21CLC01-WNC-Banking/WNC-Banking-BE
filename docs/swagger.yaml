@@ -70,11 +70,11 @@ definitions:
       success:
         type: boolean
     type: object
-  httpcommon.HttpResponse-array_model_GetTransactionsResponse:
+  httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/model.GetTransactionsResponse'
+          $ref: '#/definitions/model.GetTransactionsByCustomerResponse'
         type: array
       errors:
         items:
@@ -166,6 +166,15 @@ definitions:
       name:
         type: string
     type: object
+  model.GetTransactionsByCustomerResponse:
+    properties:
+      customerName:
+        type: string
+      transactions:
+        items:
+          $ref: '#/definitions/model.GetTransactionsResponse'
+        type: array
+    type: object
   model.GetTransactionsResponse:
     properties:
       amount:
@@ -173,8 +182,6 @@ definitions:
       balance:
         type: integer
       createdAt:
-        type: string
-      customerName:
         type: string
       description:
         type: string
@@ -675,7 +682,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsResponse'
+            $ref: '#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse'
         "400":
           description: Bad Request
           schema:

@@ -93,7 +93,7 @@ func (service *StaffService) AddAmountToAccount(ctx *gin.Context, request *model
 	return err
 }
 
-func (service *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, accountNumber string) ([]model.GetTransactionsResponse, error) {
+func (service *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, accountNumber string) (*model.GetTransactionsByCustomerResponse, error) {
 	account, err := service.accountRepository.GetOneByNumberQuery(ctx, accountNumber)
 	if err != nil || account == nil {
 		return nil, errors.New("account not found")
@@ -113,7 +113,7 @@ func (service *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, ac
 		return nil, err
 	}
 
-	resp := make([]model.GetTransactionsResponse, 0)
+	transactionResp := make([]model.GetTransactionsResponse, 0)
 
 	for _, transaction := range transactions {
 		var amount int64
@@ -125,16 +125,18 @@ func (service *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, ac
 			amount = transaction.Amount * -1
 			balance = transaction.SourceBalance
 		}
-		resp = append(resp, model.GetTransactionsResponse{
-			Id:           transaction.Id,
-			Amount:       amount,
-			CreatedAt:    transaction.CreatedAt,
-			Description:  transaction.Description,
-			Type:         transaction.Type,
-			Balance:      balance,
-			CustomerName: customer.Name,
+		transactionResp = append(transactionResp, model.GetTransactionsResponse{
+			Id:          transaction.Id,
+			Amount:      amount,
+			CreatedAt:   transaction.CreatedAt,
+			Description: transaction.Description,
+			Type:        transaction.Type,
+			Balance:     balance,
 		})
 	}
 
-	return resp, nil
+	return &model.GetTransactionsByCustomerResponse{
+		CustomerName: customer.Name,
+		Transactions: transactionResp,
+	}, nil
 }
