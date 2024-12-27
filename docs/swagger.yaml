@@ -87,11 +87,11 @@ definitions:
       success:
         type: boolean
     type: object
-  httpcommon.HttpResponse-array_model_GetTransactionsResponse:
+  httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/model.GetTransactionsResponse'
+          $ref: '#/definitions/model.GetTransactionsByCustomerResponse'
         type: array
       errors:
         items:
@@ -203,6 +203,15 @@ definitions:
     properties:
       name:
         type: string
+    type: object
+  model.GetTransactionsByCustomerResponse:
+    properties:
+      customerName:
+        type: string
+      transactions:
+        items:
+          $ref: '#/definitions/model.GetTransactionsResponse'
+        type: array
     type: object
   model.GetTransactionsResponse:
     properties:
@@ -387,13 +396,13 @@ paths:
       summary: Get Account by Customer ID
       tags:
       - Accounts
-  /account/add-internal-receiver:
+  /account/add-receiver:
     post:
       consumes:
       - application/json
-      description: Add a new internal receiver
+      description: Add a new receiver
       parameters:
-      - description: Internal Receiver Payload
+      - description: Receiver Payload
         in: body
         name: receiver
         required: true
@@ -408,7 +417,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Add Internal Receiver
+      summary: Add Receiver
       tags:
       - Receivers
   /account/customer-name:
@@ -728,7 +737,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsResponse'
+            $ref: '#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse'
         "400":
           description: Bad Request
           schema:

@@ -41,9 +41,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/account/add-internal-receiver": {
+        "/account/add-receiver": {
             "post": {
-                "description": "Add a new internal receiver",
+                "description": "Add a new receiver",
                 "consumes": [
                     "application/json"
                 ],
@@ -53,10 +53,10 @@ const docTemplate = `{
                 "tags": [
                     "Receivers"
                 ],
-                "summary": "Add Internal Receiver",
+                "summary": "Add Receiver",
                 "parameters": [
                     {
-                        "description": "Internal Receiver Payload",
+                        "description": "Receiver Payload",
                         "name": "receiver",
                         "in": "body",
                         "required": true,
@@ -562,7 +562,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsResponse"
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse"
                         }
                     },
                     "400": {
@@ -808,13 +808,13 @@ const docTemplate = `{
                 }
             }
         },
-        "httpcommon.HttpResponse-array_model_GetTransactionsResponse": {
+        "httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.GetTransactionsResponse"
+                        "$ref": "#/definitions/model.GetTransactionsByCustomerResponse"
                     }
                 },
                 "errors": {
@@ -985,6 +985,20 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "model.GetTransactionsByCustomerResponse": {
+            "type": "object",
+            "properties": {
+                "customerName": {
+                    "type": "string"
+                },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GetTransactionsResponse"
+                    }
                 }
             }
         },

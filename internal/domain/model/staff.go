@@ -15,3 +15,8 @@ type GetTransactionsResponse struct {
 	Type        string     `json:"type"`
 	Balance     int64      `json:"balance"`
 }
+
+type GetTransactionsByCustomerResponse struct {
+	CustomerName string                    `json:"customerName"`
+	Transactions []GetTransactionsResponse `json:"transactions"`
+}
