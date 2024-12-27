@@ -8,10 +8,11 @@ type AddAmountToAccountRequest struct {
 }
 
 type GetTransactionsResponse struct {
-	Id          string     `json:"id"`
-	Amount      int64      `json:"amount"`
-	CreatedAt   *time.Time `json:"createdAt"`
-	Description string     `json:"description"`
-	Type        string     `json:"type"`
-	Balance     int64      `json:"balance"`
+	Id           string     `json:"id"`
+	Amount       int64      `json:"amount"`
+	CreatedAt    *time.Time `json:"createdAt"`
+	Description  string     `json:"description"`
+	Type         string     `json:"type"`
+	Balance      int64      `json:"balance"`
+	CustomerName string     `json:"customerName"`
 }

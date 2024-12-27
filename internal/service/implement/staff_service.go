@@ -2,6 +2,7 @@ package serviceimplement
 
 import (
 	"errors"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
@@ -103,6 +104,15 @@ func (service *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, ac
 		return nil, err
 	}
 
+	userId, exists := ctx.Get("userId")
+	if !exists {
+		return nil, errors.New("customer not exists")
+	}
+	customer, err := service.customerRepository.GetOneByIdQuery(ctx, userId.(int64))
+	if err != nil {
+		return nil, err
+	}
+
 	resp := make([]model.GetTransactionsResponse, 0)
 
 	for _, transaction := range transactions {
@@ -116,12 +126,13 @@ func (service *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, ac
 			balance = transaction.SourceBalance
 		}
 		resp = append(resp, model.GetTransactionsResponse{
-			Id:          transaction.Id,
-			Amount:      amount,
-			CreatedAt:   transaction.CreatedAt,
-			Description: transaction.Description,
-			Type:        transaction.Type,
-			Balance:     balance,
+			Id:           transaction.Id,
+			Amount:       amount,
+			CreatedAt:    transaction.CreatedAt,
+			Description:  transaction.Description,
+			Type:         transaction.Type,
+			Balance:      balance,
+			CustomerName: customer.Name,
 		})
 	}
 
