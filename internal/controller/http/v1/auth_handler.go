@@ -37,10 +37,10 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 	}
 
 	customer, err := handler.authService.Login(ctx, loginRequest)
-	if err != nil {
+	if err != nil || customer == nil {
 		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
-				Message: err.Error(),
+				Message: httpcommon.ErrorMessage.BadCredential,
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
 			},
 		))

@@ -15,16 +15,28 @@ func MapRoutes(router *gin.Engine,
 	staffHandler *StaffHandler,
 	transactionHandler *TransactionHandler,
 	savedReceiverHandler *SavedReceiverHandler,
+	customerHandler *CustomerHandler,
 ) {
 	router.Use(middleware.CorsMiddleware())
 	v1 := router.Group("/api/v1")
 	{
-		customers := v1.Group("/auth")
+		auth := v1.Group("/auth")
 		{
-			customers.POST("/login", authHandler.Login)
-			customers.POST("/forgot-password/otp", authHandler.SendOTPToMail)
-			customers.POST("/forgot-password/verify-otp", authHandler.VerifyOTP)
-			customers.POST("/forgot-password", authHandler.SetPassword)
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/forgot-password/otp", authHandler.SendOTPToMail)
+			auth.POST("/forgot-password/verify-otp", authHandler.VerifyOTP)
+			auth.POST("/forgot-password", authHandler.SetPassword)
+		}
+		customer := v1.Group("/customer")
+		{
+			customer.GET("/notification",
+				authMiddleware.VerifyToken,
+				customerHandler.GetNotifications,
+			)
+			customer.PATCH("/notification/:notificationId",
+				authMiddleware.VerifyToken,
+				customerHandler.SeenNotification,
+			)
 		}
 		cores := v1.Group("/core")
 		{
