@@ -13,7 +13,6 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/constants"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/google_recaptcha"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/jwt"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/mail"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/redis"
@@ -48,10 +47,10 @@ func NewAuthService(customerRepository repository.CustomerRepository,
 
 func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.User, error) {
 	// validate captcha
-	isValid, err := google_recaptcha.ValidateRecaptcha(ctx, loginRequest.RecaptchaToken)
-	if err != nil || !isValid {
-		return nil, err
-	}
+	//isValid, err := google_recaptcha.ValidateRecaptcha(ctx, loginRequest.RecaptchaToken)
+	//if err != nil || !isValid {
+	//	return nil, err
+	//}
 
 	existsCustomer, err := service.customerRepository.GetOneByEmailQuery(ctx, loginRequest.Email)
 	if err != nil {
