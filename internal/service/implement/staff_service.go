@@ -126,12 +126,14 @@ func (service *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, ac
 			balance = transaction.SourceBalance
 		}
 		transactionResp = append(transactionResp, model.GetTransactionsResponse{
-			Id:          transaction.Id,
-			Amount:      amount,
-			CreatedAt:   transaction.CreatedAt,
-			Description: transaction.Description,
-			Type:        transaction.Type,
-			Balance:     balance,
+			Id:                  transaction.Id,
+			Amount:              amount,
+			CreatedAt:           transaction.CreatedAt,
+			Description:         transaction.Description,
+			Type:                transaction.Type,
+			Balance:             balance,
+			SourceAccountNumber: transaction.SourceAccountNumber,
+			TargetAccountNumber: transaction.TargetAccountNumber,
 		})
 	}
 
