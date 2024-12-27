@@ -16,6 +16,28 @@ definitions:
       updatedAt:
         type: string
     type: object
+  entity.Notification:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      isSeen:
+        type: boolean
+      title:
+        type: string
+      type:
+        description: incoming_transfer, outgoing_transfer, debt_reminder
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+    type: object
   entity.Transaction:
     properties:
       amount:
@@ -80,6 +102,19 @@ definitions:
   httpcommon.HttpResponse-any:
     properties:
       data: {}
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
+  httpcommon.HttpResponse-array_entity_Notification:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/entity.Notification'
+        type: array
       errors:
         items:
           $ref: '#/definitions/httpcommon.Error'
@@ -623,6 +658,51 @@ paths:
       summary: Notification test
       tags:
       - Cores
+  /customer/notification:
+    get:
+      description: Get All Notification
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-array_entity_Notification'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get All Notification
+      tags:
+      - Customer
+    patch:
+      description: Seen notification by id
+      parameters:
+      - description: Id of notification
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Seen notification by id
+      tags:
+      - Customer
   /saved-receiver:
     get:
       consumes:

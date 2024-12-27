@@ -364,6 +364,74 @@
                 }
             }
         },
+        "/customer/notification": {
+            "get": {
+                "description": "Get All Notification",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Get All Notification",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_entity_Notification"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Seen notification by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Seen notification by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Id of notification",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/saved-receiver": {
             "get": {
                 "description": "Fetches all saved receivers for the authenticated user",
@@ -732,6 +800,39 @@
                 }
             }
         },
+        "entity.Notification": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isSeen": {
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "incoming_transfer, outgoing_transfer, debt_reminder",
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
         "entity.Transaction": {
             "type": "object",
             "properties": {
@@ -829,6 +930,26 @@
             "type": "object",
             "properties": {
                 "data": {},
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "httpcommon.HttpResponse-array_entity_Notification": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Notification"
+                    }
+                },
                 "errors": {
                     "type": "array",
                     "items": {
