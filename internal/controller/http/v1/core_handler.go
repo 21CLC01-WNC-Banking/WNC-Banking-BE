@@ -1,19 +1,25 @@
 package v1
 
 import (
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
 
 type CoreHandler struct {
-	coreService service.CoreService
+	coreService        service.CoreService
+	notificationClient bean.NotificationClient
 }
 
-func NewCoreHandler(coreService service.CoreService) *CoreHandler {
-	return &CoreHandler{coreService: coreService}
+func NewCoreHandler(coreService service.CoreService,
+	notificationClient bean.NotificationClient,
+) *CoreHandler {
+	return &CoreHandler{coreService: coreService, notificationClient: notificationClient}
 }
 
 // @Summary EstimateTransferFee
@@ -49,4 +55,27 @@ func (handler *CoreHandler) EstimateTransferFee(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(200, httpcommon.NewSuccessResponse[int64](&fee))
+}
+
+// @Summary Notification test
+// @Description Notification test
+// @Tags Cores
+// @Accept json
+// @Param request body model.NotificationRequest true "Notification payload"
+// @Produce  json
+// @Router /core/test-notification [post]
+// @Success 204 "No Content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *CoreHandler) Notification(ctx *gin.Context) {
+	var notiRequest model.NotificationRequest
+	err := validation.BindJsonAndValidate(ctx, &notiRequest)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "notiRequest", Code: httpcommon.ErrorResponseCode.InvalidRequest,
+		}))
+	}
+
+	handler.notificationClient.SendTest(notiRequest)
+	ctx.AbortWithStatus(204)
 }
