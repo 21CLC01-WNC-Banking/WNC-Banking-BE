@@ -332,6 +332,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/core/test-notification": {
+            "post": {
+                "description": "Notification test",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cores"
+                ],
+                "summary": "Notification test",
+                "parameters": [
+                    {
+                        "description": "Notification payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.NotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/saved-receiver": {
             "get": {
                 "description": "Fetches all saved receivers for the authenticated user",
@@ -1045,6 +1088,20 @@ const docTemplate = `{
                     "minLength": 8
                 },
                 "recaptchaToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.NotificationRequest": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "token": {
                     "type": "string"
                 }
             }

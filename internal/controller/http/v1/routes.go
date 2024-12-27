@@ -29,6 +29,7 @@ func MapRoutes(router *gin.Engine,
 		cores := v1.Group("/core")
 		{
 			cores.GET("/estimate-transfer-fee", coreHandler.EstimateTransferFee)
+			cores.POST("/test-notification", coreHandler.Notification)
 		}
 		accounts := v1.Group("/account")
 		{

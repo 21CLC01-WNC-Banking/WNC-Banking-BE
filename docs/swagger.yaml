@@ -246,6 +246,15 @@ definitions:
     - password
     - recaptchaToken
     type: object
+  model.NotificationRequest:
+    properties:
+      body:
+        type: string
+      title:
+        type: string
+      token:
+        type: string
+    type: object
   model.PreInternalTransferRequest:
     properties:
       amount:
@@ -575,6 +584,34 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: EstimateTransferFee
+      tags:
+      - Cores
+  /core/test-notification:
+    post:
+      consumes:
+      - application/json
+      description: Notification test
+      parameters:
+      - description: Notification payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.NotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Notification test
       tags:
       - Cores
   /saved-receiver:

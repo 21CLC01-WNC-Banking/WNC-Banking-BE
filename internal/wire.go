@@ -60,6 +60,7 @@ var beanSet = wire.NewSet(
 	beanimplement.NewBcryptPasswordEncoder,
 	beanimplement.NewRedisService,
 	beanimplement.NewMailClient,
+	beanimplement.NewNotificationClient,
 )
 
 func InitializeContainer(
