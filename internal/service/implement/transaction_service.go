@@ -91,17 +91,17 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 	checkFee := *transferReq.IsSourceFee
 	if checkFee {
 		totalDeduction := transferReq.Amount + fee
-		if sourceAccount.Balance < totalDeduction {
+		if *sourceAccount.Balance < totalDeduction {
 			return "", errors.New("insufficient balance in source account")
 		}
-		sourceAccount.Balance = -(totalDeduction)
-		targetAccount.Balance = transferReq.Amount
+		*sourceAccount.Balance = -(totalDeduction)
+		*targetAccount.Balance = transferReq.Amount
 	} else {
-		if sourceAccount.Balance < transferReq.Amount {
+		if *sourceAccount.Balance < transferReq.Amount {
 			return "", errors.New("insufficient balance in source account")
 		}
-		sourceAccount.Balance = -(transferReq.Amount)
-		targetAccount.Balance = transferReq.Amount - fee
+		*sourceAccount.Balance = -(transferReq.Amount)
+		*targetAccount.Balance = transferReq.Amount - fee
 	}
 
 	//store transaction
@@ -114,8 +114,8 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 		Description:         transferReq.Description,
 		Status:              "pending",
 		IsSourceFee:         transferReq.IsSourceFee,
-		SourceBalance:       sourceAccount.Balance,
-		TargetBalance:       targetAccount.Balance,
+		SourceBalance:       *sourceAccount.Balance,
+		TargetBalance:       *targetAccount.Balance,
 	}
 
 	//save transaction

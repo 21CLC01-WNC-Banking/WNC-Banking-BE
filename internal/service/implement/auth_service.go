@@ -220,3 +220,8 @@ func (service *AuthService) SetPassword(ctx *gin.Context, setPasswordRequest mod
 
 	return nil
 }
+
+func (service *AuthService) GetUserById(ctx *gin.Context, userId int64) (*entity.User, error) {
+	return service.customerRepository.GetOneByIdQuery(ctx, userId)
+
+}

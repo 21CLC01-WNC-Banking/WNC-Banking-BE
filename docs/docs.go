@@ -15,6 +15,32 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/account/": {
+            "get": {
+                "description": "Get Account by Customer ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Get Account by Customer ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_AccountResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/account/add-receiver": {
             "post": {
                 "description": "Add a new receiver",
@@ -648,6 +674,32 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "entity.Account": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "integer"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.Transaction": {
             "type": "object",
             "properties": {
@@ -847,6 +899,23 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-model_AccountResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.AccountResponse"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse": {
             "type": "object",
             "properties": {
@@ -878,6 +947,21 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "model.AccountResponse": {
+            "type": "object",
+            "required": [
+                "account",
+                "name"
+            ],
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/entity.Account"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

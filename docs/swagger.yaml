@@ -1,4 +1,21 @@
 definitions:
+  entity.Account:
+    properties:
+      balance:
+        type: integer
+      createdAt:
+        type: string
+      customerId:
+        type: integer
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      number:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   entity.Transaction:
     properties:
       amount:
@@ -129,6 +146,17 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-model_AccountResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.AccountResponse'
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse:
     properties:
       data:
@@ -150,6 +178,16 @@ definitions:
         type: array
       success:
         type: boolean
+    type: object
+  model.AccountResponse:
+    properties:
+      account:
+        $ref: '#/definitions/entity.Account'
+      name:
+        type: string
+    required:
+    - account
+    - name
     type: object
   model.AddAmountToAccountRequest:
     properties:
@@ -341,6 +379,23 @@ definitions:
 info:
   contact: {}
 paths:
+  /account/:
+    get:
+      description: Get Account by Customer ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-model_AccountResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get Account by Customer ID
+      tags:
+      - Accounts
   /account/add-receiver:
     post:
       consumes:
