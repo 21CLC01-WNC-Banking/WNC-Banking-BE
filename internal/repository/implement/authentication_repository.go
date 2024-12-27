@@ -39,7 +39,7 @@ func (repo *AuthenticationRepository) UpdateCommand(ctx context.Context, authent
 func (repo *AuthenticationRepository) GetOneByCustomerIdQuery(ctx context.Context, customerId int64) (*entity.Authentication, error) {
 	var authentication entity.Authentication
 	query := `
-		SELECT user_id, refresh_token, created_at
+		SELECT user_id, refresh_token, device_token,created_at
 		FROM authentications
 		WHERE user_id = ?
 	`
