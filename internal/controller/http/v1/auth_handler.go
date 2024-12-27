@@ -1,8 +1,9 @@
 package v1
 
 import (
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	"net/http"
+
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -40,7 +41,7 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 	if err != nil || customer == nil {
 		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
-				Message: httpcommon.ErrorMessage.BadCredential,
+				Message: err.Error(),
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
 			},
 		))
