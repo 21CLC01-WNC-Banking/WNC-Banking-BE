@@ -18,7 +18,7 @@ func NewTransactionHandler(transactionService service.TransactionService) *Trans
 	return &TransactionHandler{transactionService: transactionService}
 }
 
-// @Summary Transaction
+// @Summary Internal transaction
 // @Description Pre Transaction from internal account to internal account
 // @Tags Transaction
 // @Accept json
@@ -44,18 +44,18 @@ func (handler *TransactionHandler) PreInternalTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&transactionId))
 }
 
-// @Summary Transaction
+// @Summary Internal transaction
 // @Description Verify OTP and transaction from internal account to internal account
 // @Tags Transaction
 // @Accept json
-// @Param request body model.InternalTransferRequest true "Transaction payload"
+// @Param request body model.TransferRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/internal-transfer [post]
 // @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *TransactionHandler) InternalTransfer(ctx *gin.Context) {
-	var transfer model.InternalTransferRequest
+	var transfer model.TransferRequest
 
 	if err := validation.BindJsonAndValidate(ctx, &transfer); err != nil {
 		return
@@ -170,4 +170,29 @@ func (handler *TransactionHandler) GetSentDebtReminder(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[[]model.DebtReminderResponse](&resList))
+}
+
+// @Summary Debt transaction
+// @Description Pre Transaction for debt reminder
+// @Tags Transaction
+// @Accept json
+// @Param request body model.PreDebtTransferRequest true "Transaction payload"
+// @Produce  json
+// @Router /transaction/pre-debt-transfer [post]
+// @Success 200 {object} httpcommon.HttpResponse[string]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *TransactionHandler) PreDebtTransfer(ctx *gin.Context) {
+	var req model.PreDebtTransferRequest
+	if err := validation.BindJsonAndValidate(ctx, &req); err != nil {
+		return
+	}
+	err := handler.transactionService.PreDebtTransfer(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	ctx.AbortWithStatus(200)
 }

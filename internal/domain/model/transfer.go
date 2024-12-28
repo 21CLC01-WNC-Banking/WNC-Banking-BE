@@ -9,11 +9,11 @@ type PreInternalTransferRequest struct {
 	Type                string `json:"type" binding:"required"`
 }
 
-type InternalTransferRequest struct {
+type TransferRequest struct {
 	TransactionId string `json:"transactionId" binding:"required"`
 	Otp           string `json:"otp" binding:"required"`
 }
 
-type UserInternalTransferResponse struct {
+type PreDebtTransferRequest struct {
 	TransactionId string `json:"transactionId" binding:"required"`
 }

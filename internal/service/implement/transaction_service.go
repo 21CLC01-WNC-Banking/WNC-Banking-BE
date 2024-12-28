@@ -131,7 +131,7 @@ func (service *TransactionService) SendOTPToEmail(ctx *gin.Context, email string
 	return nil
 }
 
-func (service *TransactionService) verifyOTP(ctx *gin.Context, transferReq model.InternalTransferRequest) error {
+func (service *TransactionService) verifyOTP(ctx *gin.Context, transferReq model.TransferRequest) error {
 	//regenerate key
 	baseKey := constants.VERIFY_TRANSFER_KEY
 	number, err := strconv.ParseInt(transferReq.TransactionId, 10, 64)
@@ -157,7 +157,7 @@ func (service *TransactionService) verifyOTP(ctx *gin.Context, transferReq model
 	return nil
 }
 
-func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferReq model.InternalTransferRequest) (*entity.Transaction, error) {
+func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferReq model.TransferRequest) (*entity.Transaction, error) {
 	//get customer and check exists account
 	customerId := middleware.GetUserIdHelper(ctx)
 	existsAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
@@ -515,4 +515,8 @@ func (service *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Cont
 	}
 
 	return transactionResp, nil
+}
+
+func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error {
+	return nil
 }
