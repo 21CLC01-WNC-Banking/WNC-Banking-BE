@@ -16,6 +16,7 @@ func MapRoutes(router *gin.Engine,
 	transactionHandler *TransactionHandler,
 	savedReceiverHandler *SavedReceiverHandler,
 	customerHandler *CustomerHandler,
+	adminHandler *AdminHandler,
 ) {
 	router.Use(middleware.CorsMiddleware())
 	v1 := router.Group("/api/v1")
@@ -40,6 +41,19 @@ func MapRoutes(router *gin.Engine,
 			customer.GET("/transactions",
 				authMiddleware.VerifyToken,
 				customerHandler.GetTransactions,
+			)
+		}
+		admin := v1.Group("/admin")
+		{
+			admin.GET("/staff",
+				authMiddleware.VerifyToken,
+				authMiddleware.AdminRequired,
+				adminHandler.GetAllStaff,
+			)
+			admin.GET("/staff/:staffId",
+				authMiddleware.VerifyToken,
+				authMiddleware.AdminRequired,
+				adminHandler.GetOneStaff,
 			)
 		}
 		cores := v1.Group("/core")
