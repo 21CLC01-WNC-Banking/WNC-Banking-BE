@@ -29,7 +29,7 @@ func NewSavedReceiverHandler(savedReceiverService service.SavedReceiverService) 
 // @Param receiver body model.Receiver true "Receiver Payload"
 // @Success 204 "No Content"
 // @Failure 500 {object} httpcommon.HttpResponse[any] "Internal Server Error"
-// @Router /saved-receiver [post]
+// @Router /customer/saved-receiver [post]
 func (handler *SavedReceiverHandler) AddReceiver(ctx *gin.Context) {
 	var receiver model.Receiver
 
@@ -54,7 +54,7 @@ func (handler *SavedReceiverHandler) AddReceiver(ctx *gin.Context) {
 // @Produce  json
 // @Success 200 {object} httpcommon.HttpResponse[[]model.SavedReceiverResponse]
 // @Failure 500 {object} httpcommon.HttpResponse[any] "Internal Server Error"
-// @Router /saved-receiver [get]
+// @Router /customer/saved-receiver [get]
 func (handler *SavedReceiverHandler) GetAllReceivers(ctx *gin.Context) {
 	savedReceivers, err := handler.savedReceiverService.GetAllReceivers(ctx)
 	if err != nil {
@@ -78,7 +78,7 @@ func (handler *SavedReceiverHandler) GetAllReceivers(ctx *gin.Context) {
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
-// @Router /saved-receiver/{id} [put]
+// @Router /customer/saved-receiver/{id} [put]
 func (handler *SavedReceiverHandler) RenameReceiver(ctx *gin.Context) {
 	var updateReceiverRequest model.UpdateReceiverRequest
 
@@ -114,7 +114,7 @@ func (handler *SavedReceiverHandler) RenameReceiver(ctx *gin.Context) {
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
-// @Router /saved-receiver/{id} [delete]
+// @Router /customer/saved-receiver/{id} [delete]
 func (handler *SavedReceiverHandler) DeleteReceiver(ctx *gin.Context) {
 	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {

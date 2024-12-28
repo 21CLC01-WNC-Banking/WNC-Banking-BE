@@ -2,6 +2,8 @@ package repositoryimplement
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
@@ -123,4 +125,15 @@ func (repo *TransactionRepository) GetSentDebtReminderByCustomerIdQuery(ctx cont
 		return nil, err
 	}
 	return &transactions, nil
+}
+
+func (repo *TransactionRepository) GetTransactionByAccountNumberAndIdQuery(ctx context.Context, accountNumber string, id string) (*entity.Transaction, error) {
+	var transaction entity.Transaction
+	query := "SELECT * FROM transactions WHERE (id = ? AND (source_account_number = ? OR target_account_number = ?))"
+	err := repo.db.QueryRowxContext(ctx, query, id, accountNumber, accountNumber).StructScan(&transaction)
+	if err != nil {
+		fmt.Println("err ", err)
+		return nil, err
+	}
+	return &transaction, nil
 }

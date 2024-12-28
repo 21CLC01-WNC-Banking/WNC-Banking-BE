@@ -2,8 +2,9 @@ package serviceimplement
 
 import (
 	"errors"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"strconv"
+
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
@@ -436,7 +437,7 @@ func (service *TransactionService) GetSentDebtReminder(ctx *gin.Context) ([]mode
 	return resList, nil
 }
 
-func (service *TransactionService) GetTransactions(ctx *gin.Context, customerId int64) ([]entity.Transaction, error) {
+func (service *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error) {
 	//get account by customerId
 	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
@@ -450,5 +451,68 @@ func (service *TransactionService) GetTransactions(ctx *gin.Context, customerId 
 	if err != nil {
 		return nil, err
 	}
-	return transactions, nil
+
+	transactionResp := make([]model.GetTransactionsResponse, 0)
+
+	for _, transaction := range transactions {
+		var amount int64
+		var balance int64
+		if transaction.TargetAccountNumber == sourceAccount.Number {
+			amount = transaction.Amount
+			balance = transaction.TargetBalance
+		} else {
+			amount = transaction.Amount * -1
+			balance = transaction.SourceBalance
+		}
+		transactionResp = append(transactionResp, model.GetTransactionsResponse{
+			Id:                  transaction.Id,
+			Amount:              amount,
+			CreatedAt:           transaction.CreatedAt,
+			Description:         transaction.Description,
+			Type:                transaction.Type,
+			Balance:             balance,
+			SourceAccountNumber: transaction.SourceAccountNumber,
+			TargetAccountNumber: transaction.TargetAccountNumber,
+		})
+	}
+
+	return transactionResp, nil
+}
+
+func (service *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
+	//get account by customerId
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("source account not found")
+		}
+		return nil, err
+	}
+
+	transaction, err := service.transactionRepository.GetTransactionByAccountNumberAndIdQuery(ctx, sourceAccount.Number, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var amount int64
+	var balance int64
+	if transaction.TargetAccountNumber == sourceAccount.Number {
+		amount = transaction.Amount
+		balance = transaction.TargetBalance
+	} else {
+		amount = transaction.Amount * -1
+		balance = transaction.SourceBalance
+	}
+	transactionResp := &model.GetTransactionsResponse{
+		Id:                  transaction.Id,
+		Amount:              amount,
+		CreatedAt:           transaction.CreatedAt,
+		Description:         transaction.Description,
+		Type:                transaction.Type,
+		Balance:             balance,
+		SourceAccountNumber: transaction.SourceAccountNumber,
+		TargetAccountNumber: transaction.TargetAccountNumber,
+	}
+
+	return transactionResp, nil
 }

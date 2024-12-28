@@ -84,14 +84,14 @@ func (h *CustomerHandler) GetNotifications(c *gin.Context) {
 // @Description Get All Transactions
 // @Tags Customer
 // @Produce  json
-// @Router /customer/transactions [get]
+// @Router /customer/transaction [get]
 // @Success 200 {object} httpcommon.HttpResponse[[]entity.Transaction]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (h *CustomerHandler) GetTransactions(c *gin.Context) {
 	customerId := middleware.GetUserIdHelper(c)
 
-	transactions, err := h.transactionService.GetTransactions(c, customerId)
+	transactions, err := h.transactionService.GetTransactionsByCustomerId(c, customerId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
@@ -100,8 +100,30 @@ func (h *CustomerHandler) GetTransactions(c *gin.Context) {
 		))
 		return
 	}
-	if len(transactions) == 0 {
-		transactions = make([]entity.Transaction, 0)
-	}
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&transactions))
+}
+
+// @Summary Get Transaction By ID
+// @Description Retrieve a specific transaction by its ID for a given customer.
+// @Tags Customer
+// @Produce json
+// @Param transactionId path string true "Transaction ID"
+// @Router /customer/transaction/{transactionId} [get]
+// @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (h *CustomerHandler) GetTransactionById(c *gin.Context) {
+	customerId := middleware.GetUserIdHelper(c)
+	transactionId := c.Param("transactionId")
+
+	transaction, err := h.transactionService.GetTransactionByIdAndCustomerId(c, customerId, transactionId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+			},
+		))
+		return
+	}
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&transaction))
 }
