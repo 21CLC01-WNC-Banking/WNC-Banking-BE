@@ -91,7 +91,7 @@ func (h *CustomerHandler) GetNotifications(c *gin.Context) {
 func (h *CustomerHandler) GetTransactions(c *gin.Context) {
 	customerId := middleware.GetUserIdHelper(c)
 
-	transactions, err := h.transactionService.GetTransactions(c, customerId)
+	transactions, err := h.transactionService.GetTransactionsByCustomerId(c, customerId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
@@ -116,7 +116,7 @@ func (h *CustomerHandler) GetTransactionById(c *gin.Context) {
 	customerId := middleware.GetUserIdHelper(c)
 	transactionId := c.Param("transactionId")
 
-	transaction, err := h.transactionService.GetTransactionById(c, customerId, transactionId)
+	transaction, err := h.transactionService.GetTransactionByIdAndCustomerId(c, customerId, transactionId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{

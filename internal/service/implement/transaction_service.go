@@ -437,7 +437,7 @@ func (service *TransactionService) GetSentDebtReminder(ctx *gin.Context) ([]mode
 	return resList, nil
 }
 
-func (service *TransactionService) GetTransactions(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error) {
+func (service *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error) {
 	//get account by customerId
 	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
@@ -479,7 +479,7 @@ func (service *TransactionService) GetTransactions(ctx *gin.Context, customerId 
 	return transactionResp, nil
 }
 
-func (service *TransactionService) GetTransactionById(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
+func (service *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
 	//get account by customerId
 	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
