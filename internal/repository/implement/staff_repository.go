@@ -2,8 +2,10 @@ package repositoryimplement
 
 import (
 	"context"
+	"errors"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
+	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
 	"github.com/jmoiron/sqlx"
 )
@@ -22,7 +24,7 @@ func (s *StaffRepository) GetAll(ctx context.Context) ([]entity.User, error) {
 		SELECT u.id, u.email, u.name, u.role_id, u.phone_number, u.created_at, u.updated_at, u.deleted_at
 		FROM users u
 		INNER JOIN roles r ON u.role_id = r.id
-		WHERE r.name = 'staff'
+		WHERE r.name = 'staff' AND u.deleted_at IS NULL
 	`
 
 	var users []entity.User
@@ -40,7 +42,7 @@ func (s *StaffRepository) GetOneById(ctx context.Context, id int64) (*entity.Use
 		SELECT u.id, u.email, u.name, u.role_id, u.phone_number, u.created_at, u.updated_at, u.deleted_at
 		FROM users u
 		INNER JOIN roles r ON u.role_id = r.id
-		WHERE r.name = 'staff' AND u.id = ?
+		WHERE r.name = 'staff' AND u.id = ? AND u.deleted_at IS NULL
 	`
 
 	var user entity.User
@@ -72,4 +74,29 @@ func (s *StaffRepository) CreateOne(ctx context.Context, staff *entity.User) (in
 	}
 
 	return userID, nil
+}
+
+func (s *StaffRepository) DeleteOne(ctx context.Context, id int64) error {
+	query := `
+		UPDATE users u
+		SET deleted_at = CURRENT_TIMESTAMP()
+		WHERE u.id = :id AND u.deleted_at IS NULL AND u.role_id = (SELECT id FROM roles WHERE name = 'staff')
+	`
+
+	result, err := s.db.NamedExecContext(ctx, query, map[string]interface{}{
+		"id": id,
+	})
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New(httpcommon.ErrorMessage.SqlxNoRow)
+	}
+
+	return nil
 }

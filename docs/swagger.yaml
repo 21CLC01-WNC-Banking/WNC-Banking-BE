@@ -637,6 +637,30 @@ paths:
       tags:
       - Admins
   /admin/staff/{staffId}:
+    delete:
+      description: Admin delete one staff
+      parameters:
+      - description: Staff ID
+        in: path
+        name: staffId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Admin delete one staff
+      tags:
+      - Admins
     get:
       description: Admin get one staff
       parameters:

@@ -102,3 +102,41 @@ func (handler *AdminHandler) CreateOneStaff(c *gin.Context) {
 
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&model.CreateStaffResponse{Id: id}))
 }
+
+// @Summary Admin delete one staff
+// @Description Admin delete one staff
+// @Tags Admins
+// @Produce  json
+// @Param staffId path int64 true "Staff ID"
+// @Router /admin/staff/{staffId} [delete]
+// @Success 204 "No content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AdminHandler) DeleteOneStaff(c *gin.Context) {
+	staffIdStr := c.Param("staffId")
+	staffId, err := strconv.ParseInt(staffIdStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
+			},
+		))
+		return
+	}
+
+	err = handler.adminService.DeleteOneStaff(c, staffId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			c.JSON(http.StatusNotFound, httpcommon.NewErrorResponse(
+				httpcommon.Error{Message: err.Error()},
+			))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{Message: err.Error()},
+		))
+		return
+	}
+	c.AbortWithStatus(http.StatusNoContent)
+}
