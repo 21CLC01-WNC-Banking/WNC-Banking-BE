@@ -51,3 +51,25 @@ func (s *StaffRepository) GetOneById(ctx context.Context, id int64) (*entity.Use
 
 	return &user, nil
 }
+
+func (s *StaffRepository) CreateOne(ctx context.Context, staff *entity.User) (int64, error) {
+	// SQL query to insert a new user with the role of "staff"
+	query := `
+		INSERT INTO users (email, name, role_id, phone_number, password)
+		VALUES (:email, :name, (SELECT id FROM roles WHERE name = 'staff'), :phone_number, :password)
+	`
+
+	// Named query execution
+	result, err := s.db.NamedExecContext(ctx, query, staff)
+	if err != nil {
+		return 0, err
+	}
+
+	// Fetch the last inserted ID
+	userID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return userID, nil
+}
