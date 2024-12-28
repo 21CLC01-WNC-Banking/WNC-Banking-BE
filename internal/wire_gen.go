@@ -49,7 +49,7 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	notificationService := serviceimplement.NewNotificationService(notificationRepository)
 	customerHandler := v1.NewCustomerHandler(notificationService, transactionService)
 	staffRepository := repositoryimplement.NewStaffRepository(db)
-	adminService := serviceimplement.NewAdminService(staffRepository)
+	adminService := serviceimplement.NewAdminService(staffRepository, passwordEncoder)
 	adminHandler := v1.NewAdminHandler(adminService)
 	server := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler)
 	apiContainer := controller.NewApiContainer(server)
