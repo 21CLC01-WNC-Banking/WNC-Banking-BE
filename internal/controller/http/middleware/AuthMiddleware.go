@@ -171,3 +171,25 @@ func (a *AuthMiddleware) StaffRequired(c *gin.Context) {
 		return
 	}
 }
+
+func (a *AuthMiddleware) AdminRequired(c *gin.Context) {
+	userId := GetUserIdHelper(c)
+
+	role, err := a.roleService.GetRoleByUserId(c, userId)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+			},
+		))
+	}
+	if role.Name != "admin" {
+		c.AbortWithStatusJSON(http.StatusForbidden, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: httpcommon.ErrorResponseCode.Forbidden,
+				Code:    httpcommon.ErrorResponseCode.Forbidden,
+			},
+		))
+		return
+	}
+}

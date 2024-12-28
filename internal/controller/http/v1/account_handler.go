@@ -66,6 +66,7 @@ func (handler *AccountHandler) GetAccountByCustomerId(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
 			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
 		}))
+		return
 	}
 	customer, err := handler.authService.GetUserById(ctx, customerId.(int64))
 	if err != nil {

@@ -37,7 +37,7 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	savedReceiverService := serviceimplement.NewSavedReceiverService(savedReceiverRepository, accountService)
 	accountHandler := v1.NewAccountHandler(accountService, savedReceiverService, authService)
 	transactionRepository := repositoryimplement.NewTransactionRepository(db)
-	staffService := serviceimplement.NewStaffService(customerRepository, passwordEncoder, accountService, accountRepository, transactionRepository)
+	staffService := serviceimplement.NewStaffService(customerRepository, passwordEncoder, accountService, accountRepository, transactionRepository, mailClient)
 	staffHandler := v1.NewStaffHandler(staffService)
 	roleRepository := repositoryimplement.NewRoleRepository(db)
 	roleService := serviceimplement.NewRoleService(roleRepository)
@@ -48,8 +48,11 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	savedReceiverHandler := v1.NewSavedReceiverHandler(savedReceiverService)
 	notificationRepository := repositoryimplement.NewNotificationRepository(db)
 	notificationService := serviceimplement.NewNotificationService(notificationRepository)
-	customerHandler := v1.NewCustomerHandler(notificationService)
-	server := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler)
+	customerHandler := v1.NewCustomerHandler(notificationService, transactionService)
+	staffRepository := repositoryimplement.NewStaffRepository(db)
+	adminService := serviceimplement.NewAdminService(staffRepository)
+	adminHandler := v1.NewAdminHandler(adminService)
+	server := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler)
 	apiContainer := controller.NewApiContainer(server)
 	return apiContainer
 }
@@ -62,11 +65,11 @@ var container = wire.NewSet(controller.NewApiContainer)
 var serverSet = wire.NewSet(http.NewServer)
 
 // handler === controller | with service and repository layers to form 3 layers architecture
-var handlerSet = wire.NewSet(v1.NewAuthHandler, v1.NewCoreHandler, v1.NewAccountHandler, v1.NewStaffHandler, v1.NewTransactionHandler, v1.NewSavedReceiverHandler, v1.NewCustomerHandler)
+var handlerSet = wire.NewSet(v1.NewAuthHandler, v1.NewCoreHandler, v1.NewAccountHandler, v1.NewStaffHandler, v1.NewTransactionHandler, v1.NewSavedReceiverHandler, v1.NewCustomerHandler, v1.NewAdminHandler)
 
-var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.NewAccountService, serviceimplement.NewCoreService, serviceimplement.NewRoleService, serviceimplement.NewTransactionService, serviceimplement.NewSavedReceiverService, serviceimplement.NewStaffService, serviceimplement.NewNotificationService)
+var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.NewAccountService, serviceimplement.NewCoreService, serviceimplement.NewRoleService, serviceimplement.NewTransactionService, serviceimplement.NewSavedReceiverService, serviceimplement.NewStaffService, serviceimplement.NewNotificationService, serviceimplement.NewAdminService)
 
-var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository, repositoryimplement.NewRoleRepository, repositoryimplement.NewTransactionRepository, repositoryimplement.NewSavedReceiverRepository, repositoryimplement.NewNotificationRepository, repositoryimplement.NewDebtReplyRepository)
+var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository, repositoryimplement.NewRoleRepository, repositoryimplement.NewTransactionRepository, repositoryimplement.NewSavedReceiverRepository, repositoryimplement.NewNotificationRepository, repositoryimplement.NewDebtReplyRepository, repositoryimplement.NewStaffRepository)
 
 var middlewareSet = wire.NewSet(middleware.NewAuthMiddleware)
 

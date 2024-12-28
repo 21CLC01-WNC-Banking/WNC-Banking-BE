@@ -74,6 +74,7 @@ func (handler *CoreHandler) Notification(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(httpcommon.Error{
 			Message: err.Error(), Field: "notiRequest", Code: httpcommon.ErrorResponseCode.InvalidRequest,
 		}))
+		return
 	}
 
 	handler.notificationClient.SendTest(notiRequest)

@@ -14,4 +14,5 @@ type TransactionService interface {
 	CancelDebtReminder(ctx *gin.Context, debtReminderId string, debtReply model.DebtReminderReplyRequest) error
 	GetReceivedDebtReminder(ctx *gin.Context) ([]model.DebtReminderResponse, error)
 	GetSentDebtReminder(ctx *gin.Context) ([]model.DebtReminderResponse, error)
+	GetTransactions(ctx *gin.Context, customerId int64) ([]entity.Transaction, error)
 }
