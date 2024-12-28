@@ -41,43 +41,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/account/add-receiver": {
-            "post": {
-                "description": "Add a new receiver",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Receivers"
-                ],
-                "summary": "Add Receiver",
-                "parameters": [
-                    {
-                        "description": "Receiver Payload",
-                        "name": "receiver",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Receiver"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    }
-                }
-            }
-        },
         "/account/customer-name": {
             "get": {
                 "description": "Get Customer Name by Account Number",
@@ -443,6 +406,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/customer/transactions": {
+            "get": {
+                "description": "Get All Transactions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Get All Transactions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_entity_Transaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/saved-receiver": {
             "get": {
                 "description": "Fetches all saved receivers for the authenticated user",
@@ -462,6 +457,41 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/httpcommon.HttpResponse-array_model_SavedReceiverResponse"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a new receiver",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Receivers"
+                ],
+                "summary": "Add Receiver",
+                "parameters": [
+                    {
+                        "description": "Receiver Payload",
+                        "name": "receiver",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Receiver"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -972,6 +1002,26 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-array_entity_Transaction": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Transaction"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse": {
             "type": "object",
             "properties": {
@@ -1141,6 +1191,9 @@ const docTemplate = `{
                 },
                 "amount": {
                     "type": "integer"
+                },
+                "description": {
+                    "type": "string"
                 }
             }
         },
@@ -1182,6 +1235,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "sourceAccountNumber": {
+                    "type": "string"
+                },
+                "targetAccountNumber": {
                     "type": "string"
                 },
                 "type": {
@@ -1296,7 +1355,6 @@ const docTemplate = `{
             "required": [
                 "email",
                 "name",
-                "password",
                 "phoneNumber"
             ],
             "properties": {
@@ -1309,11 +1367,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 5
-                },
-                "password": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 8
                 },
                 "phoneNumber": {
                     "type": "string",

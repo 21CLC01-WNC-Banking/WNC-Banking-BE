@@ -37,6 +37,10 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.VerifyToken,
 				customerHandler.SeenNotification,
 			)
+			customer.GET("/transactions",
+				authMiddleware.VerifyToken,
+				customerHandler.GetTransactions,
+			)
 		}
 		cores := v1.Group("/core")
 		{

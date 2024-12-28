@@ -1,22 +1,25 @@
 package v1
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type CustomerHandler struct {
 	notificationService service.NotificationService
+	transactionService  service.TransactionService
 }
 
-func NewCustomerHandler(notificationService service.NotificationService) *CustomerHandler {
+func NewCustomerHandler(notificationService service.NotificationService, transactionService service.TransactionService) *CustomerHandler {
 	return &CustomerHandler{
 		notificationService: notificationService,
+		transactionService:  transactionService,
 	}
 }
 
@@ -74,4 +77,27 @@ func (h *CustomerHandler) GetNotifications(c *gin.Context) {
 		notifications = make([]entity.Notification, 0)
 	}
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&notifications))
+}
+
+// @Summary Get All Transactions
+// @Description Get All Transactions
+// @Tags Customer
+// @Produce  json
+// @Router /customer/transactions [get]
+// @Success 200 {object} httpcommon.HttpResponse[[]entity.Transaction]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (h *CustomerHandler) GetTransactions(c *gin.Context) {
+	transactions, err := h.transactionService.GetTransactions(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+			},
+		))
+	}
+	if len(transactions) == 0 {
+		transactions = make([]entity.Transaction, 0)
+	}
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&transactions))
 }

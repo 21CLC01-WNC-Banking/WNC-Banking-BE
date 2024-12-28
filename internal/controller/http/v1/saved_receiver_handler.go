@@ -29,7 +29,7 @@ func NewSavedReceiverHandler(savedReceiverService service.SavedReceiverService) 
 // @Param receiver body model.Receiver true "Receiver Payload"
 // @Success 204 "No Content"
 // @Failure 500 {object} httpcommon.HttpResponse[any] "Internal Server Error"
-// @Router /account/add-receiver [post]
+// @Router /saved-receiver [post]
 func (handler *SavedReceiverHandler) AddReceiver(ctx *gin.Context) {
 	var receiver model.Receiver
 
