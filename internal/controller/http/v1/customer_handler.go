@@ -89,7 +89,9 @@ func (h *CustomerHandler) GetNotifications(c *gin.Context) {
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (h *CustomerHandler) GetTransactions(c *gin.Context) {
-	transactions, err := h.transactionService.GetTransactions(c)
+	customerId := middleware.GetUserIdHelper(c)
+
+	transactions, err := h.transactionService.GetTransactions(c, customerId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{

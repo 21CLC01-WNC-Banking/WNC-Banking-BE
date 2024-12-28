@@ -10,5 +10,5 @@ type TransactionService interface {
 	PreInternalTransfer(ctx *gin.Context, transferReq model.PreInternalTransferRequest) (string, error)
 	SendOTPToEmail(ctx *gin.Context, email string, transactionId string) error
 	InternalTransfer(ctx *gin.Context, transferReq model.InternalTransferRequest) (*entity.Transaction, error)
-	GetTransactions(ctx *gin.Context) ([]entity.Transaction, error)
+	GetTransactions(ctx *gin.Context, customerId int64) ([]entity.Transaction, error)
 }

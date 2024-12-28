@@ -239,14 +239,9 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	return existsTransaction, nil
 }
 
-func (service *TransactionService) GetTransactions(ctx *gin.Context) ([]entity.Transaction, error) {
-	customerId, exists := ctx.Get("userId")
-	if !exists {
-		return nil, errors.New("customer not exists")
-	}
-
+func (service *TransactionService) GetTransactions(ctx *gin.Context, customerId int64) ([]entity.Transaction, error) {
 	//get account by customerId
-	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId.(int64))
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
 			return nil, errors.New("source account not found")
