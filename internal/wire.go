@@ -56,6 +56,7 @@ var repositorySet = wire.NewSet(
 	repositoryimplement.NewTransactionRepository,
 	repositoryimplement.NewSavedReceiverRepository,
 	repositoryimplement.NewNotificationRepository,
+	repositoryimplement.NewDebtReplyRepository,
 	repositoryimplement.NewStaffRepository,
 )
 

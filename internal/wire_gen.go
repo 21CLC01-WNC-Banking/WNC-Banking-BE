@@ -42,7 +42,8 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	roleRepository := repositoryimplement.NewRoleRepository(db)
 	roleService := serviceimplement.NewRoleService(roleRepository)
 	authMiddleware := middleware.NewAuthMiddleware(authService, roleService)
-	transactionService := serviceimplement.NewTransactionService(transactionRepository, customerRepository, accountService, coreService, redisClient, mailClient)
+	debtReplyRepository := repositoryimplement.NewDebtReplyRepository(db)
+	transactionService := serviceimplement.NewTransactionService(transactionRepository, customerRepository, accountService, coreService, redisClient, mailClient, debtReplyRepository)
 	transactionHandler := v1.NewTransactionHandler(transactionService)
 	savedReceiverHandler := v1.NewSavedReceiverHandler(savedReceiverService)
 	notificationRepository := repositoryimplement.NewNotificationRepository(db)
@@ -68,7 +69,7 @@ var handlerSet = wire.NewSet(v1.NewAuthHandler, v1.NewCoreHandler, v1.NewAccount
 
 var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.NewAccountService, serviceimplement.NewCoreService, serviceimplement.NewRoleService, serviceimplement.NewTransactionService, serviceimplement.NewSavedReceiverService, serviceimplement.NewStaffService, serviceimplement.NewNotificationService, serviceimplement.NewAdminService)
 
-var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository, repositoryimplement.NewRoleRepository, repositoryimplement.NewTransactionRepository, repositoryimplement.NewSavedReceiverRepository, repositoryimplement.NewNotificationRepository, repositoryimplement.NewStaffRepository)
+var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository, repositoryimplement.NewRoleRepository, repositoryimplement.NewTransactionRepository, repositoryimplement.NewSavedReceiverRepository, repositoryimplement.NewNotificationRepository, repositoryimplement.NewDebtReplyRepository, repositoryimplement.NewStaffRepository)
 
 var middlewareSet = wire.NewSet(middleware.NewAuthMiddleware)
 
