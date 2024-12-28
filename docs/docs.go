@@ -829,6 +829,99 @@ const docTemplate = `{
                 }
             }
         },
+        "/transaction/cancel-debt-reminder/:id": {
+            "put": {
+                "description": "cancel a debt reminder from source or target user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Debt reminder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of debt reminder",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.DebtReminderReplyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/debt-reminder": {
+            "post": {
+                "description": "Add new Debt reminder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Debt reminder",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.DebtReminderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/transaction/internal-transfer": {
             "post": {
                 "description": "Verify OTP and transaction from internal account to internal account",
@@ -920,6 +1013,76 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/transaction/received-debt-reminder": {
+            "get": {
+                "description": "get list Receive reminder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Debt reminder",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_DebtReminderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/sent-debt-reminder": {
+            "get": {
+                "description": "get list Sent reminder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Debt reminder",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_DebtReminderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -945,6 +1108,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.DebtReply": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "debtReminderId": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userReplyName": {
                     "type": "string"
                 }
             }
@@ -988,7 +1177,7 @@ const docTemplate = `{
                 "amount": {
                     "type": "integer"
                 },
-                "bank_id": {
+                "bankId": {
                     "type": "integer"
                 },
                 "createdAt": {
@@ -1003,22 +1192,22 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "is_source_fee": {
+                "isSourceFee": {
                     "type": "boolean"
                 },
-                "source_account_number": {
+                "sourceAccountNumber": {
                     "type": "string"
                 },
-                "source_balance": {
+                "sourceBalance": {
                     "type": "integer"
                 },
                 "status": {
                     "type": "string"
                 },
-                "target_account_number": {
+                "targetAccountNumber": {
                     "type": "string"
                 },
-                "target_balance": {
+                "targetBalance": {
                     "type": "integer"
                 },
                 "type": {
@@ -1275,6 +1464,23 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-model_DebtReminderResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.DebtReminderResponse"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse": {
             "type": "object",
             "properties": {
@@ -1370,6 +1576,67 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.DebtReminderReplyRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.DebtReminderRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description",
+                "sourceAccountNumber",
+                "targetAccountNumber",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "description": {
+                    "type": "string"
+                },
+                "sourceAccountNumber": {
+                    "type": "string"
+                },
+                "targetAccountNumber": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.DebtReminderResponse": {
+            "type": "object",
+            "required": [
+                "debtReminder",
+                "receiver",
+                "sender"
+            ],
+            "properties": {
+                "debtReminder": {
+                    "$ref": "#/definitions/entity.Transaction"
+                },
+                "receiver": {
+                    "type": "string"
+                },
+                "reply": {
+                    "$ref": "#/definitions/entity.DebtReply"
+                },
+                "sender": {
+                    "type": "string"
                 }
             }
         },

@@ -86,3 +86,41 @@ func (repo *TransactionRepository) GetTransactionByAccountNumber(ctx context.Con
 
 	return transactions, nil
 }
+
+func (repo *TransactionRepository) GetTransactionByIdQuery(ctx context.Context, id string) (*entity.Transaction, error) {
+	var transaction entity.Transaction
+	query := "SELECT * FROM transactions WHERE id = ?"
+	err := repo.db.QueryRowxContext(ctx, query, id).StructScan(&transaction)
+	if err != nil {
+		return nil, err
+	}
+	return &transaction, nil
+}
+
+func (repo *TransactionRepository) GetReceivedDebtReminderByCustomerIdQuery(ctx context.Context, customerId int64) (*[]entity.Transaction, error) {
+	var transactions []entity.Transaction
+	query := `SELECT t.* 
+	FROM users u
+	JOIN accounts a ON u.id = a.customer_id
+	JOIN transactions t ON a.number = t.source_account_number
+	where u.id = ? AND t.type = 'debt_payment' AND t.status != 'success'`
+	err := repo.db.SelectContext(ctx, &transactions, query, customerId)
+	if err != nil {
+		return nil, err
+	}
+	return &transactions, nil
+}
+
+func (repo *TransactionRepository) GetSentDebtReminderByCustomerIdQuery(ctx context.Context, customerId int64) (*[]entity.Transaction, error) {
+	var transactions []entity.Transaction
+	query := `SELECT t.* 
+	FROM users u
+	JOIN accounts a ON u.id = a.customer_id
+	JOIN transactions t ON a.number = t.target_account_number
+	where u.id = ? AND t.type = 'debt_payment' AND t.status != 'success'`
+	err := repo.db.SelectContext(ctx, &transactions, query, customerId)
+	if err != nil {
+		return nil, err
+	}
+	return &transactions, nil
+}

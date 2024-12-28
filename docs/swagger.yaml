@@ -16,6 +16,23 @@ definitions:
       updatedAt:
         type: string
     type: object
+  entity.DebtReply:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      debtReminderId:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      updatedAt:
+        type: string
+      userReplyName:
+        type: string
+    type: object
   entity.Notification:
     properties:
       content:
@@ -42,7 +59,7 @@ definitions:
     properties:
       amount:
         type: integer
-      bank_id:
+      bankId:
         type: integer
       createdAt:
         type: string
@@ -52,17 +69,17 @@ definitions:
         type: string
       id:
         type: string
-      is_source_fee:
+      isSourceFee:
         type: boolean
-      source_account_number:
+      sourceAccountNumber:
         type: string
-      source_balance:
+      sourceBalance:
         type: integer
       status:
         type: string
-      target_account_number:
+      targetAccountNumber:
         type: string
-      target_balance:
+      targetBalance:
         type: integer
       type:
         type: string
@@ -229,6 +246,17 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-model_DebtReminderResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.DebtReminderResponse'
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse:
     properties:
       data:
@@ -293,6 +321,48 @@ definitions:
     properties:
       id:
         type: integer
+    type: object
+  model.DebtReminderReplyRequest:
+    properties:
+      content:
+        type: string
+    required:
+    - content
+    type: object
+  model.DebtReminderRequest:
+    properties:
+      amount:
+        minimum: 0
+        type: integer
+      description:
+        type: string
+      sourceAccountNumber:
+        type: string
+      targetAccountNumber:
+        type: string
+      type:
+        type: string
+    required:
+    - amount
+    - description
+    - sourceAccountNumber
+    - targetAccountNumber
+    - type
+    type: object
+  model.DebtReminderResponse:
+    properties:
+      debtReminder:
+        $ref: '#/definitions/entity.Transaction'
+      receiver:
+        type: string
+      reply:
+        $ref: '#/definitions/entity.DebtReply'
+      sender:
+        type: string
+    required:
+    - debtReminder
+    - receiver
+    - sender
     type: object
   model.GetCustomerNameByAccountNumberResponse:
     properties:
@@ -1016,6 +1086,67 @@ paths:
       summary: Get transactions by account number
       tags:
       - Staff
+  /transaction/cancel-debt-reminder/:id:
+    put:
+      consumes:
+      - application/json
+      description: cancel a debt reminder from source or target user
+      parameters:
+      - description: Id of debt reminder
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.DebtReminderReplyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Debt reminder
+      tags:
+      - Transaction
+  /transaction/debt-reminder:
+    post:
+      consumes:
+      - application/json
+      description: Add new Debt reminder
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.DebtReminderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Debt reminder
+      tags:
+      - Transaction
   /transaction/internal-transfer:
     post:
       consumes:
@@ -1074,6 +1205,52 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Transaction
+      tags:
+      - Transaction
+  /transaction/received-debt-reminder:
+    get:
+      consumes:
+      - application/json
+      description: get list Receive reminder
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-model_DebtReminderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Debt reminder
+      tags:
+      - Transaction
+  /transaction/sent-debt-reminder:
+    get:
+      consumes:
+      - application/json
+      description: get list Sent reminder
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-model_DebtReminderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Debt reminder
       tags:
       - Transaction
 swagger: "2.0"
