@@ -18,15 +18,15 @@ func NewAdminService(staffRepository repository.StaffRepository, passwordEncoder
 	return &AdminService{staffRepository: staffRepository, passwordEncoder: passwordEncoder}
 }
 
-func (a AdminService) GetAllStaff(ctx *gin.Context) ([]entity.User, error) {
+func (a *AdminService) GetAllStaff(ctx *gin.Context) ([]entity.User, error) {
 	return a.staffRepository.GetAll(ctx)
 }
 
-func (a AdminService) GetOneStaff(ctx *gin.Context, staffId int64) (*entity.User, error) {
+func (a *AdminService) GetOneStaff(ctx *gin.Context, staffId int64) (*entity.User, error) {
 	return a.staffRepository.GetOneById(ctx, staffId)
 }
 
-func (a AdminService) CreateOneStaff(ctx *gin.Context, request *model.CreateStaffRequest) (int64, error) {
+func (a *AdminService) CreateOneStaff(ctx *gin.Context, request *model.CreateStaffRequest) (int64, error) {
 	hashedPassword, err := a.passwordEncoder.Encrypt(request.Password)
 	if err != nil {
 		return 0, err
@@ -38,4 +38,8 @@ func (a AdminService) CreateOneStaff(ctx *gin.Context, request *model.CreateStaf
 		PhoneNumber: request.PhoneNumber,
 		Password:    hashedPassword,
 	})
+}
+
+func (a *AdminService) DeleteOneStaff(ctx *gin.Context, staffId int64) error {
+	return a.staffRepository.DeleteOne(ctx, staffId)
 }
