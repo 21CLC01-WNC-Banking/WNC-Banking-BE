@@ -2,6 +2,7 @@ package serviceimplement
 
 import (
 	"errors"
+	"time"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
@@ -10,6 +11,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/exp/rand"
 )
 
 type StaffService struct {
@@ -18,6 +20,7 @@ type StaffService struct {
 	accountService        service.AccountService
 	accountRepository     repository.AccountRepository
 	transactionRepository repository.TransactionRepository
+	mailCLient            bean.MailClient
 }
 
 func NewStaffService(
@@ -26,6 +29,7 @@ func NewStaffService(
 	accountService service.AccountService,
 	accountRepository repository.AccountRepository,
 	transactionRepository repository.TransactionRepository,
+	mailCLient bean.MailClient,
 ) service.StaffService {
 	return &StaffService{
 		customerRepository:    customerRepository,
@@ -33,7 +37,21 @@ func NewStaffService(
 		accountService:        accountService,
 		accountRepository:     accountRepository,
 		transactionRepository: transactionRepository,
+		mailCLient:            mailCLient,
 	}
+}
+
+func generateRandomPassword(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+
+	rand.Seed(uint64(time.Now().UnixNano()))
+
+	password := make([]byte, length)
+	for i := range password {
+		password[i] = charset[rand.Intn(len(charset))]
+	}
+
+	return string(password)
 }
 
 func (service *StaffService) RegisterCustomer(ctx *gin.Context, registerRequest model.RegisterRequest) error {
@@ -44,10 +62,14 @@ func (service *StaffService) RegisterCustomer(ctx *gin.Context, registerRequest 
 	if existsCustomer != nil {
 		return errors.New("Email have already registered")
 	}
-	hashPW, err := service.passwordEncoder.Encrypt(registerRequest.Password)
+
+	// generate random password
+	randomPassword := generateRandomPassword(8)
+	hashPW, err := service.passwordEncoder.Encrypt(randomPassword)
 	if err != nil {
 		return err
 	}
+
 	newCustomer := &entity.User{
 		Email:       registerRequest.Email,
 		Name:        registerRequest.Name,
@@ -69,6 +91,14 @@ func (service *StaffService) RegisterCustomer(ctx *gin.Context, registerRequest 
 	if err != nil {
 		return err
 	}
+
+	// send random password to email
+	emailBody := service.mailCLient.GenerateRandomPasswordBody(registerRequest.Email, randomPassword)
+	err = service.mailCLient.SendEmail(ctx, registerRequest.Email, "Generate random password", emailBody)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
