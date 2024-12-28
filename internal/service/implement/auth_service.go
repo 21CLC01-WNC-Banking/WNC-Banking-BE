@@ -70,7 +70,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 		return nil, err
 	}
 	accessToken, err := jwt.GenerateToken(constants.ACCESS_TOKEN_DURATION, jwtSecret, map[string]interface{}{
-		"id": existsCustomer.ID,
+		"id": existsCustomer.Id,
 	})
 
 	if err == nil {
@@ -86,14 +86,14 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 	}
 
 	refreshToken, err := jwt.GenerateToken(constants.REFRESH_TOKEN_DURATION, jwtSecret, map[string]interface{}{
-		"id": existsCustomer.ID,
+		"id": existsCustomer.Id,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	// Check if a refresh token already exists
-	existingRefreshToken, err := service.authenticationRepository.GetOneByCustomerIdQuery(ctx, existsCustomer.ID)
+	existingRefreshToken, err := service.authenticationRepository.GetOneByCustomerIdQuery(ctx, existsCustomer.Id)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 	if existingRefreshToken == nil {
 		// Create a new refresh token
 		err = service.authenticationRepository.CreateCommand(ctx, entity.Authentication{
-			UserId:       existsCustomer.ID,
+			UserId:       existsCustomer.Id,
 			RefreshToken: refreshToken,
 		})
 		if err != nil {
@@ -110,7 +110,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 	} else {
 		// Update the existing refresh token
 		err = service.authenticationRepository.UpdateCommand(ctx, entity.Authentication{
-			UserId:       existsCustomer.ID,
+			UserId:       existsCustomer.Id,
 			RefreshToken: refreshToken,
 		})
 		if err != nil {

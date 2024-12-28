@@ -8,6 +8,7 @@ import (
 type StaffRepository interface {
 	GetAll(ctx context.Context) ([]entity.User, error)
 	GetOneById(ctx context.Context, id int64) (*entity.User, error)
-	CreateOne(ctx context.Context, user *entity.User) (int64, error) // return staff ID after return
+	CreateOne(ctx context.Context, staff *entity.User) (int64, error) // return staff Id after return
 	DeleteOne(ctx context.Context, id int64) error
+	UpdateOneStaff(ctx context.Context, staff *entity.User) error
 }

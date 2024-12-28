@@ -10,3 +10,11 @@ type CreateStaffRequest struct {
 type CreateStaffResponse struct {
 	Id int64 `json:"id"`
 }
+
+type UpdateStaffRequest struct {
+	Id          int64  `json:"id" binding:"required"` // required
+	Name        string `json:"name"`
+	Email       string `json:"email" binding:"omitempty,email"`
+	PhoneNumber string `json:"phoneNumber"`
+	Password    string `json:"password"`
+}

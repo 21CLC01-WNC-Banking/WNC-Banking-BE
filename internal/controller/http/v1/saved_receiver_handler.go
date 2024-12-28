@@ -69,11 +69,11 @@ func (handler *SavedReceiverHandler) GetAllReceivers(ctx *gin.Context) {
 
 // RenameReceiver handles the endpoint to rename a saved receiver
 // @Summary Rename a saved receiver
-// @Description Renames a saved receiver's nickname by receiver ID
+// @Description Renames a saved receiver's nickname by receiver Id
 // @Tags Receivers
 // @Accept  json
 // @Produce  json
-// @Param id path int64 true "Receiver ID"
+// @Param id path int64 true "Receiver Id"
 // @Param body body model.UpdateReceiverRequest true "Request body for renaming the receiver"
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
@@ -89,7 +89,7 @@ func (handler *SavedReceiverHandler) RenameReceiver(ctx *gin.Context) {
 	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(httpcommon.Error{
-			Message: "Invalid receiver ID", Field: "id", Code: httpcommon.ErrorResponseCode.MissingIdParameter,
+			Message: "Invalid receiver Id", Field: "id", Code: httpcommon.ErrorResponseCode.MissingIdParameter,
 		}))
 		return
 	}
@@ -106,11 +106,11 @@ func (handler *SavedReceiverHandler) RenameReceiver(ctx *gin.Context) {
 
 // DeleteReceiver handles the endpoint to delete a saved receiver
 // @Summary Delete a saved receiver
-// @Description Deletes a saved receiver by receiver ID
+// @Description Deletes a saved receiver by receiver Id
 // @Tags Receivers
 // @Accept  json
 // @Produce  json
-// @Param id path int64 true "Receiver ID"
+// @Param id path int64 true "Receiver Id"
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -119,7 +119,7 @@ func (handler *SavedReceiverHandler) DeleteReceiver(ctx *gin.Context) {
 	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(httpcommon.Error{
-			Message: "Invalid receiver ID", Field: "id", Code: httpcommon.ErrorResponseCode.MissingIdParameter,
+			Message: "Invalid receiver Id", Field: "id", Code: httpcommon.ErrorResponseCode.MissingIdParameter,
 		}))
 		return
 	}

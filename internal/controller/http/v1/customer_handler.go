@@ -103,11 +103,11 @@ func (h *CustomerHandler) GetTransactions(c *gin.Context) {
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&transactions))
 }
 
-// @Summary Get Transaction By ID
-// @Description Retrieve a specific transaction by its ID for a given customer.
+// @Summary Get Transaction By Id
+// @Description Retrieve a specific transaction by its Id for a given customer.
 // @Tags Customer
 // @Produce json
-// @Param transactionId path string true "Transaction ID"
+// @Param transactionId path string true "Transaction Id"
 // @Router /customer/transaction/{transactionId} [get]
 // @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
