@@ -10,4 +10,5 @@ type TransactionService interface {
 	PreInternalTransfer(ctx *gin.Context, transferReq model.PreInternalTransferRequest) (string, error)
 	SendOTPToEmail(ctx *gin.Context, email string, transactionId string) error
 	InternalTransfer(ctx *gin.Context, transferReq model.InternalTransferRequest) (*entity.Transaction, error)
+	AddDebtReminder(ctx *gin.Context, debtReminder model.DebtReminderRequest) error
 }

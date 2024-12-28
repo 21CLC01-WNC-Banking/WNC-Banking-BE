@@ -220,7 +220,7 @@ func (service *TransactionService) verifyTransactionInfo(ctx *gin.Context, sourc
 		}
 		return nil, nil, nil, err
 	}
-	//get account by customerId and check sourceNumber
+	//get account by customerId and check sourceNumber is internal
 	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.ID)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
@@ -232,7 +232,7 @@ func (service *TransactionService) verifyTransactionInfo(ctx *gin.Context, sourc
 		return nil, nil, nil, errors.New("source account not match")
 	}
 
-	//check targetNumber
+	//check targetNumber is internal
 	targetAccount, err := service.accountService.GetAccountByNumber(ctx, targetAccountNumber)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
@@ -258,19 +258,19 @@ func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminde
 
 	*sourceAccount.Balance = debtReminder.Amount
 	*targetAccount.Balance = -(debtReminder.Amount + fee)
-	falseStatus := false
+	trueStatus := true
 	//store transaction
 	transaction := &entity.Transaction{
-		SourceAccountNumber: sourceAccount.Number,
-		TargetAccountNumber: targetAccount.Number,
+		SourceAccountNumber: targetAccount.Number,
+		TargetAccountNumber: sourceAccount.Number,
 		Amount:              debtReminder.Amount,
 		BankId:              nil,
 		Type:                debtReminder.Type,
 		Description:         debtReminder.Description,
 		Status:              "pending",
-		IsSourceFee:         &falseStatus,
-		SourceBalance:       *sourceAccount.Balance,
-		TargetBalance:       *targetAccount.Balance,
+		IsSourceFee:         &trueStatus,
+		SourceBalance:       *targetAccount.Balance,
+		TargetBalance:       *sourceAccount.Balance,
 	}
 
 	//save transaction

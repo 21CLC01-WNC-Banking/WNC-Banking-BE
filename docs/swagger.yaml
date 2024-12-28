@@ -234,6 +234,26 @@ definitions:
     - accountNumber
     - amount
     type: object
+  model.DebtReminderRequest:
+    properties:
+      amount:
+        minimum: 0
+        type: integer
+      description:
+        type: string
+      sourceAccountNumber:
+        type: string
+      targetAccountNumber:
+        type: string
+      type:
+        type: string
+    required:
+    - amount
+    - description
+    - sourceAccountNumber
+    - targetAccountNumber
+    - type
+    type: object
   model.GetCustomerNameByAccountNumberResponse:
     properties:
       name:
@@ -259,6 +279,10 @@ definitions:
       description:
         type: string
       id:
+        type: string
+      sourceAccountNumber:
+        type: string
+      targetAccountNumber:
         type: string
       type:
         type: string
@@ -866,6 +890,34 @@ paths:
       summary: Get transactions by account number
       tags:
       - Staff
+  /transaction/debt-reminder:
+    post:
+      consumes:
+      - application/json
+      description: Add new Debt reminder
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.DebtReminderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Transaction
+      tags:
+      - Transaction
   /transaction/internal-transfer:
     post:
       consumes:

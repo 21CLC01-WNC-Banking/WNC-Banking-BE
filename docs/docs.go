@@ -691,6 +691,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/transaction/debt-reminder": {
+            "post": {
+                "description": "Add new Debt reminder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.DebtReminderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/transaction/internal-transfer": {
             "post": {
                 "description": "Verify OTP and transaction from internal account to internal account",
@@ -1144,6 +1187,34 @@ const docTemplate = `{
                 }
             }
         },
+        "model.DebtReminderRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description",
+                "sourceAccountNumber",
+                "targetAccountNumber",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "description": {
+                    "type": "string"
+                },
+                "sourceAccountNumber": {
+                    "type": "string"
+                },
+                "targetAccountNumber": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "model.GetCustomerNameByAccountNumberResponse": {
             "type": "object",
             "properties": {
@@ -1182,6 +1253,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "sourceAccountNumber": {
+                    "type": "string"
+                },
+                "targetAccountNumber": {
                     "type": "string"
                 },
                 "type": {

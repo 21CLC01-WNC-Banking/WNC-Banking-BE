@@ -69,3 +69,28 @@ func (handler *TransactionHandler) InternalTransfer(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[*entity.Transaction](&transaction))
 }
+
+// @Summary Transaction
+// @Description Add new Debt reminder
+// @Tags Transaction
+// @Accept json
+// @Param request body model.DebtReminderRequest true "Transaction payload"
+// @Produce  json
+// @Router /transaction/debt-reminder [post]
+// @Success 200 "No Content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *TransactionHandler) AddDebtReminder(ctx *gin.Context) {
+	var req model.DebtReminderRequest
+	if err := validation.BindJsonAndValidate(ctx, &req); err != nil {
+		return
+	}
+	err := handler.transactionService.AddDebtReminder(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	ctx.AbortWithStatus(200)
+}
