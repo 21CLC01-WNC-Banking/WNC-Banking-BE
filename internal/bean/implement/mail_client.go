@@ -53,6 +53,28 @@ func (m *MailClient) GenerateOTPBody(to, code, context string, ttl time.Duration
 	return body
 }
 
+func (m *MailClient) GenerateRandomPasswordBody(to, password string) string {
+	contextMessage := "Mật khẩu để đăng nhập vào tài khoản của bạn"
+
+	body := fmt.Sprintf(`
+		<!DOCTYPE html>
+		<html lang="vi">
+		<body>
+			<p>Bạn đã chọn <strong>%s</strong> làm địa chỉ email của mình.</p>
+			<p>%s</p>
+			<p>Mật khẩu tạm thời của bạn là:</p>
+			<h2 style="color: #4CAF50;">%s</h2>
+			<hr>
+			<p style="color: red;"><strong>Cảnh báo: Không bao giờ chia sẻ mật khẩu của bạn với bất kỳ ai.</strong></p>
+			<p><strong>Tại sao bạn nhận được email này?</strong></p>
+			<p>Chúng tôi yêu cầu xác minh bất cứ khi nào mật khẩu được cập nhật hoặc giao dịch được thực hiện.</p>
+			<p>Nếu bạn không thực hiện yêu cầu này, bạn có thể bỏ qua email này.</p>
+		</body>
+		</html>
+	`, to, contextMessage, password)
+	return body
+}
+
 func (m *MailClient) SendEmail(ctx context.Context, to, subject, body string) error {
 	message := gomail.NewMessage()
 
