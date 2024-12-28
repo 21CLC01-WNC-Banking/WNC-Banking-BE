@@ -98,6 +98,7 @@ func (h *CustomerHandler) GetTransactions(c *gin.Context) {
 				Message: err.Error(),
 			},
 		))
+		return
 	}
 	if len(transactions) == 0 {
 		transactions = make([]entity.Transaction, 0)
