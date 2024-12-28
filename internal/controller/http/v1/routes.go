@@ -38,10 +38,21 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.VerifyToken,
 				customerHandler.SeenNotification,
 			)
-			customer.GET("/transactions",
+			customer.GET("/transaction",
 				authMiddleware.VerifyToken,
 				customerHandler.GetTransactions,
 			)
+			customer.GET("/transaction/:transactionId",
+				authMiddleware.VerifyToken,
+				customerHandler.GetTransactionById,
+			)
+			savedReceiver := customer.Group("/saved-receiver")
+			{
+				savedReceiver.POST("/", authMiddleware.VerifyToken, savedReceiverHandler.AddReceiver)
+				savedReceiver.GET("/", authMiddleware.VerifyToken, savedReceiverHandler.GetAllReceivers)
+				savedReceiver.PUT("/:id", authMiddleware.VerifyToken, savedReceiverHandler.RenameReceiver)
+				savedReceiver.DELETE("/:id", authMiddleware.VerifyToken, savedReceiverHandler.DeleteReceiver)
+			}
 		}
 		admin := v1.Group("/admin")
 		{
@@ -93,13 +104,6 @@ func MapRoutes(router *gin.Engine,
 		{
 			transactions.POST("/pre-internal-transfer", authMiddleware.VerifyToken, transactionHandler.PreInternalTransfer)
 			transactions.POST("/internal-transfer", authMiddleware.VerifyToken, transactionHandler.InternalTransfer)
-		}
-		savedReceiver := v1.Group("/saved-receiver")
-		{
-			savedReceiver.POST("/", authMiddleware.VerifyToken, savedReceiverHandler.AddReceiver)
-			savedReceiver.GET("/", authMiddleware.VerifyToken, savedReceiverHandler.GetAllReceivers)
-			savedReceiver.PUT("/:id", authMiddleware.VerifyToken, savedReceiverHandler.RenameReceiver)
-			savedReceiver.DELETE("/:id", authMiddleware.VerifyToken, savedReceiverHandler.DeleteReceiver)
 		}
 	}
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
