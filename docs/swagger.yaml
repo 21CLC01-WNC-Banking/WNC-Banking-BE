@@ -122,6 +122,19 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-array_entity_Transaction:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/entity.Transaction'
+        type: array
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-array_entity_User:
     properties:
       data:
@@ -454,30 +467,6 @@ paths:
       summary: Get Account by Customer ID
       tags:
       - Accounts
-  /account/add-receiver:
-    post:
-      consumes:
-      - application/json
-      description: Add a new receiver
-      parameters:
-      - description: Receiver Payload
-        in: body
-        name: receiver
-        required: true
-        schema:
-          $ref: '#/definitions/model.Receiver'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Add Receiver
-      tags:
-      - Receivers
   /account/customer-name:
     get:
       description: Get Customer Name by Account Number
@@ -761,6 +750,27 @@ paths:
       summary: Seen notification by id
       tags:
       - Customer
+  /customer/transactions:
+    get:
+      description: Get All Transactions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-array_entity_Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get All Transactions
+      tags:
+      - Customer
   /saved-receiver:
     get:
       consumes:
@@ -778,6 +788,29 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Get all saved receivers
+      tags:
+      - Receivers
+    post:
+      consumes:
+      - application/json
+      description: Add a new receiver
+      parameters:
+      - description: Receiver Payload
+        in: body
+        name: receiver
+        required: true
+        schema:
+          $ref: '#/definitions/model.Receiver'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Add Receiver
       tags:
       - Receivers
   /saved-receiver/{id}:

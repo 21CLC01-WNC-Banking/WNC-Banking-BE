@@ -238,3 +238,20 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	// notify, response history
 	return existsTransaction, nil
 }
+
+func (service *TransactionService) GetTransactions(ctx *gin.Context, customerId int64) ([]entity.Transaction, error) {
+	//get account by customerId
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("source account not found")
+		}
+		return nil, err
+	}
+
+	transactions, err := service.transactionRepository.GetTransactionByAccountNumber(ctx, sourceAccount.Number)
+	if err != nil {
+		return nil, err
+	}
+	return transactions, nil
+}

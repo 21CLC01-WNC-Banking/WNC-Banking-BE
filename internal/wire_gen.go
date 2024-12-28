@@ -47,7 +47,7 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	savedReceiverHandler := v1.NewSavedReceiverHandler(savedReceiverService)
 	notificationRepository := repositoryimplement.NewNotificationRepository(db)
 	notificationService := serviceimplement.NewNotificationService(notificationRepository)
-	customerHandler := v1.NewCustomerHandler(notificationService)
+	customerHandler := v1.NewCustomerHandler(notificationService, transactionService)
 	staffRepository := repositoryimplement.NewStaffRepository(db)
 	adminService := serviceimplement.NewAdminService(staffRepository)
 	adminHandler := v1.NewAdminHandler(adminService)

@@ -38,6 +38,10 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.VerifyToken,
 				customerHandler.SeenNotification,
 			)
+			customer.GET("/transactions",
+				authMiddleware.VerifyToken,
+				customerHandler.GetTransactions,
+			)
 		}
 		admin := v1.Group("/admin")
 		{
