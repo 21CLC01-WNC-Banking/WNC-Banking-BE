@@ -7,3 +7,7 @@ type DebtReminderRequest struct {
 	Description         string `json:"description" binding:"required"`
 	Type                string `json:"type" binding:"required"`
 }
+
+type DebtReminderReplyRequest struct {
+	Content string `json:"content" binding:"required"`
+}

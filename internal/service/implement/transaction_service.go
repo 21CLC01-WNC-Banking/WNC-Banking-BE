@@ -24,6 +24,7 @@ type TransactionService struct {
 	coreService           service.CoreService
 	redisClient           bean.RedisClient
 	mailClient            bean.MailClient
+	debtReply             repository.DebtReplyRepository
 }
 
 func NewTransactionService(transactionRepository repository.TransactionRepository,
@@ -31,7 +32,8 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 	accountService service.AccountService,
 	coreService service.CoreService,
 	redisClient bean.RedisClient,
-	mailClient bean.MailClient) service.TransactionService {
+	mailClient bean.MailClient,
+	debtReply repository.DebtReplyRepository) service.TransactionService {
 	return &TransactionService{
 		transactionRepository: transactionRepository,
 		customerRepository:    customerRepository,
@@ -39,6 +41,7 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 		coreService:           coreService,
 		redisClient:           redisClient,
 		mailClient:            mailClient,
+		debtReply:             debtReply,
 	}
 }
 
@@ -210,7 +213,7 @@ func (service *TransactionService) verifyTransactionInfo(ctx *gin.Context, sourc
 		return nil, nil, nil, errors.New("source account number can not equal to target account number")
 	}
 
-	//get customer and check info
+	//get customer
 	customerId := middleware.GetUserIdHelper(ctx)
 	//check customerId
 	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
@@ -278,5 +281,62 @@ func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminde
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtReminderId string, debtReply model.DebtReminderReplyRequest) error {
+	//get customer and check info
+	customerId := middleware.GetUserIdHelper(ctx)
+	//check customerId
+	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return errors.New("customer not found")
+		}
+		return err
+	}
+
+	//get account by customerId and check sourceNumber is internal
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.ID)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return errors.New("source account not found")
+		}
+		return err
+	}
+
+	//get transaction by debtReminderId
+	debtReminder, err := service.transactionRepository.GetTransactionByIdQuery(ctx, debtReminderId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return errors.New("debt reminder not found")
+		}
+		return err
+	}
+	//check accountNumber in debtReminder
+	if sourceAccount.Number != debtReminder.SourceAccountNumber && sourceAccount.Number != debtReminder.TargetAccountNumber {
+		return errors.New("account number not match")
+	}
+
+	//create reply
+	reply := &entity.DebtReply{
+		Content:        debtReply.Content,
+		DebtReminderId: debtReminderId,
+		UserReplyId:    customerId,
+	}
+
+	//save reply
+	err = service.debtReply.CreateCommand(ctx, reply)
+	if err != nil {
+		return err
+	}
+	//update status and save
+	debtReminder.Status = "failed"
+	err = service.transactionRepository.UpdateStatusCommand(ctx, debtReminder)
+	if err != nil {
+		return err
+	}
+
+	//notify...
 	return nil
 }

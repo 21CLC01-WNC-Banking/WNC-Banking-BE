@@ -11,4 +11,5 @@ type TransactionRepository interface {
 	UpdateStatusCommand(ctx context.Context, transaction *entity.Transaction) error
 	UpdateBalancesCommand(ctx context.Context, transaction *entity.Transaction) error
 	GetTransactionByAccountNumber(ctx context.Context, accountNumber string) ([]entity.Transaction, error)
+	GetTransactionByIdQuery(ctx context.Context, id string) (*entity.Transaction, error)
 }

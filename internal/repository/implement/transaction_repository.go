@@ -86,3 +86,13 @@ func (repo *TransactionRepository) GetTransactionByAccountNumber(ctx context.Con
 
 	return transactions, nil
 }
+
+func (repo *TransactionRepository) GetTransactionByIdQuery(ctx context.Context, id string) (*entity.Transaction, error) {
+	var transaction entity.Transaction
+	query := "SELECT * FROM transactions WHERE id = ?"
+	err := repo.db.QueryRowxContext(ctx, query, id).StructScan(&transaction)
+	if err != nil {
+		return nil, err
+	}
+	return &transaction, nil
+}

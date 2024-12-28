@@ -54,6 +54,7 @@ var repositorySet = wire.NewSet(
 	repositoryimplement.NewTransactionRepository,
 	repositoryimplement.NewSavedReceiverRepository,
 	repositoryimplement.NewNotificationRepository,
+	repositoryimplement.NewDebtReplyRepository,
 )
 
 var middlewareSet = wire.NewSet(

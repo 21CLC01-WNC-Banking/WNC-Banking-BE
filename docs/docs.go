@@ -691,6 +691,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/transaction/cancel-debt-reminder/:id": {
+            "put": {
+                "description": "cancel a debt reminder from source or target user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Debt reminder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of debt reminder",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.DebtReminderReplyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/transaction/debt-reminder": {
             "post": {
                 "description": "Add new Debt reminder",
@@ -893,7 +943,7 @@ const docTemplate = `{
                 "amount": {
                     "type": "integer"
                 },
-                "bank_id": {
+                "bankId": {
                     "type": "integer"
                 },
                 "createdAt": {
@@ -908,22 +958,22 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "is_source_fee": {
+                "isSourceFee": {
                     "type": "boolean"
                 },
-                "source_account_number": {
+                "sourceAccountNumber": {
                     "type": "string"
                 },
-                "source_balance": {
+                "sourceBalance": {
                     "type": "integer"
                 },
                 "status": {
                     "type": "string"
                 },
-                "target_account_number": {
+                "targetAccountNumber": {
                     "type": "string"
                 },
-                "target_balance": {
+                "targetBalance": {
                     "type": "integer"
                 },
                 "type": {
@@ -1184,6 +1234,17 @@ const docTemplate = `{
                 },
                 "amount": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.DebtReminderReplyRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
                 }
             }
         },
