@@ -43,3 +43,21 @@ func (a *AdminService) CreateOneStaff(ctx *gin.Context, request *model.CreateSta
 func (a *AdminService) DeleteOneStaff(ctx *gin.Context, staffId int64) error {
 	return a.staffRepository.DeleteOne(ctx, staffId)
 }
+
+func (a *AdminService) UpdateOneStaff(ctx *gin.Context, request *model.UpdateStaffRequest) error {
+	if request.Password != "" {
+		hashedPassword, err := a.passwordEncoder.Encrypt(request.Password)
+		if err != nil {
+			return err
+		}
+		request.Password = hashedPassword
+	}
+
+	return a.staffRepository.UpdateOneStaff(ctx, &entity.User{
+		Id:          request.Id,
+		Email:       request.Email,
+		Name:        request.Name,
+		Password:    request.Password,
+		PhoneNumber: request.PhoneNumber,
+	})
+}

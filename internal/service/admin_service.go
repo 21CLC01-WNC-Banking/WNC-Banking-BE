@@ -11,4 +11,5 @@ type AdminService interface {
 	GetOneStaff(ctx *gin.Context, staffId int64) (*entity.User, error)
 	CreateOneStaff(ctx *gin.Context, request *model.CreateStaffRequest) (int64, error) // return created staff id
 	DeleteOneStaff(ctx *gin.Context, staffId int64) error
+	UpdateOneStaff(ctx *gin.Context, request *model.UpdateStaffRequest) error
 }

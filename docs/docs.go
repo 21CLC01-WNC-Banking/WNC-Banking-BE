@@ -17,14 +17,14 @@ const docTemplate = `{
     "paths": {
         "/account/": {
             "get": {
-                "description": "Get Account by Customer ID",
+                "description": "Get Account by Customer Id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Accounts"
                 ],
-                "summary": "Get Account by Customer ID",
+                "summary": "Get Account by Customer Id",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -101,6 +101,44 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "description": "Admin update one staff",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admins"
+                ],
+                "summary": "Admin update one staff ( only update non-empty field )",
+                "parameters": [
+                    {
+                        "description": "Staff payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.UpdateStaffRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Admin create one staff",
                 "produces": [
@@ -156,7 +194,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Staff ID",
+                        "description": "Staff Id",
                         "name": "staffId",
                         "in": "path",
                         "required": true
@@ -195,7 +233,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Staff ID",
+                        "description": "Staff Id",
                         "name": "staffId",
                         "in": "path",
                         "required": true
@@ -616,7 +654,7 @@ const docTemplate = `{
         },
         "/customer/saved-receiver/{id}": {
             "put": {
-                "description": "Renames a saved receiver's nickname by receiver ID",
+                "description": "Renames a saved receiver's nickname by receiver Id",
                 "consumes": [
                     "application/json"
                 ],
@@ -630,7 +668,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Receiver ID",
+                        "description": "Receiver Id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -664,7 +702,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Deletes a saved receiver by receiver ID",
+                "description": "Deletes a saved receiver by receiver Id",
                 "consumes": [
                     "application/json"
                 ],
@@ -678,7 +716,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Receiver ID",
+                        "description": "Receiver Id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -737,18 +775,18 @@ const docTemplate = `{
         },
         "/customer/transaction/{transactionId}": {
             "get": {
-                "description": "Retrieve a specific transaction by its ID for a given customer.",
+                "description": "Retrieve a specific transaction by its Id for a given customer.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Customer"
                 ],
-                "summary": "Get Transaction By ID",
+                "summary": "Get Transaction By Id",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Transaction ID",
+                        "description": "Transaction Id",
                         "name": "transactionId",
                         "in": "path",
                         "required": true
@@ -1959,6 +1997,30 @@ const docTemplate = `{
             ],
             "properties": {
                 "newNickname": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.UpdateStaffRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "description": "required",
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phoneNumber": {
                     "type": "string"
                 }
             }

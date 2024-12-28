@@ -20,7 +20,7 @@ type StaffService struct {
 	accountService        service.AccountService
 	accountRepository     repository.AccountRepository
 	transactionRepository repository.TransactionRepository
-	mailCLient            bean.MailClient
+	mailClient            bean.MailClient
 }
 
 func NewStaffService(
@@ -29,7 +29,7 @@ func NewStaffService(
 	accountService service.AccountService,
 	accountRepository repository.AccountRepository,
 	transactionRepository repository.TransactionRepository,
-	mailCLient bean.MailClient,
+	mailClient bean.MailClient,
 ) service.StaffService {
 	return &StaffService{
 		customerRepository:    customerRepository,
@@ -37,7 +37,7 @@ func NewStaffService(
 		accountService:        accountService,
 		accountRepository:     accountRepository,
 		transactionRepository: transactionRepository,
-		mailCLient:            mailCLient,
+		mailClient:            mailClient,
 	}
 }
 
@@ -87,14 +87,14 @@ func (service *StaffService) RegisterCustomer(ctx *gin.Context, registerRequest 
 	if err != nil {
 		return err
 	}
-	err = service.accountService.AddNewAccount(ctx, currentCustomer.ID)
+	err = service.accountService.AddNewAccount(ctx, currentCustomer.Id)
 	if err != nil {
 		return err
 	}
 
 	// send random password to email
-	emailBody := service.mailCLient.GenerateRandomPasswordBody(registerRequest.Email, randomPassword)
-	err = service.mailCLient.SendEmail(ctx, registerRequest.Email, "Generate random password", emailBody)
+	emailBody := service.mailClient.GenerateRandomPasswordBody(registerRequest.Email, randomPassword)
+	err = service.mailClient.SendEmail(ctx, registerRequest.Email, "Generate random password", emailBody)
 	if err != nil {
 		return err
 	}

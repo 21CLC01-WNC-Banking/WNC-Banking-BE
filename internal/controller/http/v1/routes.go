@@ -76,6 +76,11 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.AdminRequired,
 				adminHandler.DeleteOneStaff,
 			)
+			admin.PUT("/staff",
+				authMiddleware.VerifyToken,
+				authMiddleware.AdminRequired,
+				adminHandler.UpdateOneStaff,
+			)
 		}
 		cores := v1.Group("/core")
 		{

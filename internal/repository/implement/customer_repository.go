@@ -54,7 +54,7 @@ func (repo *CustomerRepository) GetIdByEmailQuery(ctx context.Context, email str
 	if err != nil {
 		return 0, err
 	}
-	return customer.ID, nil
+	return customer.Id, nil
 }
 
 func (repo *CustomerRepository) UpdatePasswordByIdQuery(ctx context.Context, id int64, password string) error {

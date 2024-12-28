@@ -225,7 +225,7 @@ func (service *TransactionService) verifyTransactionInfo(ctx *gin.Context, sourc
 		return nil, nil, nil, err
 	}
 	//get account by customerId and check sourceNumber is internal
-	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.ID)
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.Id)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
 			return nil, nil, nil, errors.New("source account not found")
@@ -298,7 +298,7 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 	}
 
 	//get account by customerId and check sourceNumber is internal
-	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.ID)
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.Id)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
 			return errors.New("source account not found")
