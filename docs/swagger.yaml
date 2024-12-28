@@ -122,6 +122,19 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-array_entity_User:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/entity.User'
+        type: array
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse:
     properties:
       data:
@@ -230,6 +243,8 @@ definitions:
         type: string
       amount:
         type: integer
+      description:
+        type: string
     required:
     - accountNumber
     - amount
@@ -259,6 +274,10 @@ definitions:
       description:
         type: string
       id:
+        type: string
+      sourceAccountNumber:
+        type: string
+      targetAccountNumber:
         type: string
       type:
         type: string
@@ -344,10 +363,6 @@ definitions:
         maxLength: 255
         minLength: 5
         type: string
-      password:
-        maxLength: 255
-        minLength: 8
-        type: string
       phoneNumber:
         maxLength: 255
         minLength: 10
@@ -355,7 +370,6 @@ definitions:
     required:
     - email
     - name
-    - password
     - phoneNumber
     type: object
   model.SavedReceiverResponse:
@@ -487,6 +501,50 @@ paths:
       summary: Get Customer Name by Account Number
       tags:
       - Accounts
+  /admin/staff:
+    get:
+      description: Admin get all staff
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-array_entity_User'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Admin get all staff
+      tags:
+      - Admins
+  /admin/staff/{staffId}:
+    get:
+      description: Admin get one staff
+      parameters:
+      - description: Staff ID
+        in: path
+        name: staffId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-entity_User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Admin get one staff
+      tags:
+      - Admins
   /auth/forgot-password:
     post:
       consumes:

@@ -21,6 +21,7 @@ type Server struct {
 	transactionHandler   *v1.TransactionHandler
 	savedReceiverHandler *v1.SavedReceiverHandler
 	customerHandler      *v1.CustomerHandler
+	adminHandler         *v1.AdminHandler
 }
 
 func NewServer(authHandler *v1.AuthHandler,
@@ -31,6 +32,7 @@ func NewServer(authHandler *v1.AuthHandler,
 	transactionHandler *v1.TransactionHandler,
 	savedReceiverHandler *v1.SavedReceiverHandler,
 	customerHandler *v1.CustomerHandler,
+	adminHandler *v1.AdminHandler,
 ) *Server {
 	return &Server{
 		authHandler:          authHandler,
@@ -41,6 +43,7 @@ func NewServer(authHandler *v1.AuthHandler,
 		transactionHandler:   transactionHandler,
 		savedReceiverHandler: savedReceiverHandler,
 		customerHandler:      customerHandler,
+		adminHandler:         adminHandler,
 	}
 }
 
@@ -52,7 +55,7 @@ func (s *Server) Run() {
 		Handler: router,
 	}
 
-	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler, s.savedReceiverHandler, s.customerHandler)
+	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler, s.savedReceiverHandler, s.customerHandler, s.adminHandler)
 	err := httpServerInstance.ListenAndServe()
 	if err != nil {
 		return
