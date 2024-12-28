@@ -77,6 +77,9 @@ func (service *StaffService) AddAmountToAccount(ctx *gin.Context, request *model
 	if err != nil {
 		return err
 	}
+	if request.Description == "" {
+		request.Description = "staff add amount to account"
+	}
 
 	isSourceFee := false
 	transaction := entity.Transaction{
@@ -85,7 +88,7 @@ func (service *StaffService) AddAmountToAccount(ctx *gin.Context, request *model
 		Amount:              request.Amount,
 		Type:                "internal",
 		Status:              "success",
-		Description:         "staff add amount to account",
+		Description:         request.Description,
 		IsSourceFee:         &isSourceFee,
 	}
 
