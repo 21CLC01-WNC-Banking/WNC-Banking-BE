@@ -137,6 +137,47 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Admin create one staff",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admins"
+                ],
+                "summary": "Admin create one staff",
+                "parameters": [
+                    {
+                        "description": "Staff payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CreateStaffRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_CreateStaffResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
             }
         },
         "/admin/staff/{staffId}": {
@@ -1167,6 +1208,23 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-model_CreateStaffResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.CreateStaffResponse"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse": {
             "type": "object",
             "properties": {
@@ -1231,6 +1289,37 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                }
+            }
+        },
+        "model.CreateStaffRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "phoneNumber"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CreateStaffResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
                 }
             }
         },

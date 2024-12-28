@@ -2,7 +2,9 @@ package v1
 
 import (
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -72,4 +74,31 @@ func (handler *AdminHandler) GetOneStaff(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&staff))
+}
+
+// @Summary Admin create one staff
+// @Description Admin create one staff
+// @Tags Admins
+// @Produce  json
+// @Param request body model.CreateStaffRequest true "Staff payload"
+// @Router /admin/staff [post]
+// @Success 200 {object} httpcommon.HttpResponse[model.CreateStaffResponse]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AdminHandler) CreateOneStaff(c *gin.Context) {
+	var request model.CreateStaffRequest
+
+	err := validation.BindJsonAndValidate(c, &request)
+	if err != nil {
+		return
+	}
+
+	id, err := handler.adminService.CreateOneStaff(c, &request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{Message: err.Error()},
+		))
+	}
+
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&model.CreateStaffResponse{Id: id}))
 }

@@ -51,6 +51,11 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.AdminRequired,
 				adminHandler.GetOneStaff,
 			)
+			admin.POST("/staff",
+				authMiddleware.VerifyToken,
+				authMiddleware.AdminRequired,
+				adminHandler.CreateOneStaff,
+			)
 		}
 		cores := v1.Group("/core")
 		{

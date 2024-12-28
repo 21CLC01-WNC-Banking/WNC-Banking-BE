@@ -205,6 +205,17 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-model_CreateStaffResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.CreateStaffResponse'
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse:
     properties:
       data:
@@ -248,6 +259,27 @@ definitions:
     required:
     - accountNumber
     - amount
+    type: object
+  model.CreateStaffRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phoneNumber:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - phoneNumber
+    type: object
+  model.CreateStaffResponse:
+    properties:
+      id:
+        type: integer
     type: object
   model.GetCustomerNameByAccountNumberResponse:
     properties:
@@ -516,6 +548,33 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Admin get all staff
+      tags:
+      - Admins
+    post:
+      description: Admin create one staff
+      parameters:
+      - description: Staff payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateStaffRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-model_CreateStaffResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Admin create one staff
       tags:
       - Admins
   /admin/staff/{staffId}:
