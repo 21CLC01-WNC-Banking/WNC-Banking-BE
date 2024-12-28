@@ -535,6 +535,22 @@ definitions:
     required:
     - newNickname
     type: object
+  model.UpdateStaffRequest:
+    properties:
+      email:
+        type: string
+      id:
+        description: required
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      phoneNumber:
+        type: string
+    required:
+    - id
+    type: object
   model.VerifyOTPRequest:
     properties:
       email:
@@ -554,7 +570,7 @@ info:
 paths:
   /account/:
     get:
-      description: Get Account by Customer ID
+      description: Get Account by Customer Id
       produces:
       - application/json
       responses:
@@ -566,7 +582,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Get Account by Customer ID
+      summary: Get Account by Customer Id
       tags:
       - Accounts
   /account/customer-name:
@@ -636,11 +652,60 @@ paths:
       summary: Admin create one staff
       tags:
       - Admins
+    put:
+      description: Admin update one staff
+      parameters:
+      - description: Staff payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateStaffRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Admin update one staff ( only update non-empty field )
+      tags:
+      - Admins
   /admin/staff/{staffId}:
+    delete:
+      description: Admin delete one staff
+      parameters:
+      - description: Staff Id
+        in: path
+        name: staffId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Admin delete one staff
+      tags:
+      - Admins
     get:
       description: Admin get one staff
       parameters:
-      - description: Staff ID
+      - description: Staff Id
         in: path
         name: staffId
         required: true
@@ -925,9 +990,9 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Deletes a saved receiver by receiver ID
+      description: Deletes a saved receiver by receiver Id
       parameters:
-      - description: Receiver ID
+      - description: Receiver Id
         in: path
         name: id
         required: true
@@ -951,9 +1016,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Renames a saved receiver's nickname by receiver ID
+      description: Renames a saved receiver's nickname by receiver Id
       parameters:
-      - description: Receiver ID
+      - description: Receiver Id
         in: path
         name: id
         required: true
@@ -1003,9 +1068,9 @@ paths:
       - Customer
   /customer/transaction/{transactionId}:
     get:
-      description: Retrieve a specific transaction by its ID for a given customer.
+      description: Retrieve a specific transaction by its Id for a given customer.
       parameters:
-      - description: Transaction ID
+      - description: Transaction Id
         in: path
         name: transactionId
         required: true
@@ -1025,7 +1090,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Get Transaction By ID
+      summary: Get Transaction By Id
       tags:
       - Customer
   /staff/add-amount:

@@ -45,8 +45,8 @@ func (handler *AccountHandler) GetCustomerNameByAccountNumber(ctx *gin.Context) 
 	}))
 }
 
-// @Summary Get Account by Customer ID
-// @Description Get Account by Customer ID
+// @Summary Get Account by Customer Id
+// @Description Get Account by Customer Id
 // @Tags Accounts
 // @Produce  json
 // @Router /account/ [get]

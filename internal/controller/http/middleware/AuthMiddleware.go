@@ -61,7 +61,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 	accessToken := getAccessToken(c)
 	claims, err := jwt.VerifyToken(accessToken, jwtSecret)
 	if err == nil {
-		// If the access token is valid, extract customer ID and proceed
+		// If the access token is valid, extract customer Id and proceed
 		if payload, ok := claims.Payload.(map[string]interface{}); ok {
 			userId := int64(payload["id"].(float64))
 			c.Set("userId", userId)
@@ -85,7 +85,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 			return
 		}
 
-		// Extract customer ID from refresh token claims
+		// Extract customer Id from refresh token claims
 		payload, ok := refreshClaims.Payload.(map[string]interface{})
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
@@ -135,7 +135,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 			true,
 		)
 
-		// Proceed with the customer ID set in the context
+		// Proceed with the customer Id set in the context
 		c.Set("userId", userId)
 		c.Next()
 		return

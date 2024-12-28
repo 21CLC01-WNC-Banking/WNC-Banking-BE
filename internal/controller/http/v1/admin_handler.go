@@ -42,7 +42,7 @@ func (handler *AdminHandler) GetAllStaff(c *gin.Context) {
 // @Description Admin get one staff
 // @Tags Admins
 // @Produce  json
-// @Param staffId path int64 true "Staff ID"
+// @Param staffId path int64 true "Staff Id"
 // @Router /admin/staff/{staffId} [get]
 // @Success 200 {object} httpcommon.HttpResponse[entity.User]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
@@ -98,7 +98,74 @@ func (handler *AdminHandler) CreateOneStaff(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{Message: err.Error()},
 		))
+		return
 	}
 
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&model.CreateStaffResponse{Id: id}))
+}
+
+// @Summary Admin delete one staff
+// @Description Admin delete one staff
+// @Tags Admins
+// @Produce  json
+// @Param staffId path int64 true "Staff Id"
+// @Router /admin/staff/{staffId} [delete]
+// @Success 204 "No content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AdminHandler) DeleteOneStaff(c *gin.Context) {
+	staffIdStr := c.Param("staffId")
+	staffId, err := strconv.ParseInt(staffIdStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
+			},
+		))
+		return
+	}
+
+	err = handler.adminService.DeleteOneStaff(c, staffId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			c.JSON(http.StatusNotFound, httpcommon.NewErrorResponse(
+				httpcommon.Error{Message: err.Error()},
+			))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{Message: err.Error()},
+		))
+		return
+	}
+	c.AbortWithStatus(http.StatusNoContent)
+}
+
+// @Summary Admin update one staff ( only update non-empty field )
+// @Description Admin update one staff
+// @Tags Admins
+// @Produce  json
+// @Param request body model.UpdateStaffRequest true "Staff payload"
+// @Router /admin/staff [put]
+// @Success 204 "No content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AdminHandler) UpdateOneStaff(c *gin.Context) {
+	var request model.UpdateStaffRequest
+
+	err := validation.BindJsonAndValidate(c, &request)
+	if err != nil {
+		return
+	}
+
+	err = handler.adminService.UpdateOneStaff(c, &request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{Message: err.Error()},
+		))
+		return
+	}
+
+	c.AbortWithStatus(http.StatusNoContent)
 }
