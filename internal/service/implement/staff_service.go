@@ -77,8 +77,8 @@ func (service *StaffService) AddAmountToAccount(ctx *gin.Context, request *model
 	if err != nil {
 		return err
 	}
-	if request.Message == "" {
-		request.Message = "Transfer to savings"
+	if request.Description == "" {
+		request.Description = "staff add amount to account"
 	}
 
 	isSourceFee := false
@@ -88,7 +88,7 @@ func (service *StaffService) AddAmountToAccount(ctx *gin.Context, request *model
 		Amount:              request.Amount,
 		Type:                "internal",
 		Status:              "success",
-		Description:         request.Message,
+		Description:         request.Description,
 		IsSourceFee:         &isSourceFee,
 	}
 
