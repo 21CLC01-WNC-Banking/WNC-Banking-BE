@@ -16,6 +16,23 @@ definitions:
       updatedAt:
         type: string
     type: object
+  entity.DebtReply:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      debtReminderId:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      updatedAt:
+        type: string
+      userReplyName:
+        type: string
+    type: object
   entity.Notification:
     properties:
       content:
@@ -192,6 +209,17 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-model_DebtReminderResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.DebtReminderResponse'
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse:
     properties:
       data:
@@ -260,6 +288,21 @@ definitions:
     - sourceAccountNumber
     - targetAccountNumber
     - type
+    type: object
+  model.DebtReminderResponse:
+    properties:
+      debtReminder:
+        $ref: '#/definitions/entity.Transaction'
+      receiver:
+        type: string
+      reply:
+        $ref: '#/definitions/entity.DebtReply'
+      sender:
+        type: string
+    required:
+    - debtReminder
+    - receiver
+    - sender
     type: object
   model.GetCustomerNameByAccountNumberResponse:
     properties:
@@ -955,7 +998,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Transaction
+      summary: Debt reminder
       tags:
       - Transaction
   /transaction/internal-transfer:
@@ -1016,6 +1059,52 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Transaction
+      tags:
+      - Transaction
+  /transaction/received-debt-reminder:
+    get:
+      consumes:
+      - application/json
+      description: get list Receive reminder
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-model_DebtReminderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Debt reminder
+      tags:
+      - Transaction
+  /transaction/sent-debt-reminder:
+    get:
+      consumes:
+      - application/json
+      description: get list Sent reminder
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-model_DebtReminderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Debt reminder
       tags:
       - Transaction
 swagger: "2.0"

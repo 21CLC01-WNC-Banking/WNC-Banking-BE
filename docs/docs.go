@@ -753,7 +753,7 @@ const docTemplate = `{
                 "tags": [
                     "Transaction"
                 ],
-                "summary": "Transaction",
+                "summary": "Debt reminder",
                 "parameters": [
                     {
                         "description": "Transaction payload",
@@ -875,6 +875,76 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/transaction/received-debt-reminder": {
+            "get": {
+                "description": "get list Receive reminder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Debt reminder",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_DebtReminderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/sent-debt-reminder": {
+            "get": {
+                "description": "get list Sent reminder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Debt reminder",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_DebtReminderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -900,6 +970,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.DebtReply": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "debtReminderId": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userReplyName": {
                     "type": "string"
                 }
             }
@@ -1173,6 +1269,23 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-model_DebtReminderResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.DebtReminderResponse"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse": {
             "type": "object",
             "properties": {
@@ -1272,6 +1385,28 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.DebtReminderResponse": {
+            "type": "object",
+            "required": [
+                "debtReminder",
+                "receiver",
+                "sender"
+            ],
+            "properties": {
+                "debtReminder": {
+                    "$ref": "#/definitions/entity.Transaction"
+                },
+                "receiver": {
+                    "type": "string"
+                },
+                "reply": {
+                    "$ref": "#/definitions/entity.DebtReply"
+                },
+                "sender": {
                     "type": "string"
                 }
             }
