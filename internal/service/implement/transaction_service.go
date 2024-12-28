@@ -322,7 +322,7 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 	reply := &entity.DebtReply{
 		Content:        debtReply.Content,
 		DebtReminderId: debtReminderId,
-		UserReplyId:    customerId,
+		UserReplyName:  sourceCustomer.Name,
 	}
 
 	//save reply
@@ -339,4 +339,99 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 
 	//notify...
 	return nil
+}
+
+func (service *TransactionService) GetReceivedDebtReminder(ctx *gin.Context) ([]model.DebtReminderResponse, error) {
+	//get customer and check info
+	customerId := middleware.GetUserIdHelper(ctx)
+	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("customer not found")
+		}
+		return nil, err
+	}
+	//get debt receive
+	debtList, err := service.transactionRepository.GetReceivedDebtReminderByCustomerIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, nil
+		}
+	}
+	var resList []model.DebtReminderResponse
+	for _, debt := range *debtList {
+		sender, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debt.TargetAccountNumber)
+		if err != nil {
+			if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+				return nil, errors.New("customer not found")
+			}
+		}
+		if debt.Status == "failed" {
+			reply, err := service.debtReply.GetReplyByDebtIdQuery(ctx, debt.Id)
+			if err != nil {
+				return nil, err
+			}
+			resList = append(resList, model.DebtReminderResponse{
+				Sender:       sender.Name,
+				Receiver:     sourceCustomer.Name,
+				DebtReminder: &debt,
+				Reply:        reply,
+			})
+		} else {
+			resList = append(resList, model.DebtReminderResponse{
+				Sender:       sender.Name,
+				Receiver:     sourceCustomer.Name,
+				DebtReminder: &debt,
+				Reply:        nil,
+			})
+		}
+	}
+	return resList, nil
+}
+
+func (service *TransactionService) GetSentDebtReminder(ctx *gin.Context) ([]model.DebtReminderResponse, error) {
+	customerId := middleware.GetUserIdHelper(ctx)
+	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("customer not found")
+		}
+		return nil, err
+	}
+	//get debt sent
+	debtList, err := service.transactionRepository.GetSentDebtReminderByCustomerIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, nil
+		}
+	}
+	var resList []model.DebtReminderResponse
+	for _, debt := range *debtList {
+		receiver, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debt.SourceAccountNumber)
+		if err != nil {
+			if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+				return nil, errors.New("customer not found")
+			}
+		}
+		if debt.Status == "failed" {
+			reply, err := service.debtReply.GetReplyByDebtIdQuery(ctx, debt.Id)
+			if err != nil {
+				return nil, err
+			}
+			resList = append(resList, model.DebtReminderResponse{
+				Sender:       sourceCustomer.Name,
+				Receiver:     receiver.Name,
+				DebtReminder: &debt,
+				Reply:        reply,
+			})
+		} else {
+			resList = append(resList, model.DebtReminderResponse{
+				Sender:       sourceCustomer.Name,
+				Receiver:     receiver.Name,
+				DebtReminder: &debt,
+				Reply:        nil,
+			})
+		}
+	}
+	return resList, nil
 }

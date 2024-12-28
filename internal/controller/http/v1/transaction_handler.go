@@ -70,7 +70,7 @@ func (handler *TransactionHandler) InternalTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[*entity.Transaction](&transaction))
 }
 
-// @Summary Transaction
+// @Summary Debt reminder
 // @Description Add new Debt reminder
 // @Tags Transaction
 // @Accept json
@@ -130,4 +130,44 @@ func (handler *TransactionHandler) CancelDebtReminder(ctx *gin.Context) {
 		return
 	}
 	ctx.AbortWithStatus(200)
+}
+
+// @Summary Debt reminder
+// @Description get list Receive reminder
+// @Tags Transaction
+// @Accept json
+// @Produce  json
+// @Router /transaction/received-debt-reminder [GET]
+// @Success 200 {object} httpcommon.HttpResponse[model.DebtReminderResponse]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *TransactionHandler) GetReceivedDebtReminder(ctx *gin.Context) {
+	resList, err := handler.transactionService.GetReceivedDebtReminder(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[[]model.DebtReminderResponse](&resList))
+}
+
+// @Summary Debt reminder
+// @Description get list Sent reminder
+// @Tags Transaction
+// @Accept json
+// @Produce  json
+// @Router /transaction/sent-debt-reminder [GET]
+// @Success 200 {object} httpcommon.HttpResponse[model.DebtReminderResponse]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *TransactionHandler) GetSentDebtReminder(ctx *gin.Context) {
+	resList, err := handler.transactionService.GetSentDebtReminder(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[[]model.DebtReminderResponse](&resList))
 }

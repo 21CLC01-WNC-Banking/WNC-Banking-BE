@@ -72,6 +72,8 @@ func MapRoutes(router *gin.Engine,
 			transactions.POST("/internal-transfer", authMiddleware.VerifyToken, transactionHandler.InternalTransfer)
 			transactions.POST("/debt-reminder", authMiddleware.VerifyToken, transactionHandler.AddDebtReminder)
 			transactions.PUT("/cancel-debt-reminder/:id", authMiddleware.VerifyToken, transactionHandler.CancelDebtReminder)
+			transactions.GET("/received-debt-reminder", authMiddleware.VerifyToken, transactionHandler.GetReceivedDebtReminder)
+			transactions.GET("/sent-debt-reminder", authMiddleware.VerifyToken, transactionHandler.GetSentDebtReminder)
 		}
 		savedReceiver := v1.Group("/saved-receiver")
 		{

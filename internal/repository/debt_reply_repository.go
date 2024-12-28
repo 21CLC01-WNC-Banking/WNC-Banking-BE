@@ -7,4 +7,5 @@ import (
 
 type DebtReplyRepository interface {
 	CreateCommand(ctx context.Context, reply *entity.DebtReply) error
+	GetReplyByDebtIdQuery(ctx context.Context, debtId string) (*entity.DebtReply, error)
 }

@@ -17,10 +17,20 @@ func NewDebtReplyRepository(db database.Db) repository.DebtReplyRepository {
 }
 
 func (repo *DebtReplyRepository) CreateCommand(ctx context.Context, reply *entity.DebtReply) error {
-	insertQuery := `INSERT INTO debt_reply(debt_reminder_id, user_reply_id, content) VALUES (:debt_reminder_id,:user_reply_id, :content)`
+	insertQuery := `INSERT INTO debt_reply(debt_reminder_id, user_reply_name, content) VALUES (:debt_reminder_id,:user_reply_name, :content)`
 	_, err := repo.db.NamedExecContext(ctx, insertQuery, reply)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (repo *DebtReplyRepository) GetReplyByDebtIdQuery(ctx context.Context, debtId string) (*entity.DebtReply, error) {
+	var reply entity.DebtReply
+	query := `SELECT * FROM debt_reply WHERE debt_reminder_id = ?`
+	err := repo.db.QueryRowxContext(ctx, query, debtId).StructScan(&reply)
+	if err != nil {
+		return nil, err
+	}
+	return &reply, nil
 }
