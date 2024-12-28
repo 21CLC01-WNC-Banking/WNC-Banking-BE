@@ -69,6 +69,7 @@ func (h *CustomerHandler) GetNotifications(c *gin.Context) {
 				Message: err.Error(),
 			},
 		))
+		return
 	}
 	if len(notifications) == 0 {
 		notifications = make([]entity.Notification, 0)

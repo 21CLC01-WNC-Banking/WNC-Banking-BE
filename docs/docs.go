@@ -113,6 +113,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/staff": {
+            "get": {
+                "description": "Admin get all staff",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admins"
+                ],
+                "summary": "Admin get all staff",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_entity_User"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/staff/{staffId}": {
+            "get": {
+                "description": "Admin get one staff",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admins"
+                ],
+                "summary": "Admin get one staff",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Staff ID",
+                        "name": "staffId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-entity_User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/forgot-password": {
             "post": {
                 "description": "Set a new password after OTP verification",
@@ -972,6 +1039,26 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-array_entity_User": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.User"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse": {
             "type": "object",
             "properties": {
@@ -1141,6 +1228,9 @@ const docTemplate = `{
                 },
                 "amount": {
                     "type": "integer"
+                },
+                "description": {
+                    "type": "string"
                 }
             }
         },
@@ -1182,6 +1272,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "sourceAccountNumber": {
+                    "type": "string"
+                },
+                "targetAccountNumber": {
                     "type": "string"
                 },
                 "type": {
@@ -1296,7 +1392,6 @@ const docTemplate = `{
             "required": [
                 "email",
                 "name",
-                "password",
                 "phoneNumber"
             ],
             "properties": {
@@ -1309,11 +1404,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 5
-                },
-                "password": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 8
                 },
                 "phoneNumber": {
                     "type": "string",
