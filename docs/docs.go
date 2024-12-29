@@ -1850,11 +1850,11 @@ const docTemplate = `{
                 "content": {
                     "type": "string"
                 },
+                "deviceId": {
+                    "type": "integer"
+                },
                 "title": {
                     "type": "string"
-                },
-                "userId": {
-                    "type": "integer"
                 }
             }
         },

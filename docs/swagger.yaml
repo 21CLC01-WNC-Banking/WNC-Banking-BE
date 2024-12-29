@@ -428,10 +428,10 @@ definitions:
     properties:
       content:
         type: string
+      deviceId:
+        type: integer
       title:
         type: string
-      userId:
-        type: integer
     type: object
   model.PreInternalTransferRequest:
     properties:
