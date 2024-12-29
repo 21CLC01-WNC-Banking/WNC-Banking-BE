@@ -2,10 +2,11 @@ package websocket
 
 import (
 	"fmt"
-	"github.com/gorilla/websocket"
 	"net/http"
 	"strconv"
 	"sync"
+
+	"github.com/gorilla/websocket"
 )
 
 type DeviceConnection struct {
@@ -22,7 +23,12 @@ type Server struct {
 
 func NewServer() *Server {
 	deviceCons := make(map[int]*DeviceConnection)
-	upgrader := websocket.Upgrader{} // Use default options
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			origin := r.Header.Get("Origin")
+			return origin == "http://localhost:3000" || origin == "http://localhost:8080"
+		},
+	} // Use default options
 	return &Server{
 		deviceCons: deviceCons,
 		upgrader:   &upgrader,
