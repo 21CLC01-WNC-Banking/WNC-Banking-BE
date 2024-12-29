@@ -1049,7 +1049,7 @@ const docTemplate = `{
                 "tags": [
                     "Transaction"
                 ],
-                "summary": "Transaction",
+                "summary": "Internal transaction",
                 "parameters": [
                     {
                         "description": "Transaction payload",
@@ -1057,7 +1057,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.InternalTransferRequest"
+                            "$ref": "#/definitions/model.TransferRequest"
                         }
                     }
                 ],
@@ -1067,6 +1067,49 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/httpcommon.HttpResponse-entity_Transaction"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/pre-debt-transfer": {
+            "post": {
+                "description": "Pre Transaction for debt reminder",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "Debt transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PreDebtTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1095,7 +1138,7 @@ const docTemplate = `{
                 "tags": [
                     "Transaction"
                 ],
-                "summary": "Transaction",
+                "summary": "Internal transaction",
                 "parameters": [
                     {
                         "description": "Transaction payload",
@@ -1806,21 +1849,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.InternalTransferRequest": {
-            "type": "object",
-            "required": [
-                "otp",
-                "transactionId"
-            ],
-            "properties": {
-                "otp": {
-                    "type": "string"
-                },
-                "transactionId": {
-                    "type": "string"
-                }
-            }
-        },
         "model.LoginRequest": {
             "type": "object",
             "required": [
@@ -1854,6 +1882,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PreDebtTransferRequest": {
+            "type": "object",
+            "required": [
+                "transactionId"
+            ],
+            "properties": {
+                "transactionId": {
                     "type": "string"
                 }
             }
@@ -1987,6 +2026,21 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 8
+                }
+            }
+        },
+        "model.TransferRequest": {
+            "type": "object",
+            "required": [
+                "otp",
+                "transactionId"
+            ],
+            "properties": {
+                "otp": {
+                    "type": "string"
+                },
+                "transactionId": {
+                    "type": "string"
                 }
             }
         },

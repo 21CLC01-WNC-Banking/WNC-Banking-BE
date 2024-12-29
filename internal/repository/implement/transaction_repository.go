@@ -77,7 +77,7 @@ func (repo *TransactionRepository) GetTransactionByAccountNumber(ctx context.Con
 			target_balance, created_at, updated_at, deleted_at
 		FROM transactions
 		WHERE (source_account_number = ? OR target_account_number = ?) AND status = "success"
-		ORDER BY created_at DESC
+		ORDER BY updated_at DESC
 	`
 
 	var transactions []entity.Transaction
@@ -105,7 +105,8 @@ func (repo *TransactionRepository) GetReceivedDebtReminderByCustomerIdQuery(ctx 
 	FROM users u
 	JOIN accounts a ON u.id = a.customer_id
 	JOIN transactions t ON a.number = t.source_account_number
-	where u.id = ? AND t.type = 'debt_payment' AND t.status != 'success'`
+	where u.id = ? AND t.type = 'debt_payment' AND t.status != 'success'
+	ORDER BY created_at DESC`
 	err := repo.db.SelectContext(ctx, &transactions, query, customerId)
 	if err != nil {
 		return nil, err
@@ -119,7 +120,8 @@ func (repo *TransactionRepository) GetSentDebtReminderByCustomerIdQuery(ctx cont
 	FROM users u
 	JOIN accounts a ON u.id = a.customer_id
 	JOIN transactions t ON a.number = t.target_account_number
-	where u.id = ? AND t.type = 'debt_payment' AND t.status != 'success'`
+	where u.id = ? AND t.type = 'debt_payment' AND t.status != 'success'
+	ORDER BY created_at DESC`
 	err := repo.db.SelectContext(ctx, &transactions, query, customerId)
 	if err != nil {
 		return nil, err

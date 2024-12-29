@@ -118,6 +118,7 @@ func MapRoutes(router *gin.Engine,
 			transactions.PUT("/cancel-debt-reminder/:id", authMiddleware.VerifyToken, transactionHandler.CancelDebtReminder)
 			transactions.GET("/received-debt-reminder", authMiddleware.VerifyToken, transactionHandler.GetReceivedDebtReminder)
 			transactions.GET("/sent-debt-reminder", authMiddleware.VerifyToken, transactionHandler.GetSentDebtReminder)
+			transactions.POST("/pre-debt-transfer", authMiddleware.VerifyToken, transactionHandler.PreDebtTransfer)
 		}
 	}
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

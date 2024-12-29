@@ -397,16 +397,6 @@ definitions:
       type:
         type: string
     type: object
-  model.InternalTransferRequest:
-    properties:
-      otp:
-        type: string
-      transactionId:
-        type: string
-    required:
-    - otp
-    - transactionId
-    type: object
   model.LoginRequest:
     properties:
       email:
@@ -432,6 +422,13 @@ definitions:
         type: integer
       title:
         type: string
+    type: object
+  model.PreDebtTransferRequest:
+    properties:
+      transactionId:
+        type: string
+    required:
+    - transactionId
     type: object
   model.PreInternalTransferRequest:
     properties:
@@ -527,6 +524,16 @@ definitions:
     - email
     - otp
     - password
+    type: object
+  model.TransferRequest:
+    properties:
+      otp:
+        type: string
+      transactionId:
+        type: string
+    required:
+    - otp
+    - transactionId
     type: object
   model.UpdateReceiverRequest:
     properties:
@@ -1250,7 +1257,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.InternalTransferRequest'
+          $ref: '#/definitions/model.TransferRequest'
       produces:
       - application/json
       responses:
@@ -1266,7 +1273,35 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Transaction
+      summary: Internal transaction
+      tags:
+      - Transaction
+  /transaction/pre-debt-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Pre Transaction for debt reminder
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PreDebtTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Debt transaction
       tags:
       - Transaction
   /transaction/pre-internal-transfer:
@@ -1296,7 +1331,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Transaction
+      summary: Internal transaction
       tags:
       - Transaction
   /transaction/received-debt-reminder:
