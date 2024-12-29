@@ -1847,14 +1847,14 @@ const docTemplate = `{
         "model.NotificationRequest": {
             "type": "object",
             "properties": {
-                "body": {
+                "content": {
                     "type": "string"
                 },
                 "title": {
                     "type": "string"
                 },
-                "token": {
-                    "type": "string"
+                "userId": {
+                    "type": "integer"
                 }
             }
         },

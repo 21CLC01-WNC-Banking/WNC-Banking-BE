@@ -9,6 +9,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	v1 "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/v1"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/websocket"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	repositoryimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository/implement"
 	serviceimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service/implement"
@@ -22,6 +23,7 @@ var container = wire.NewSet(
 // may have grpc server in the future
 var serverSet = wire.NewSet(
 	http.NewServer,
+	websocket.NewServer,
 )
 
 // handler === controller | with service and repository layers to form 3 layers architecture
