@@ -76,7 +76,7 @@ func (repo *TransactionRepository) GetTransactionByAccountNumber(ctx context.Con
 			type, description, status, is_source_fee, source_balance, 
 			target_balance, created_at, updated_at, deleted_at
 		FROM transactions
-		WHERE source_account_number = ? OR target_account_number = ? AND status = "success"
+		WHERE (source_account_number = ? OR target_account_number = ?) AND status = "success"
 		ORDER BY created_at DESC
 	`
 

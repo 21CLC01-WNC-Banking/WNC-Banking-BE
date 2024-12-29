@@ -12,6 +12,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/v1"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/websocket"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository/implement"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service/implement"
@@ -31,7 +32,8 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	authService := serviceimplement.NewAuthService(customerRepository, authenticationRepository, passwordEncoder, redisClient, accountService, mailClient)
 	authHandler := v1.NewAuthHandler(authService)
 	coreService := serviceimplement.NewCoreService()
-	notificationClient := beanimplement.NewNotificationClient()
+	server := websocket.NewServer()
+	notificationClient := beanimplement.NewNotificationClient(server)
 	coreHandler := v1.NewCoreHandler(coreService, notificationClient)
 	savedReceiverRepository := repositoryimplement.NewSavedReceiverRepository(db)
 	savedReceiverService := serviceimplement.NewSavedReceiverService(savedReceiverRepository, accountService)
@@ -52,8 +54,8 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	staffRepository := repositoryimplement.NewStaffRepository(db)
 	adminService := serviceimplement.NewAdminService(staffRepository, passwordEncoder)
 	adminHandler := v1.NewAdminHandler(adminService)
-	server := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler)
-	apiContainer := controller.NewApiContainer(server)
+	httpServer := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler)
+	apiContainer := controller.NewApiContainer(httpServer, server)
 	return apiContainer
 }
 
@@ -62,7 +64,7 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 var container = wire.NewSet(controller.NewApiContainer)
 
 // may have grpc server in the future
-var serverSet = wire.NewSet(http.NewServer)
+var serverSet = wire.NewSet(http.NewServer, websocket.NewServer)
 
 // handler === controller | with service and repository layers to form 3 layers architecture
 var handlerSet = wire.NewSet(v1.NewAuthHandler, v1.NewCoreHandler, v1.NewAccountHandler, v1.NewStaffHandler, v1.NewTransactionHandler, v1.NewSavedReceiverHandler, v1.NewCustomerHandler, v1.NewAdminHandler)

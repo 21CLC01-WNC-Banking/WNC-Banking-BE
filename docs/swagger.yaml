@@ -426,11 +426,11 @@ definitions:
     type: object
   model.NotificationRequest:
     properties:
-      body:
+      content:
         type: string
+      deviceId:
+        type: integer
       title:
-        type: string
-      token:
         type: string
     type: object
   model.PreInternalTransferRequest:
