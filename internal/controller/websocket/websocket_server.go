@@ -8,24 +8,24 @@ import (
 	"sync"
 )
 
-type UserConnection struct {
+type DeviceConnection struct {
 	Conn *websocket.Conn
 }
 
 var ()
 
 type Server struct {
-	userCons     map[int]*UserConnection
-	upgrader     *websocket.Upgrader
-	userConsLock sync.RWMutex
+	deviceCons     map[int]*DeviceConnection
+	upgrader       *websocket.Upgrader
+	deviceConsLock sync.RWMutex
 }
 
 func NewServer() *Server {
-	userCons := make(map[int]*UserConnection)
+	deviceCons := make(map[int]*DeviceConnection)
 	upgrader := websocket.Upgrader{} // Use default options
 	return &Server{
-		userCons: userCons,
-		upgrader: &upgrader,
+		deviceCons: deviceCons,
+		upgrader:   &upgrader,
 	}
 }
 
@@ -48,61 +48,61 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Example: Get user ID from query params (use authentication in production)
-	userIDStr := r.URL.Query().Get("userId")
-	if userIDStr == "" {
-		conn.WriteMessage(websocket.TextMessage, []byte("Missing userId"))
+	// Example: Get device ID from query params (use authentication in production)
+	deviceIDStr := r.URL.Query().Get("deviceId")
+	if deviceIDStr == "" {
+		conn.WriteMessage(websocket.TextMessage, []byte("Missing deviceId"))
 		conn.Close()
 		return
 	}
 
-	userID, err := strconv.Atoi(userIDStr)
+	deviceID, err := strconv.Atoi(deviceIDStr)
 
 	// Add the connection to the map
-	s.userConsLock.Lock()
-	s.userCons[userID] = &UserConnection{Conn: conn}
-	s.userConsLock.Unlock()
+	s.deviceConsLock.Lock()
+	s.deviceCons[deviceID] = &DeviceConnection{Conn: conn}
+	s.deviceConsLock.Unlock()
 
-	// Notify user that the connection is established
+	// Notify device that the connection is established
 	conn.WriteMessage(websocket.TextMessage, []byte("established"))
 }
 
-// Read messages from a user connection
-func readMessages(userID int, conn *websocket.Conn) {
+// Read messages from a device connection
+func readMessages(deviceID int, conn *websocket.Conn) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Printf("Error reading message from user %d: %v\n", userID, err)
+			fmt.Printf("Error reading message from device %d: %v\n", deviceID, err)
 			return
 		}
-		fmt.Printf("Received from user %d: %s\n", userID, message)
+		fmt.Printf("Received from device %d: %s\n", deviceID, message)
 	}
 }
 
-// Send a message to a specific user
-func (s *Server) SendToUser(userID int, message string) {
-	s.userConsLock.RLock()
-	defer s.userConsLock.RUnlock()
+// Send a message to a specific device
+func (s *Server) SendToDevice(deviceID int, message string) {
+	s.deviceConsLock.RLock()
+	defer s.deviceConsLock.RUnlock()
 
-	if userConn, exists := s.userCons[userID]; exists {
-		err := userConn.Conn.WriteMessage(websocket.TextMessage, []byte(message))
+	if deviceConn, exists := s.deviceCons[deviceID]; exists {
+		err := deviceConn.Conn.WriteMessage(websocket.TextMessage, []byte(message))
 		if err != nil {
-			fmt.Printf("Error sending message to user %d: %v\n", userID, err)
+			fmt.Printf("Error sending message to device %d: %v\n", deviceID, err)
 		}
 	} else {
-		fmt.Printf("User %d not connected\n", userID)
+		fmt.Printf("Device %d not connected\n", deviceID)
 	}
 }
 
-// Broadcast a message to all users
+// Broadcast a message to all devices
 func (s *Server) broadcastMessage(message string) {
-	s.userConsLock.RLock()
-	defer s.userConsLock.RUnlock()
+	s.deviceConsLock.RLock()
+	defer s.deviceConsLock.RUnlock()
 
-	for userID, userConn := range s.userCons {
-		err := userConn.Conn.WriteMessage(websocket.TextMessage, []byte(message))
+	for deviceID, deviceConn := range s.deviceCons {
+		err := deviceConn.Conn.WriteMessage(websocket.TextMessage, []byte(message))
 		if err != nil {
-			fmt.Printf("Error broadcasting message to user %d: %v\n", userID, err)
+			fmt.Printf("Error broadcasting message to device %d: %v\n", deviceID, err)
 		}
 	}
 }

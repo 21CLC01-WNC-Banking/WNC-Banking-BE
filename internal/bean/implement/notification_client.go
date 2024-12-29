@@ -18,5 +18,5 @@ func NewNotificationClient(client *websocket.Server) bean.NotificationClient {
 }
 
 func (c *NotificationClient) SendTest(req model.NotificationRequest) {
-	c.client.SendToUser(req.UserId, req.Title+"\n"+req.Content)
+	c.client.SendToDevice(req.DeviceId, req.Title+"\n"+req.Content)
 }

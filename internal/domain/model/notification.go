@@ -1,7 +1,7 @@
 package model
 
 type NotificationRequest struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
-	UserId  int    `json:"userId"`
+	Title    string `json:"title"`
+	Content  string `json:"content"`
+	DeviceId int    `json:"deviceId"`
 }
