@@ -4,6 +4,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
+	"github.com/gammazero/workerpool"
 )
 
 func Migrate() {
@@ -22,5 +23,12 @@ func registerDependencies() *controller.ApiContainer {
 
 func Execute() {
 	container := registerDependencies()
-	container.HttpServer.Run()
+
+	wp := workerpool.New(2)
+
+	wp.Submit(container.HttpServer.Run)
+
+	wp.Submit(container.WebsocketServer.Run)
+
+	wp.StopWait()
 }
