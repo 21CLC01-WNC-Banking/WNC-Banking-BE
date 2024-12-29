@@ -518,5 +518,41 @@ func (service *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Cont
 }
 
 func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error {
+	//get customer
+	customerId := middleware.GetUserIdHelper(ctx)
+	//check customerId
+	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return errors.New("customer not found")
+		}
+		return err
+	}
+	//get account by customerId
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.Id)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return errors.New("source account not found")
+		}
+		return err
+	}
+	//get transaction by id and check valid
+	transaction, err := service.transactionRepository.GetTransactionByIdQuery(ctx, transferReq.TransactionId)
+	if err != nil {
+		return err
+	}
+	if transaction.SourceAccountNumber != sourceAccount.Number {
+		return errors.New("source account not match")
+	}
+	//check balance
+	if *sourceAccount.Balance < -(transaction.SourceBalance) {
+		return errors.New("insufficient balance in source account")
+	}
+
+	//send OTP
+	err = service.SendOTPToEmail(ctx, sourceCustomer.Email, transaction.Id)
+	if err != nil {
+		return err
+	}
 	return nil
 }

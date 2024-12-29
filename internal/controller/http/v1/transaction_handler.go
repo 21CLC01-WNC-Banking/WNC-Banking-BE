@@ -179,7 +179,7 @@ func (handler *TransactionHandler) GetSentDebtReminder(ctx *gin.Context) {
 // @Param request body model.PreDebtTransferRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/pre-debt-transfer [post]
-// @Success 200 {object} httpcommon.HttpResponse[string]
+// @Success 200 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *TransactionHandler) PreDebtTransfer(ctx *gin.Context) {
