@@ -7,11 +7,12 @@ import (
 )
 
 type AuthService interface {
-	Login(ctx *gin.Context, customerRequest model.LoginRequest) (*entity.User, error)
+	Login(ctx *gin.Context, customerRequest model.LoginRequest) (*model.LoginResponse, error)
 	ValidateRefreshToken(ctx *gin.Context, customerId int64) (*entity.Authentication, error)
 
 	SendOTPToEmail(ctx *gin.Context, sendOTPRequest model.SendOTPRequest) error
 	VerifyOTP(ctx *gin.Context, verifyOTPRequest model.VerifyOTPRequest) error
 	SetPassword(ctx *gin.Context, setPasswordRequest model.SetPasswordRequest) error
 	GetUserById(ctx *gin.Context, userId int64) (*entity.User, error)
+	Logout(ctx *gin.Context, refreshToken string)
 }

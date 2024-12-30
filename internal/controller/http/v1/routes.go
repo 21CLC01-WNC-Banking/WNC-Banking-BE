@@ -27,6 +27,7 @@ func MapRoutes(router *gin.Engine,
 			auth.POST("/forgot-password/otp", authHandler.SendOTPToMail)
 			auth.POST("/forgot-password/verify-otp", authHandler.VerifyOTP)
 			auth.POST("/forgot-password", authHandler.SetPassword)
+			auth.POST("/logout", authHandler.Logout)
 		}
 		customer := v1.Group("/customer")
 		{

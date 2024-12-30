@@ -25,32 +25,35 @@ type AuthService struct {
 	authenticationRepository repository.AuthenticationRepository
 	passwordEncoder          bean.PasswordEncoder
 	accountService           service.AccountService
-	redisCLient              bean.RedisClient
-	mailCLient               bean.MailClient
+	redisClient              bean.RedisClient
+	mailClient               bean.MailClient
+	roleRepository           repository.RoleRepository
 }
 
 func NewAuthService(customerRepository repository.CustomerRepository,
 	authenticationRepository repository.AuthenticationRepository,
 	encoder bean.PasswordEncoder,
-	redisCLient bean.RedisClient,
+	redisClient bean.RedisClient,
 	accountSer service.AccountService,
-	mailCLient bean.MailClient,
+	mailClient bean.MailClient,
+	roleRepository repository.RoleRepository,
 ) service.AuthService {
 	return &AuthService{
 		customerRepository:       customerRepository,
 		authenticationRepository: authenticationRepository,
 		passwordEncoder:          encoder,
-		redisCLient:              redisCLient,
+		redisClient:              redisClient,
 		accountService:           accountSer,
-		mailCLient:               mailCLient,
+		mailClient:               mailClient,
+		roleRepository:           roleRepository,
 	}
 }
 
-func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*entity.User, error) {
+func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequest) (*model.LoginResponse, error) {
 	// validate captcha
 	isValid, err := google_recaptcha.ValidateRecaptcha(ctx, loginRequest.RecaptchaToken)
 	if err != nil || !isValid {
-		return nil, err
+		return nil, errors.New("invalid recaptcha token")
 	}
 
 	existsCustomer, err := service.customerRepository.GetOneByEmailQuery(ctx, loginRequest.Email)
@@ -129,7 +132,17 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 		true,
 	)
 
-	return existsCustomer, nil
+	role, err := service.roleRepository.GetByUserId(ctx, existsCustomer.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.LoginResponse{
+		Name:   existsCustomer.Name,
+		Email:  existsCustomer.Email,
+		UserId: existsCustomer.Id,
+		Role:   role.Name,
+	}, nil
 }
 
 func (service *AuthService) ValidateRefreshToken(ctx *gin.Context, customerId int64) (*entity.Authentication, error) {
@@ -152,14 +165,14 @@ func (service *AuthService) SendOTPToEmail(ctx *gin.Context, sendOTPRequest mode
 	baseKey := constants.RESET_PASSWORD_KEY
 	key := redis.Concat(baseKey, customerId)
 
-	err = service.redisCLient.Set(ctx, key, otp)
+	err = service.redisClient.Set(ctx, key, otp)
 	if err != nil {
 		return err
 	}
 
 	// send otp to user email
-	emailBody := service.mailCLient.GenerateOTPBody(sendOTPRequest.Email, otp, constants.FORGOT_PASSWORD, constants.RESET_PASSWORD_EXP_TIME)
-	err = service.mailCLient.SendEmail(ctx, sendOTPRequest.Email, "OTP reset password", emailBody)
+	emailBody := service.mailClient.GenerateOTPBody(sendOTPRequest.Email, otp, constants.FORGOT_PASSWORD, constants.RESET_PASSWORD_EXP_TIME)
+	err = service.mailClient.SendEmail(ctx, sendOTPRequest.Email, "OTP reset password", emailBody)
 	if err != nil {
 		return err
 	}
@@ -176,7 +189,7 @@ func (service *AuthService) VerifyOTP(ctx *gin.Context, verifyOTPRequest model.V
 	baseKey := constants.RESET_PASSWORD_KEY
 	key := redis.Concat(baseKey, customerId)
 
-	val, err := service.redisCLient.Get(ctx, key)
+	val, err := service.redisClient.Get(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -197,13 +210,13 @@ func (service *AuthService) SetPassword(ctx *gin.Context, setPasswordRequest mod
 	baseKey := constants.RESET_PASSWORD_KEY
 	key := redis.Concat(baseKey, customerId)
 
-	val, err := service.redisCLient.Get(ctx, key)
+	val, err := service.redisClient.Get(ctx, key)
 	if err != nil {
 		return err
 	}
 
 	if val == setPasswordRequest.OTP {
-		service.redisCLient.Delete(ctx, key)
+		service.redisClient.Delete(ctx, key)
 
 		hashedPW, err := service.passwordEncoder.Encrypt(setPasswordRequest.Password)
 		if err != nil {
@@ -223,5 +236,26 @@ func (service *AuthService) SetPassword(ctx *gin.Context, setPasswordRequest mod
 
 func (service *AuthService) GetUserById(ctx *gin.Context, userId int64) (*entity.User, error) {
 	return service.customerRepository.GetOneByIdQuery(ctx, userId)
+}
 
+func (service *AuthService) Logout(ctx *gin.Context, refreshToken string) {
+	_ = service.authenticationRepository.DeleteByRefreshToken(ctx, refreshToken)
+	ctx.SetCookie(
+		"access_token",
+		"",
+		-1,
+		"/",
+		"",
+		false,
+		true,
+	)
+	ctx.SetCookie(
+		"refresh_token",
+		"",
+		-1,
+		"/",
+		"",
+		false,
+		true,
+	)
 }
