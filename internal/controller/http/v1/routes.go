@@ -81,6 +81,10 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.AdminRequired,
 				adminHandler.UpdateOneStaff,
 			)
+			admin.POST("/staff/partner-bank",
+				authMiddleware.VerifyToken,
+				authMiddleware.AdminRequired,
+				adminHandler.AddPartnerBank)
 		}
 		cores := v1.Group("/core")
 		{

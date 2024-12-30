@@ -423,6 +423,21 @@ definitions:
       title:
         type: string
     type: object
+  model.PartnerBankRequest:
+    properties:
+      bankCode:
+        type: string
+      bankName:
+        type: string
+      logoUrl:
+        type: string
+      researchApi:
+        type: string
+      shortName:
+        type: string
+      transferApi:
+        type: string
+    type: object
   model.PreDebtTransferRequest:
     properties:
       transactionId:
@@ -615,6 +630,34 @@ paths:
       summary: Get Customer Name by Account Number
       tags:
       - Accounts
+  /admin/partner-bank:
+    post:
+      consumes:
+      - application/json
+      description: Add a partner bank
+      parameters:
+      - description: PartnerBank payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PartnerBankRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Add Partner Bank
+      tags:
+      - Admins
   /admin/staff:
     get:
       description: Admin get all staff

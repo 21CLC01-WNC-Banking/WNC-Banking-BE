@@ -1,8 +1,8 @@
 CREATE TABLE partner_banks (
    id INT AUTO_INCREMENT PRIMARY KEY,
    bank_code VARCHAR(255) NOT NULL UNIQUE,
-   bank_name VARCHAR(255) NOT NULL,
-   short_name VARCHAR(5) NOT NULL UNIQUE,
+   bank_name VARCHAR(255),
+   short_name VARCHAR(5),
    logo_url VARCHAR(255) NOT NULL,
    research_api VARCHAR(255) NOT NULL,
    transfer_api VARCHAR(255) NOT NULL,

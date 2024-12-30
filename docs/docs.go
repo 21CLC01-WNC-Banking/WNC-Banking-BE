@@ -76,6 +76,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/partner-bank": {
+            "post": {
+                "description": "Add a partner bank",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admins"
+                ],
+                "summary": "Add Partner Bank",
+                "parameters": [
+                    {
+                        "description": "PartnerBank payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PartnerBankRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/staff": {
             "get": {
                 "description": "Admin get all staff",
@@ -1882,6 +1925,29 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PartnerBankRequest": {
+            "type": "object",
+            "properties": {
+                "bankCode": {
+                    "type": "string"
+                },
+                "bankName": {
+                    "type": "string"
+                },
+                "logoUrl": {
+                    "type": "string"
+                },
+                "researchApi": {
+                    "type": "string"
+                },
+                "shortName": {
+                    "type": "string"
+                },
+                "transferApi": {
                     "type": "string"
                 }
             }

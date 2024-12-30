@@ -48,6 +48,7 @@ var serviceSet = wire.NewSet(
 	serviceimplement.NewStaffService,
 	serviceimplement.NewNotificationService,
 	serviceimplement.NewAdminService,
+	serviceimplement.NewPartnerBankService,
 )
 
 var repositorySet = wire.NewSet(
@@ -60,6 +61,7 @@ var repositorySet = wire.NewSet(
 	repositoryimplement.NewNotificationRepository,
 	repositoryimplement.NewDebtReplyRepository,
 	repositoryimplement.NewStaffRepository,
+	repositoryimplement.NewPartnerBankRepository,
 )
 
 var middlewareSet = wire.NewSet(

@@ -11,12 +11,14 @@ import (
 )
 
 type AdminHandler struct {
-	adminService service.AdminService
+	adminService       service.AdminService
+	partnerBankService service.PartnerBankService
 }
 
-func NewAdminHandler(adminService service.AdminService) *AdminHandler {
+func NewAdminHandler(adminService service.AdminService, partnerBankService service.PartnerBankService) *AdminHandler {
 	return &AdminHandler{
-		adminService: adminService,
+		adminService:       adminService,
+		partnerBankService: partnerBankService,
 	}
 }
 
@@ -168,4 +170,29 @@ func (handler *AdminHandler) UpdateOneStaff(c *gin.Context) {
 	}
 
 	c.AbortWithStatus(http.StatusNoContent)
+}
+
+// @Summary Add Partner Bank
+// @Description Add a partner bank
+// @Tags Admins
+// @Accept json
+// @Param request body model.PartnerBankRequest true "PartnerBank payload"
+// @Produce  json
+// @Router /admin/partner-bank [post]
+// @Success 200 "No Content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AdminHandler) AddPartnerBank(c *gin.Context) {
+	var partnerRequest model.PartnerBankRequest
+	if err := validation.BindJsonAndValidate(c, &partnerRequest); err != nil {
+		return
+	}
+	err := handler.partnerBankService.AddPartnerBank(c, partnerRequest)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	c.AbortWithStatus(200)
 }
