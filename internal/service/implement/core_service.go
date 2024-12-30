@@ -8,7 +8,8 @@ import (
 )
 
 const FEE_PERCENTAGE = 2 // 2%
-const MIN_FEE = 2000     // const fee if amount <= 200k
+// const MIN_FEE = 2000     // const fee if amount <= 200k
+const MIN_FEE = 2
 const THRESHOLD = 200000 // limit 200k
 
 type CoreService struct{}

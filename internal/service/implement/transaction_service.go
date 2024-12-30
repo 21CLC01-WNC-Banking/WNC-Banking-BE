@@ -1,7 +1,6 @@
 package serviceimplement
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -225,7 +224,7 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		return nil, err
 	}
 
-	// send notification to ws
+	// create notification response
 	notificationForSourceCustomerResp := &model.NotificationResponse{
 		DeviceId:      int(sourceCustomer.Id),
 		Name:          sourceCustomer.Name,
@@ -244,33 +243,9 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		CreatedAt:     existsTransaction.CreatedAt,
 	}
 
-	// // notify, response history
-	sourceContent, _ := json.Marshal(notificationForSourceCustomerResp)
-	notificationForSourceCustomer := &entity.Notification{
-		Type:    notificationForSourceCustomerResp.Type,
-		Content: string(sourceContent),
-		IsSeen:  false,
-		UserID:  sourceCustomer.Id,
-	}
-	err = service.notificationRepository.CreateCommand(ctx, notificationForSourceCustomer)
-	if err != nil {
-		return nil, err
-	}
-
-	targetContent, _ := json.Marshal(notificationForSourceCustomerResp)
-	notificationForTargetCustomer := &entity.Notification{
-		Type:    notificationForTargetCustomerResp.Type,
-		Content: string(targetContent),
-		IsSeen:  false,
-		UserID:  targetCustomer.Id,
-	}
-	err = service.notificationRepository.CreateCommand(ctx, notificationForTargetCustomer)
-	if err != nil {
-		return nil, err
-	}
-
-	service.notificationClient.Send(*notificationForSourceCustomerResp)
-	service.notificationClient.Send(*notificationForTargetCustomerResp)
+	// notify, response history
+	service.notificationClient.SendAndSave(ctx, *notificationForSourceCustomerResp)
+	service.notificationClient.SendAndSave(ctx, *notificationForTargetCustomerResp)
 
 	return existsTransaction, nil
 }

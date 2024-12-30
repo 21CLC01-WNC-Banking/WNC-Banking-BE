@@ -1,8 +1,11 @@
 package bean
 
-import "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
+import (
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
+	"github.com/gin-gonic/gin"
+)
 
 type NotificationClient interface {
 	SendTest(req model.NotificationRequest)
-	Send(req model.NotificationResponse)
+	SendAndSave(ctx *gin.Context, req model.NotificationResponse)
 }
