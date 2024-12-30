@@ -12,6 +12,13 @@ type LoginRequest struct {
 	RecaptchaToken string `json:"recaptchaToken" binding:"required"`
 }
 
+type LoginResponse struct {
+	Email  string `json:"email"`
+	Name   string `json:"name"`
+	Role   string `json:"role"`
+	UserId int64  `json:"userId"`
+}
+
 type AuthenticationRequest struct {
 	CustomerID   int64  `json:"customerId" binding:"required,min=1,max=255"`
 	RefreshToken string `json:"refreshToken" binding:"required"`

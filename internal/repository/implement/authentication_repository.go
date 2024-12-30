@@ -49,3 +49,10 @@ func (repo *AuthenticationRepository) GetOneByCustomerIdQuery(ctx context.Contex
 	}
 	return &authentication, nil
 }
+
+func (repo *AuthenticationRepository) DeleteByRefreshToken(ctx context.Context, refreshToken string) error {
+	query := `DELETE FROM authentications WHERE refresh_token = ?`
+
+	_, err := repo.db.ExecContext(ctx, query, refreshToken)
+	return err
+}
