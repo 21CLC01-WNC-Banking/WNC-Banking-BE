@@ -30,17 +30,23 @@ func (c *NotificationClient) SendTest(req model.NotificationRequest) {
 	c.client.SendToDevice(req.DeviceId, req.Title+"\n"+req.Content)
 }
 
-func (c *NotificationClient) SendAndSave(ctx *gin.Context, req model.NotificationResponse) {
+func (c *NotificationClient) SendAndSave(ctx *gin.Context, req interface{}) {
 	// Save notification
 	content, err := json.Marshal(req)
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	notiReq, ok := req.(model.NotificationResponse)
+	if !ok {
+		fmt.Println("Invalid request type")
+	}
+
 	notification := &entity.Notification{
-		Type:    req.Type,
+		Type:    notiReq.Type,
 		Content: string(content),
 		IsSeen:  false,
-		UserID:  int64(req.DeviceId),
+		UserID:  int64(notiReq.DeviceId),
 	}
 	err = c.notificationRepository.CreateCommand(ctx, notification)
 	if err != nil {
@@ -48,5 +54,5 @@ func (c *NotificationClient) SendAndSave(ctx *gin.Context, req model.Notificatio
 	}
 
 	// Send notification
-	c.client.SendToDevice(req.DeviceId, noti.GenerateContent(req))
+	c.client.SendToDevice(notiReq.DeviceId, noti.GenerateContentForNotification(notiReq))
 }

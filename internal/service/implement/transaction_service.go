@@ -231,7 +231,7 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "outgoing_transfer",
-		CreatedAt:     existsTransaction.CreatedAt,
+		CreatedAt:     existsTransaction.UpdatedAt,
 	}
 
 	notificationForTargetCustomerResp := &model.NotificationResponse{
@@ -240,7 +240,7 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "incoming_transfer",
-		CreatedAt:     existsTransaction.CreatedAt,
+		CreatedAt:     existsTransaction.UpdatedAt,
 	}
 
 	// notify, response history
