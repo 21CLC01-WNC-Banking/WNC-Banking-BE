@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository"
@@ -74,4 +75,13 @@ func (n *NotificationRepository) GetCustomerIdById(ctx context.Context, id int64
 	}
 
 	return userId
+}
+
+func (n *NotificationRepository) CreateCommand(ctx context.Context, reply *entity.Notification) error {
+	insertQuery := `INSERT INTO notifications(type, content, is_seen, user_id) VALUES (:type, :content, :is_seen, :user_id)`
+	_, err := n.db.NamedExecContext(ctx, insertQuery, reply)
+	if err != nil {
+		return err
+	}
+	return nil
 }

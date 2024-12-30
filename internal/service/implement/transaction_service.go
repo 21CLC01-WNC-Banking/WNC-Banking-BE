@@ -1,7 +1,9 @@
 package serviceimplement
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
@@ -19,13 +21,15 @@ import (
 )
 
 type TransactionService struct {
-	transactionRepository repository.TransactionRepository
-	customerRepository    repository.CustomerRepository
-	accountService        service.AccountService
-	coreService           service.CoreService
-	redisClient           bean.RedisClient
-	mailClient            bean.MailClient
-	debtReply             repository.DebtReplyRepository
+	transactionRepository  repository.TransactionRepository
+	customerRepository     repository.CustomerRepository
+	accountService         service.AccountService
+	coreService            service.CoreService
+	redisClient            bean.RedisClient
+	mailClient             bean.MailClient
+	debtReply              repository.DebtReplyRepository
+	notificationRepository repository.NotificationRepository
+	notificationClient     bean.NotificationClient
 }
 
 func NewTransactionService(transactionRepository repository.TransactionRepository,
@@ -34,15 +38,20 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 	coreService service.CoreService,
 	redisClient bean.RedisClient,
 	mailClient bean.MailClient,
-	debtReply repository.DebtReplyRepository) service.TransactionService {
+	debtReply repository.DebtReplyRepository,
+	notificationRepository repository.NotificationRepository,
+	notificationClient bean.NotificationClient,
+) service.TransactionService {
 	return &TransactionService{
-		transactionRepository: transactionRepository,
-		customerRepository:    customerRepository,
-		accountService:        accountService,
-		coreService:           coreService,
-		redisClient:           redisClient,
-		mailClient:            mailClient,
-		debtReply:             debtReply,
+		transactionRepository:  transactionRepository,
+		customerRepository:     customerRepository,
+		accountService:         accountService,
+		coreService:            coreService,
+		redisClient:            redisClient,
+		mailClient:             mailClient,
+		debtReply:              debtReply,
+		notificationRepository: notificationRepository,
+		notificationClient:     notificationClient,
 	}
 }
 
@@ -107,6 +116,8 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 func (service *TransactionService) SendOTPToEmail(ctx *gin.Context, email string, transactionId string) error {
 	// generate otp
 	otp := mail.GenerateOTP(6)
+
+	fmt.Println("OTP: ", otp)
 
 	// store otp in redis
 	baseKey := constants.VERIFY_TRANSFER_KEY
@@ -179,6 +190,16 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		return nil, err
 	}
 
+	//get source customer and target customer's name
+	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.SourceAccountNumber)
+	if err != nil {
+		return nil, err
+	}
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
+	if err != nil {
+		return nil, err
+	}
+
 	//update to DB
 	//balance for source and target
 	newSourceBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
@@ -204,7 +225,53 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		return nil, err
 	}
 
-	// notify, response history
+	// send notification to ws
+	notificationForSourceCustomerResp := &model.NotificationResponse{
+		DeviceId:      int(sourceCustomer.Id),
+		Name:          sourceCustomer.Name,
+		Amount:        int(existsTransaction.Amount),
+		TransactionId: existsTransaction.Id,
+		Type:          "outgoing_transfer",
+		CreatedAt:     existsTransaction.CreatedAt,
+	}
+
+	notificationForTargetCustomerResp := &model.NotificationResponse{
+		DeviceId:      int(targetCustomer.Id),
+		Name:          targetCustomer.Name,
+		Amount:        int(existsTransaction.Amount),
+		TransactionId: existsTransaction.Id,
+		Type:          "incoming_transfer",
+		CreatedAt:     existsTransaction.CreatedAt,
+	}
+
+	// // notify, response history
+	sourceContent, _ := json.Marshal(notificationForSourceCustomerResp)
+	notificationForSourceCustomer := &entity.Notification{
+		Type:    notificationForSourceCustomerResp.Type,
+		Content: string(sourceContent),
+		IsSeen:  false,
+		UserID:  sourceCustomer.Id,
+	}
+	err = service.notificationRepository.CreateCommand(ctx, notificationForSourceCustomer)
+	if err != nil {
+		return nil, err
+	}
+
+	targetContent, _ := json.Marshal(notificationForSourceCustomerResp)
+	notificationForTargetCustomer := &entity.Notification{
+		Type:    notificationForTargetCustomerResp.Type,
+		Content: string(targetContent),
+		IsSeen:  false,
+		UserID:  targetCustomer.Id,
+	}
+	err = service.notificationRepository.CreateCommand(ctx, notificationForTargetCustomer)
+	if err != nil {
+		return nil, err
+	}
+
+	service.notificationClient.Send(*notificationForSourceCustomerResp)
+	service.notificationClient.Send(*notificationForTargetCustomerResp)
+
 	return existsTransaction, nil
 }
 
