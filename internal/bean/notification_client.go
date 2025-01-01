@@ -7,5 +7,5 @@ import (
 
 type NotificationClient interface {
 	SendTest(req model.NotificationRequest)
-	SendAndSave(ctx *gin.Context, req interface{})
+	SaveAndSend(ctx *gin.Context, req interface{})
 }

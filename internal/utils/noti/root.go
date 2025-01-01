@@ -6,7 +6,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 )
 
-func GenerateContentForNotification(req model.NotificationResponse) string {
+func GenerateContentForTransactionNoti(req model.TransactionNotificationContent) string {
 	return `
 		{
 			"Name": ` + req.Name + `,

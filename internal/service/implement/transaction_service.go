@@ -189,16 +189,6 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		return nil, err
 	}
 
-	//get source customer and target customer's name
-	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.SourceAccountNumber)
-	if err != nil {
-		return nil, err
-	}
-	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
-	if err != nil {
-		return nil, err
-	}
-
 	//update to DB
 	//balance for source and target
 	newSourceBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
@@ -225,7 +215,17 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	}
 
 	// create notification response
-	notificationForSourceCustomerResp := &model.NotificationResponse{
+	//get source customer and target customer's name
+	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.SourceAccountNumber)
+	if err != nil {
+		return nil, err
+	}
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(sourceCustomer.Id),
 		Name:          sourceCustomer.Name,
 		Amount:        int(existsTransaction.Amount),
@@ -234,7 +234,7 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		CreatedAt:     existsTransaction.UpdatedAt,
 	}
 
-	notificationForTargetCustomerResp := &model.NotificationResponse{
+	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(targetCustomer.Id),
 		Name:          targetCustomer.Name,
 		Amount:        int(existsTransaction.Amount),
@@ -244,8 +244,8 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	}
 
 	// notify, response history
-	service.notificationClient.SendAndSave(ctx, *notificationForSourceCustomerResp)
-	service.notificationClient.SendAndSave(ctx, *notificationForTargetCustomerResp)
+	service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
+	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
 
 	return existsTransaction, nil
 }
@@ -320,10 +320,33 @@ func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminde
 	}
 
 	//save transaction
-	_, err = service.transactionRepository.CreateCommand(ctx, transaction)
+	targetTransactionId, err := service.transactionRepository.CreateCommand(ctx, transaction)
 	if err != nil {
 		return err
 	}
+
+	targetTransaction, err := service.transactionRepository.GetTransactionByIdQuery(ctx, targetTransactionId)
+
+	//get target customer's name
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.TargetAccountNumber)
+	if err != nil {
+		return err
+	}
+
+	// create notification response
+	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(targetCustomer.Id),
+		Name:          targetCustomer.Name,
+		Amount:        int(transaction.Amount),
+		TransactionId: transaction.Id,
+		Type:          "debt_reminder",
+		CreatedAt:     targetTransaction.CreatedAt,
+	}
+	fmt.Println(notificationForTargetCustomerResp)
+
+	// notify, response history
+	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
+
 	return nil
 }
 
@@ -381,6 +404,45 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 	}
 
 	//notify...
+	//if current user is source, then find the other user to notify
+	if sourceAccount.Number == debtReminder.SourceAccountNumber {
+		creditor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.TargetAccountNumber)
+		if err != nil {
+			return err
+		}
+
+		// create notification response
+		notificationForTargetCustomerResp := &model.TransactionNotificationContent{
+			DeviceId:      int(creditor.Id),
+			Name:          creditor.Name,
+			Amount:        int(debtReminder.Amount),
+			TransactionId: debtReminder.Id,
+			Type:          "debt_reminder",
+			CreatedAt:     debtReminder.CreatedAt,
+		}
+
+		// notify, response history
+		service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
+	} else {
+		//if current user is target, then find the other user to notify
+		debtor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.SourceAccountNumber)
+		if err != nil {
+			return err
+		}
+
+		// create notification response
+		notificationForSourceCustomerResp := &model.TransactionNotificationContent{
+			DeviceId:      int(debtor.Id),
+			Name:          debtor.Name,
+			Amount:        int(debtReminder.Amount),
+			TransactionId: debtReminder.Id,
+			Type:          "debt_reminder",
+			CreatedAt:     debtReminder.CreatedAt,
+		}
+
+		// notify, response history
+		service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
+	}
 	return nil
 }
 

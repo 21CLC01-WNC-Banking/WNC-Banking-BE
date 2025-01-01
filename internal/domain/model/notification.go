@@ -8,7 +8,7 @@ type NotificationRequest struct {
 	DeviceId int    `json:"deviceId"`
 }
 
-type NotificationResponse struct {
+type TransactionNotificationContent struct {
 	DeviceId      int        `json:"deviceId"`
 	Name          string     `json:"name"`
 	Amount        int        `json:"amount"`

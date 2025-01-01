@@ -30,14 +30,14 @@ func (c *NotificationClient) SendTest(req model.NotificationRequest) {
 	c.client.SendToDevice(req.DeviceId, req.Title+"\n"+req.Content)
 }
 
-func (c *NotificationClient) SendAndSave(ctx *gin.Context, req interface{}) {
+func (c *NotificationClient) SaveAndSend(ctx *gin.Context, req interface{}) {
 	// Save notification
 	content, err := json.Marshal(req)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	notiReq, ok := req.(model.NotificationResponse)
+	notiReq, ok := req.(model.TransactionNotificationContent)
 	if !ok {
 		fmt.Println("Invalid request type")
 	}
@@ -54,5 +54,5 @@ func (c *NotificationClient) SendAndSave(ctx *gin.Context, req interface{}) {
 	}
 
 	// Send notification
-	c.client.SendToDevice(notiReq.DeviceId, noti.GenerateContentForNotification(notiReq))
+	c.client.SendToDevice(notiReq.DeviceId, noti.GenerateContentForTransactionNoti(notiReq))
 }
