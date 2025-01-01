@@ -1314,9 +1314,6 @@ const docTemplate = `{
                 "isSeen": {
                     "type": "boolean"
                 },
-                "title": {
-                    "type": "string"
-                },
                 "type": {
                     "description": "incoming_transfer, outgoing_transfer, debt_reminder",
                     "type": "string"

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -15,12 +16,14 @@ import (
 )
 
 type StaffService struct {
-	customerRepository    repository.CustomerRepository
-	passwordEncoder       bean.PasswordEncoder
-	accountService        service.AccountService
-	accountRepository     repository.AccountRepository
-	transactionRepository repository.TransactionRepository
-	mailClient            bean.MailClient
+	customerRepository     repository.CustomerRepository
+	passwordEncoder        bean.PasswordEncoder
+	accountService         service.AccountService
+	accountRepository      repository.AccountRepository
+	transactionRepository  repository.TransactionRepository
+	mailClient             bean.MailClient
+	notificationRepository repository.NotificationRepository
+	notificationClient     bean.NotificationClient
 }
 
 func NewStaffService(
@@ -30,14 +33,18 @@ func NewStaffService(
 	accountRepository repository.AccountRepository,
 	transactionRepository repository.TransactionRepository,
 	mailClient bean.MailClient,
+	notificationRepository repository.NotificationRepository,
+	notificationClient bean.NotificationClient,
 ) service.StaffService {
 	return &StaffService{
-		customerRepository:    customerRepository,
-		passwordEncoder:       passwordEncoder,
-		accountService:        accountService,
-		accountRepository:     accountRepository,
-		transactionRepository: transactionRepository,
-		mailClient:            mailClient,
+		customerRepository:     customerRepository,
+		passwordEncoder:        passwordEncoder,
+		accountService:         accountService,
+		accountRepository:      accountRepository,
+		transactionRepository:  transactionRepository,
+		mailClient:             mailClient,
+		notificationRepository: notificationRepository,
+		notificationClient:     notificationClient,
 	}
 }
 
@@ -122,7 +129,44 @@ func (service *StaffService) AddAmountToAccount(ctx *gin.Context, request *model
 		IsSourceFee:         &isSourceFee,
 	}
 
-	_, err = service.transactionRepository.CreateCommand(ctx, &transaction)
+	transactionId, err := service.transactionRepository.CreateCommand(ctx, &transaction)
+	savedTransaction, err := service.transactionRepository.GetTransactionByIdQuery(ctx, transactionId)
+
+	// notify
+	//get target customer's name
+	customerId := middleware.GetUserIdHelper(ctx)
+	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
+	if err != nil {
+		return err
+	}
+
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.TargetAccountNumber)
+	if err != nil {
+		return err
+	}
+
+	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(customerId),
+		Name:          sourceCustomer.Name,
+		Amount:        int(savedTransaction.Amount),
+		TransactionId: savedTransaction.Id,
+		Type:          "outgoing_transfer",
+		CreatedAt:     savedTransaction.CreatedAt,
+	}
+
+	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(targetCustomer.Id),
+		Name:          targetCustomer.Name,
+		Amount:        int(savedTransaction.Amount),
+		TransactionId: savedTransaction.Id,
+		Type:          "incoming_transfer",
+		CreatedAt:     savedTransaction.CreatedAt,
+	}
+
+	// notify, response history
+	service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
+	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
+
 	return err
 }
 
