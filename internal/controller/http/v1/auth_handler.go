@@ -1,9 +1,8 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
-
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -39,6 +38,9 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 
 	customer, err := handler.authService.Login(ctx, loginRequest)
 	if err != nil || customer == nil {
+		if customer == nil && err == nil {
+			err = errors.New(httpcommon.ErrorMessage.SqlxNoRow)
+		}
 		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: err.Error(),
@@ -48,9 +50,7 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, httpcommon.NewSuccessResponse[entity.User](&entity.User{
-		Email: customer.Email,
-	}))
+	ctx.JSON(200, httpcommon.NewSuccessResponse(customer))
 }
 
 // @Summary Send OTP to Mail
@@ -143,5 +143,24 @@ func (handler *AuthHandler) SetPassword(ctx *gin.Context) {
 		return
 	}
 
+	ctx.AbortWithStatus(204)
+}
+
+// @Summary Logout
+// @Description Logout
+// @Tags Auths
+// @Router /auth/logout [post]
+// @Success 204 "No Content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AuthHandler) Logout(ctx *gin.Context) {
+	refreshToken, err := ctx.Cookie("refresh_token")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
+			httpcommon.Error{Message: "Refresh token required"},
+		))
+	}
+
+	handler.authService.Logout(ctx, refreshToken)
 	ctx.AbortWithStatus(204)
 }
