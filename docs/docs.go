@@ -1233,6 +1233,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/transaction/external-transfer": {
+            "post": {
+                "description": "Verify OTP and transaction from internal account to external account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "External transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-entity_Transaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/transaction/internal-transfer": {
             "post": {
                 "description": "Verify OTP and transaction from internal account to internal account",
@@ -1306,6 +1352,52 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/pre-external-transfer": {
+            "post": {
+                "description": "Pre Transaction from internal account to external account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "External transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PreExternalTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-string"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -2185,6 +2277,42 @@ const docTemplate = `{
             ],
             "properties": {
                 "transactionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PreExternalTransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description",
+                "isSourceFee",
+                "partnerBankId",
+                "sourceAccountNumber",
+                "targetAccountNumber",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "description": {
+                    "type": "string"
+                },
+                "isSourceFee": {
+                    "type": "boolean"
+                },
+                "partnerBankId": {
+                    "type": "integer"
+                },
+                "sourceAccountNumber": {
+                    "type": "string"
+                },
+                "targetAccountNumber": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

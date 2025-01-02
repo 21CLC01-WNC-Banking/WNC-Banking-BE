@@ -2,6 +2,7 @@ package serviceimplement
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
@@ -51,6 +52,11 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 	sourceCustomer, sourceAccount, targetAccount, err := service.verifyTransactionInfo(ctx, transferReq.SourceAccountNumber, transferReq.TargetAccountNumber)
 	if err != nil {
 		return "", err
+	}
+
+	//check type
+	if transferReq.Type != "internal" {
+		return "", errors.New("invalid transaction type")
 	}
 
 	//estimate fee
@@ -203,6 +209,10 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	if err != nil {
 		return nil, err
 	}
+
+	/*
+		notify
+	*/
 
 	// notify, response history
 	return existsTransaction, nil
@@ -591,6 +601,7 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 	if transferReq.SourceAccountNumber == transferReq.TargetAccountNumber {
 		return "", errors.New("source account number can not equal to target account number")
 	}
+
 	//get customer
 	customerId := middleware.GetUserIdHelper(ctx)
 	//check customerId
@@ -601,6 +612,7 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		}
 		return "", err
 	}
+
 	//get account by customerId and check sourceNumber is internal
 	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.Id)
 	if err != nil {
@@ -613,10 +625,21 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		return "", errors.New("source account not match")
 	}
 
+	//check targetNumber is in internal bank
+	targetAccount, err := service.accountService.GetAccountByNumber(ctx, transferReq.TargetAccountNumber)
+	if targetAccount != nil {
+		return "", errors.New("target account existed in internal bank")
+	}
 	//check targetNumber is in partner bank
 	/*
 		here...
 	*/
+
+	//check type
+	if transferReq.Type != "external" {
+		return "", errors.New("invalid transaction type")
+	}
+
 	//estimate fee
 	fee, err := service.coreService.EstimateTransferFee(ctx, transferReq.Amount)
 	if err != nil {
@@ -664,4 +687,59 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		return "", err
 	}
 	return transactionId, nil
+}
+
+func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferReq model.TransferRequest) (*entity.Transaction, error) {
+	//get customer and check exists account
+	customerId := middleware.GetUserIdHelper(ctx)
+	existsAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
+	if err != nil {
+		return nil, err
+	}
+
+	//check transaction by account number and transaction id
+	existsTransaction, err := service.transactionRepository.GetTransactionBySourceNumberAndIdQuery(ctx, existsAccount.Number, transferReq.TransactionId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("transaction not found")
+		}
+		return nil, err
+	}
+	//verify OTP
+	err = service.verifyOTP(ctx, transferReq)
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		call api to partner bank to confirm transaction
+	*/
+
+	//update to DB
+	//balance for source
+	fmt.Print(existsAccount.Number)
+	fmt.Print(existsTransaction.SourceAccountNumber)
+	newSourceBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	existsTransaction.Status = "success"
+	existsTransaction.SourceBalance = newSourceBalance
+
+	//transaction
+	err = service.transactionRepository.UpdateBalancesCommand(ctx, existsTransaction)
+	if err != nil {
+		return nil, err
+	}
+	err = service.transactionRepository.UpdateStatusCommand(ctx, existsTransaction)
+	if err != nil {
+		return nil, err
+	}
+	/*
+		notify transfer success
+	*/
+
+	// response history
+	return existsTransaction, nil
 }

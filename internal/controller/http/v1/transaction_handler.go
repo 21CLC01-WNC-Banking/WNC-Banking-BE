@@ -197,10 +197,53 @@ func (handler *TransactionHandler) PreDebtTransfer(ctx *gin.Context) {
 	ctx.AbortWithStatus(200)
 }
 
+// @Summary External transaction
+// @Description Pre Transaction from internal account to external account
+// @Tags Transaction
+// @Accept json
+// @Param request body model.PreExternalTransferRequest true "Transaction payload"
+// @Produce  json
+// @Router /transaction/pre-external-transfer [post]
+// @Success 200 {object} httpcommon.HttpResponse[string]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *TransactionHandler) PreExternalTransfer(ctx *gin.Context) {
-	var request model.ExternalTransactionRequest
+	var request model.PreExternalTransferRequest
 	if err := validation.BindJsonAndValidate(ctx, &request); err != nil {
 		return
 	}
+	transactionId, err := handler.transactionService.PreExternalTransfer(ctx, request)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&transactionId))
+}
 
+// @Summary External transaction
+// @Description Verify OTP and transaction from internal account to external account
+// @Tags Transaction
+// @Accept json
+// @Param request body model.TransferRequest true "Transaction payload"
+// @Produce  json
+// @Router /transaction/external-transfer [post]
+// @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *TransactionHandler) ExternalTransfer(ctx *gin.Context) {
+	var transfer model.TransferRequest
+
+	if err := validation.BindJsonAndValidate(ctx, &transfer); err != nil {
+		return
+	}
+	transaction, err := handler.transactionService.ExternalTransfer(ctx, transfer)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[*entity.Transaction](&transaction))
 }

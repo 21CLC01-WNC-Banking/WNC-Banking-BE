@@ -99,6 +99,7 @@ func MapRoutes(router *gin.Engine,
 		{
 			accounts.GET("/customer-name", authMiddleware.VerifyToken, accountHandler.GetCustomerNameByAccountNumber)
 			accounts.GET("/", authMiddleware.VerifyToken, accountHandler.GetAccountByCustomerId)
+			accounts.POST("/get-external-account-name", authMiddleware.VerifyToken, accountHandler.GetExternalAccountName)
 		}
 		staff := v1.Group("/staff")
 		{
@@ -127,13 +128,14 @@ func MapRoutes(router *gin.Engine,
 			transactions.GET("/received-debt-reminder", authMiddleware.VerifyToken, transactionHandler.GetReceivedDebtReminder)
 			transactions.GET("/sent-debt-reminder", authMiddleware.VerifyToken, transactionHandler.GetSentDebtReminder)
 			transactions.POST("/pre-debt-transfer", authMiddleware.VerifyToken, transactionHandler.PreDebtTransfer)
+			transactions.POST("/pre-external-transfer", authMiddleware.VerifyToken, transactionHandler.PreExternalTransfer)
+			transactions.POST("/external-transfer", authMiddleware.VerifyToken, transactionHandler.ExternalTransfer)
 		}
 		partnerBanks := v1.Group("/partner-bank")
 		{
 			partnerBanks.POST("/get-account-information", externalSearchMiddleware.VerifyAPI, partnerBankHandler.GetAccountNumberInfo)
 			partnerBanks.POST("/external-transfer-rsa", rsaMiddleware.Verify, partnerBankHandler.ReceiveExternalTransfer)
 			partnerBanks.GET("/", authMiddleware.VerifyToken, partnerBankHandler.GetListPartnerBank)
-			partnerBanks.POST("/get-external-account-name", authMiddleware.VerifyToken, partnerBankHandler.GetExternalAccountName)
 		}
 	}
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

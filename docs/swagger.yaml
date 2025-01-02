@@ -492,6 +492,32 @@ definitions:
     required:
     - transactionId
     type: object
+  model.PreExternalTransferRequest:
+    properties:
+      amount:
+        minimum: 0
+        type: integer
+      description:
+        type: string
+      isSourceFee:
+        type: boolean
+      partnerBankId:
+        type: integer
+      sourceAccountNumber:
+        type: string
+      targetAccountNumber:
+        type: string
+      type:
+        type: string
+    required:
+    - amount
+    - description
+    - isSourceFee
+    - partnerBankId
+    - sourceAccountNumber
+    - targetAccountNumber
+    - type
+    type: object
   model.PreInternalTransferRequest:
     properties:
       amount:
@@ -1436,6 +1462,36 @@ paths:
       summary: Debt reminder
       tags:
       - Transaction
+  /transaction/external-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP and transaction from internal account to external account
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-entity_Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: External transaction
+      tags:
+      - Transaction
   /transaction/internal-transfer:
     post:
       consumes:
@@ -1492,6 +1548,36 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Debt transaction
+      tags:
+      - Transaction
+  /transaction/pre-external-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Pre Transaction from internal account to external account
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PreExternalTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: External transaction
       tags:
       - Transaction
   /transaction/pre-internal-transfer:

@@ -6,7 +6,6 @@ import (
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -130,24 +129,4 @@ func (handler *PartnerBankHandler) ReceiveExternalTransfer(c *gin.Context) {
 	}
 	//encode response
 	c.AbortWithStatus(200)
-}
-
-// @Summary Get external account name
-// @Description Get external account name by account number from external bank
-// @Tags Partner bank
-// @Accept json
-// @Param request body model.GetExternalAccountNameRequest true "PartnerBank payload"
-// @Produce  json
-// @Router /partner-bank/get-external-account-name [post]
-// @Success 200 {object} httpcommon.HttpResponse[string]
-// @Failure 400 {object} httpcommon.HttpResponse[any]
-// @Failure 500 {object} httpcommon.HttpResponse[any]
-func (handler *PartnerBankHandler) GetExternalAccountName(c *gin.Context) {
-	var req model.GetExternalAccountNameRequest
-	err := validation.BindJsonAndValidate(c, &req)
-	if err != nil {
-		return
-	}
-	var name = "FAKE GETNAME"
-	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&name))
 }
