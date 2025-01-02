@@ -218,11 +218,11 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	//get source customer and target customer's name
 	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.SourceAccountNumber)
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
 	}
 	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
 	}
 
 	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
@@ -244,7 +244,8 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	}
 
 	// notify, response history
-	service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
+	content, err := service.notificationClient.SaveAndSendHelper(ctx, *notificationForSourceCustomerResp)
+	service.notificationClient.SaveAndSend(ctx, content)
 	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
 
 	return existsTransaction, nil
@@ -330,7 +331,7 @@ func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminde
 	//get target customer's name
 	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.TargetAccountNumber)
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
 
 	// create notification response
@@ -408,7 +409,7 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 	if sourceAccount.Number == debtReminder.SourceAccountNumber {
 		creditor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.TargetAccountNumber)
 		if err != nil {
-			return err
+			fmt.Println(err)
 		}
 
 		// create notification response
@@ -427,7 +428,7 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 		//if current user is target, then find the other user to notify
 		debtor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.SourceAccountNumber)
 		if err != nil {
-			return err
+			fmt.Println(err)
 		}
 
 		// create notification response

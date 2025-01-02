@@ -2,6 +2,7 @@ package serviceimplement
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
@@ -137,12 +138,12 @@ func (service *StaffService) AddAmountToAccount(ctx *gin.Context, request *model
 	customerId := middleware.GetUserIdHelper(ctx)
 	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
 
 	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.TargetAccountNumber)
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
 
 	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
