@@ -465,6 +465,32 @@
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "description": "Logout",
+                "tags": [
+                    "Auths"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/core/estimate-transfer-fee": {
             "get": {
                 "description": "Estimate the internal transfer fee",

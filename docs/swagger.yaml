@@ -939,6 +939,23 @@ paths:
       summary: Login
       tags:
       - Auths
+  /auth/logout:
+    post:
+      description: Logout
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Logout
+      tags:
+      - Auths
   /core/estimate-transfer-fee:
     get:
       consumes:
