@@ -76,6 +76,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/partner-bank": {
+            "post": {
+                "description": "Add a partner bank",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admins"
+                ],
+                "summary": "Add Partner Bank",
+                "parameters": [
+                    {
+                        "description": "PartnerBank payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PartnerBankRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/staff": {
             "get": {
                 "description": "Admin get all staff",
@@ -840,6 +883,133 @@ const docTemplate = `{
                 }
             }
         },
+        "/partner-bank/": {
+            "get": {
+                "description": "get list partner banks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Partner bank"
+                ],
+                "summary": "Partner bank",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_DebtReminderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/partner-bank/get-account-information": {
+            "post": {
+                "description": "Get account name in our bank by account number from external bank",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Partner bank"
+                ],
+                "summary": "Get account name",
+                "parameters": [
+                    {
+                        "description": "PartnerBank payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.AccountNumberInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_AccountNumberInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/partner-bank/get-external-account-name": {
+            "post": {
+                "description": "Get external account name by account number from external bank",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Partner bank"
+                ],
+                "summary": "Get external account name",
+                "parameters": [
+                    {
+                        "description": "PartnerBank payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GetExternalAccountNameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/staff/add-amount": {
             "post": {
                 "description": "Add amount to account",
@@ -1063,6 +1233,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/transaction/external-transfer": {
+            "post": {
+                "description": "Verify OTP and transaction from internal account to external account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "External transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-entity_Transaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/transaction/internal-transfer": {
             "post": {
                 "description": "Verify OTP and transaction from internal account to internal account",
@@ -1136,6 +1352,52 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/pre-external-transfer": {
+            "post": {
+                "description": "Pre Transaction from internal account to external account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction"
+                ],
+                "summary": "External transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.PreExternalTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-string"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1523,6 +1785,26 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-array_model_DebtReminderResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DebtReminderResponse"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse": {
             "type": "object",
             "properties": {
@@ -1602,6 +1884,23 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "type": "integer"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "httpcommon.HttpResponse-model_AccountNumberInfoResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.AccountNumberInfoResponse"
                 },
                 "errors": {
                     "type": "array",
@@ -1696,6 +1995,28 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "model.AccountNumberInfoRequest": {
+            "type": "object",
+            "properties": {
+                "desAccountNumber": {
+                    "type": "string"
+                },
+                "srcBankCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.AccountNumberInfoResponse": {
+            "type": "object",
+            "properties": {
+                "desAccountName": {
+                    "type": "string"
+                },
+                "desAccountNumber": {
+                    "type": "string"
                 }
             }
         },
@@ -1832,6 +2153,17 @@ const docTemplate = `{
                 }
             }
         },
+        "model.GetExternalAccountNameRequest": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "bankId": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.GetTransactionsByCustomerResponse": {
             "type": "object",
             "properties": {
@@ -1912,6 +2244,32 @@ const docTemplate = `{
                 }
             }
         },
+        "model.PartnerBankRequest": {
+            "type": "object",
+            "properties": {
+                "bankCode": {
+                    "type": "string"
+                },
+                "bankName": {
+                    "type": "string"
+                },
+                "logoUrl": {
+                    "type": "string"
+                },
+                "publicKey": {
+                    "type": "string"
+                },
+                "researchApi": {
+                    "type": "string"
+                },
+                "shortName": {
+                    "type": "string"
+                },
+                "transferApi": {
+                    "type": "string"
+                }
+            }
+        },
         "model.PreDebtTransferRequest": {
             "type": "object",
             "required": [
@@ -1919,6 +2277,42 @@ const docTemplate = `{
             ],
             "properties": {
                 "transactionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.PreExternalTransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "description",
+                "isSourceFee",
+                "partnerBankId",
+                "sourceAccountNumber",
+                "targetAccountNumber",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "description": {
+                    "type": "string"
+                },
+                "isSourceFee": {
+                    "type": "boolean"
+                },
+                "partnerBankId": {
+                    "type": "integer"
+                },
+                "sourceAccountNumber": {
+                    "type": "string"
+                },
+                "targetAccountNumber": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

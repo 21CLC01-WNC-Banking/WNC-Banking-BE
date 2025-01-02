@@ -15,3 +15,13 @@ type AccountResponse struct {
 	Account *entity.Account `json:"account" binding:"required"`
 	Name    string          `json:"name" binding:"required"`
 }
+
+type AccountNumberInfoRequest struct {
+	SrcBankCode      string `json:"srcBankCode"`
+	DesAccountNumber string `json:"desAccountNumber"`
+}
+
+type AccountNumberInfoResponse struct {
+	DesAccountNumber string `json:"desAccountNumber"`
+	DesAccountName   string `json:"desAccountName"`
+}

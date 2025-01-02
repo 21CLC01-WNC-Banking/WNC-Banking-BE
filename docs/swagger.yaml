@@ -165,6 +165,19 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-array_model_DebtReminderResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.DebtReminderResponse'
+        type: array
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse:
     properties:
       data:
@@ -217,6 +230,17 @@ definitions:
     properties:
       data:
         type: integer
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
+  httpcommon.HttpResponse-model_AccountNumberInfoResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.AccountNumberInfoResponse'
       errors:
         items:
           $ref: '#/definitions/httpcommon.Error'
@@ -278,6 +302,20 @@ definitions:
         type: array
       success:
         type: boolean
+    type: object
+  model.AccountNumberInfoRequest:
+    properties:
+      desAccountNumber:
+        type: string
+      srcBankCode:
+        type: string
+    type: object
+  model.AccountNumberInfoResponse:
+    properties:
+      desAccountName:
+        type: string
+      desAccountNumber:
+        type: string
     type: object
   model.AccountResponse:
     properties:
@@ -369,6 +407,13 @@ definitions:
       name:
         type: string
     type: object
+  model.GetExternalAccountNameRequest:
+    properties:
+      accountNumber:
+        type: string
+      bankId:
+        type: integer
+    type: object
   model.GetTransactionsByCustomerResponse:
     properties:
       customerName:
@@ -423,12 +468,55 @@ definitions:
       title:
         type: string
     type: object
+  model.PartnerBankRequest:
+    properties:
+      bankCode:
+        type: string
+      bankName:
+        type: string
+      logoUrl:
+        type: string
+      publicKey:
+        type: string
+      researchApi:
+        type: string
+      shortName:
+        type: string
+      transferApi:
+        type: string
+    type: object
   model.PreDebtTransferRequest:
     properties:
       transactionId:
         type: string
     required:
     - transactionId
+    type: object
+  model.PreExternalTransferRequest:
+    properties:
+      amount:
+        minimum: 0
+        type: integer
+      description:
+        type: string
+      isSourceFee:
+        type: boolean
+      partnerBankId:
+        type: integer
+      sourceAccountNumber:
+        type: string
+      targetAccountNumber:
+        type: string
+      type:
+        type: string
+    required:
+    - amount
+    - description
+    - isSourceFee
+    - partnerBankId
+    - sourceAccountNumber
+    - targetAccountNumber
+    - type
     type: object
   model.PreInternalTransferRequest:
     properties:
@@ -615,6 +703,34 @@ paths:
       summary: Get Customer Name by Account Number
       tags:
       - Accounts
+  /admin/partner-bank:
+    post:
+      consumes:
+      - application/json
+      description: Add a partner bank
+      parameters:
+      - description: PartnerBank payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PartnerBankRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Add Partner Bank
+      tags:
+      - Admins
   /admin/staff:
     get:
       description: Admin get all staff
@@ -1117,6 +1233,89 @@ paths:
       summary: Get Transaction By Id
       tags:
       - Customer
+  /partner-bank/:
+    get:
+      consumes:
+      - application/json
+      description: get list partner banks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-array_model_DebtReminderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Partner bank
+      tags:
+      - Partner bank
+  /partner-bank/get-account-information:
+    post:
+      consumes:
+      - application/json
+      description: Get account name in our bank by account number from external bank
+      parameters:
+      - description: PartnerBank payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.AccountNumberInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-model_AccountNumberInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get account name
+      tags:
+      - Partner bank
+  /partner-bank/get-external-account-name:
+    post:
+      consumes:
+      - application/json
+      description: Get external account name by account number from external bank
+      parameters:
+      - description: PartnerBank payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.GetExternalAccountNameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get external account name
+      tags:
+      - Partner bank
   /staff/add-amount:
     post:
       consumes:
@@ -1263,6 +1462,36 @@ paths:
       summary: Debt reminder
       tags:
       - Transaction
+  /transaction/external-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP and transaction from internal account to external account
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-entity_Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: External transaction
+      tags:
+      - Transaction
   /transaction/internal-transfer:
     post:
       consumes:
@@ -1319,6 +1548,36 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Debt transaction
+      tags:
+      - Transaction
+  /transaction/pre-external-transfer:
+    post:
+      consumes:
+      - application/json
+      description: Pre Transaction from internal account to external account
+      parameters:
+      - description: Transaction payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.PreExternalTransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: External transaction
       tags:
       - Transaction
   /transaction/pre-internal-transfer:
