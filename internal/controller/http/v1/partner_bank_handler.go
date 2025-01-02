@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -69,7 +70,7 @@ func (handler *PartnerBankHandler) GetAccountNumberInfo(c *gin.Context) {
 // @Accept json
 // @Produce  json
 // @Router /partner-bank/ [GET]
-// @Success 200 {object} httpcommon.HttpResponse[[]model.DebtReminderResponse]
+// @Success 200 {object} httpcommon.HttpResponse[[]entity.PartnerBank]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *PartnerBankHandler) GetListPartnerBank(c *gin.Context) {
@@ -128,5 +129,25 @@ func (handler *PartnerBankHandler) ReceiveExternalTransfer(c *gin.Context) {
 		return
 	}
 	//encode response
-	c.AbortWithStatus(200)
+	responseString := "transfer success"
+	var res string
+	middlewareType, _ := c.Get("middlewareType")
+	if middlewareType == "RSA" {
+		res, err = middleware.SignWithRSAPrivateKey(responseString)
+	} else {
+		res = ""
+	}
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+				Code:    httpcommon.ErrorResponseCode.InternalServerError,
+				Field:   "",
+			}))
+		return
+	}
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[model.ExternalTransferResponse](&model.ExternalTransferResponse{
+		Data:       responseString,
+		SignedData: res,
+	}))
 }

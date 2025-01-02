@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
@@ -41,6 +42,29 @@ func loadPrivateKey() (*rsa.PrivateKey, error) {
 		return nil, errors.New("failed to parse private key")
 	}
 	return key, nil
+}
+
+func SignWithRSAPrivateKey(data string) (string, error) {
+	privateKey, err := loadPrivateKey()
+	if err != nil {
+		return "", err
+	}
+	// Hash the data using SHA-256
+	hasher := sha256.New()
+	_, err = hasher.Write([]byte(data))
+	if err != nil {
+		return "", errors.New("failed to hash data")
+	}
+	hashed := hasher.Sum(nil)
+
+	// Sign the hashed data using RSA and PKCS1v15
+	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed)
+	if err != nil {
+		return "", errors.New("failed to sign data")
+	}
+
+	// Return the signature as a base64 encoded string
+	return base64.StdEncoding.EncodeToString(signature), nil
 }
 
 func loadPublicKey(pemKey string) (*rsa.PublicKey, error) {
@@ -214,6 +238,7 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 	}
 	c.Set("partnerBankId", partnerBank.ID)
 	c.Set("request", transactionRequest)
+	c.Set("middlewareType", "RSA")
 	c.Next()
 	return
 }
