@@ -55,6 +55,31 @@ definitions:
       userId:
         type: integer
     type: object
+  entity.PartnerBank:
+    properties:
+      bankCode:
+        type: string
+      bankName:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: integer
+      logoUrl:
+        type: string
+      publicKey:
+        type: string
+      researchApi:
+        type: string
+      shortName:
+        type: string
+      transferApi:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   entity.Transaction:
     properties:
       amount:
@@ -139,6 +164,19 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-array_entity_PartnerBank:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/entity.PartnerBank'
+        type: array
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-array_entity_Transaction:
     properties:
       data:
@@ -157,19 +195,6 @@ definitions:
       data:
         items:
           $ref: '#/definitions/entity.User'
-        type: array
-      errors:
-        items:
-          $ref: '#/definitions/httpcommon.Error'
-        type: array
-      success:
-        type: boolean
-    type: object
-  httpcommon.HttpResponse-array_model_DebtReminderResponse:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/model.DebtReminderResponse'
         type: array
       errors:
         items:
@@ -703,6 +728,36 @@ paths:
       summary: Get Customer Name by Account Number
       tags:
       - Accounts
+  /account/get-external-account-name:
+    post:
+      consumes:
+      - application/json
+      description: Get external account name by account number from external bank
+      parameters:
+      - description: PartnerBank payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.GetExternalAccountNameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get external account name
+      tags:
+      - Account
   /admin/partner-bank:
     post:
       consumes:
@@ -1244,7 +1299,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-array_model_DebtReminderResponse'
+            $ref: '#/definitions/httpcommon.HttpResponse-array_entity_PartnerBank'
         "400":
           description: Bad Request
           schema:
@@ -1284,36 +1339,6 @@ paths:
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-any'
       summary: Get account name
-      tags:
-      - Partner bank
-  /partner-bank/get-external-account-name:
-    post:
-      consumes:
-      - application/json
-      description: Get external account name by account number from external bank
-      parameters:
-      - description: PartnerBank payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/model.GetExternalAccountNameRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-string'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/httpcommon.HttpResponse-any'
-      summary: Get external account name
       tags:
       - Partner bank
   /staff/add-amount:

@@ -72,11 +72,21 @@ func (service *SavedReceiverService) GetAllReceivers(ctx *gin.Context) (*[]model
 	}
 	var response []model.SavedReceiverResponse
 	for _, receiver := range *savedReceivers {
-		response = append(response, model.SavedReceiverResponse{
-			ID:                    receiver.ID,
-			ReceiverAccountNumber: receiver.ReceiverAccountNumber,
-			ReceiverNickname:      receiver.ReceiverNickname,
-		})
+		if receiver.BankId == nil {
+			response = append(response, model.SavedReceiverResponse{
+				ID:                    receiver.ID,
+				ReceiverAccountNumber: receiver.ReceiverAccountNumber,
+				ReceiverNickname:      receiver.ReceiverNickname,
+			})
+		} else {
+			response = append(response, model.SavedReceiverResponse{
+				ID:                    receiver.ID,
+				ReceiverAccountNumber: receiver.ReceiverAccountNumber,
+				ReceiverNickname:      receiver.ReceiverNickname,
+				BankId:                receiver.BankId,
+			})
+		}
+
 	}
 
 	return &response, nil
