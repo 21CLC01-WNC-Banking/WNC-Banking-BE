@@ -10,4 +10,5 @@ type PartnerBankService interface {
 	AddPartnerBank(c *gin.Context, request model.PartnerBankRequest) error
 	GetPartnerBankByBankCode(c *gin.Context, bankCode string) (*entity.PartnerBank, error)
 	GetListPartnerBank(c *gin.Context) ([]entity.PartnerBank, error)
+	GetBankById(c *gin.Context, bankId int64) (*entity.PartnerBank, error)
 }

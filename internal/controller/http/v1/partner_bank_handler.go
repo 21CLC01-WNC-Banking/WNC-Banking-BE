@@ -69,7 +69,7 @@ func (handler *PartnerBankHandler) GetAccountNumberInfo(c *gin.Context) {
 // @Accept json
 // @Produce  json
 // @Router /partner-bank/ [GET]
-// @Success 200 {object} httpcommon.HttpResponse[[]model.DebtReminderResponse]
+// @Success 200 {object} httpcommon.HttpResponse[[]entity.PartnerBank]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *PartnerBankHandler) GetListPartnerBank(c *gin.Context) {

@@ -13,12 +13,16 @@ import (
 type SavedReceiverService struct {
 	savedReceiverRepository repository.SavedReceiverRepository
 	accountService          service.AccountService
+	partnerBankService      service.PartnerBankService
 }
 
-func NewSavedReceiverService(savedReceiverRepository repository.SavedReceiverRepository, accountService service.AccountService) service.SavedReceiverService {
+func NewSavedReceiverService(savedReceiverRepository repository.SavedReceiverRepository,
+	accountService service.AccountService,
+	partnerBankService service.PartnerBankService) service.SavedReceiverService {
 	return &SavedReceiverService{
 		savedReceiverRepository: savedReceiverRepository,
 		accountService:          accountService,
+		partnerBankService:      partnerBankService,
 	}
 }
 
@@ -72,11 +76,26 @@ func (service *SavedReceiverService) GetAllReceivers(ctx *gin.Context) (*[]model
 	}
 	var response []model.SavedReceiverResponse
 	for _, receiver := range *savedReceivers {
-		response = append(response, model.SavedReceiverResponse{
-			ID:                    receiver.ID,
-			ReceiverAccountNumber: receiver.ReceiverAccountNumber,
-			ReceiverNickname:      receiver.ReceiverNickname,
-		})
+		if receiver.BankId == nil {
+			response = append(response, model.SavedReceiverResponse{
+				ID:                    receiver.ID,
+				ReceiverAccountNumber: receiver.ReceiverAccountNumber,
+				ReceiverNickname:      receiver.ReceiverNickname,
+			})
+		} else {
+			partnerBank, err := service.partnerBankService.GetBankById(ctx, *receiver.BankId)
+			if err != nil {
+				return nil, err
+			}
+			response = append(response, model.SavedReceiverResponse{
+				ID:                    receiver.ID,
+				ReceiverAccountNumber: receiver.ReceiverAccountNumber,
+				ReceiverNickname:      receiver.ReceiverNickname,
+				BankId:                receiver.BankId,
+				BankShortName:         partnerBank.ShortName,
+			})
+		}
+
 	}
 
 	return &response, nil
