@@ -47,3 +47,14 @@ func (repo *PartnerBankRepository) GetListBank(ctx context.Context) ([]entity.Pa
 	}
 	return partnerBanks, nil
 }
+
+func (repo *PartnerBankRepository) GetBankById(ctx context.Context, bankId int64) (*entity.PartnerBank, error) {
+	query := `SELECT id,bank_code,bank_name,short_name,logo_url,research_api,transfer_api,public_key
+				FROM partner_banks WHERE id=?`
+	var partnerBank entity.PartnerBank
+	err := repo.db.QueryRowxContext(ctx, query, bankId).StructScan(&partnerBank)
+	if err != nil {
+		return nil, err
+	}
+	return &partnerBank, nil
+}

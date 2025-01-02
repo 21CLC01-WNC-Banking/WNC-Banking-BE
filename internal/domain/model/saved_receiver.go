@@ -11,6 +11,7 @@ type SavedReceiverResponse struct {
 	ReceiverAccountNumber string `json:"receiverAccountNumber" binding:"required"`
 	ReceiverNickname      string `json:"receiverNickname" binding:"required"`
 	BankId                *int64 `json:"bankId"`
+	BankShortName         string `json:"bankShortName"`
 }
 
 type UpdateReceiverRequest struct {

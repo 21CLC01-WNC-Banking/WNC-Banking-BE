@@ -49,3 +49,14 @@ func (service *PartnerBankService) GetPartnerBankByBankCode(c *gin.Context, bank
 func (service *PartnerBankService) GetListPartnerBank(c *gin.Context) ([]entity.PartnerBank, error) {
 	return service.partnerBankRepo.GetListBank(c)
 }
+
+func (service *PartnerBankService) GetBankById(c *gin.Context, bankId int64) (*entity.PartnerBank, error) {
+	partnerBank, err := service.partnerBankRepo.GetBankById(c, bankId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("partner bank not found")
+		}
+		return nil, err
+	}
+	return partnerBank, nil
+}
