@@ -857,6 +857,133 @@ const docTemplate = `{
                 }
             }
         },
+        "/partner-bank/": {
+            "get": {
+                "description": "get list partner banks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Partner bank"
+                ],
+                "summary": "Partner bank",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_DebtReminderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/partner-bank/get-account-information": {
+            "post": {
+                "description": "Get account name in our bank by account number from external bank",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Partner bank"
+                ],
+                "summary": "Get account name",
+                "parameters": [
+                    {
+                        "description": "PartnerBank payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.AccountNumberInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_AccountNumberInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
+        "/partner-bank/get-external-account-name": {
+            "post": {
+                "description": "Get external account name by account number from external bank",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Partner bank"
+                ],
+                "summary": "Get external account name",
+                "parameters": [
+                    {
+                        "description": "PartnerBank payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GetExternalAccountNameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/staff/add-amount": {
             "post": {
                 "description": "Add amount to account",
@@ -1540,6 +1667,26 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-array_model_DebtReminderResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.DebtReminderResponse"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-array_model_GetTransactionsByCustomerResponse": {
             "type": "object",
             "properties": {
@@ -1619,6 +1766,23 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "type": "integer"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "httpcommon.HttpResponse-model_AccountNumberInfoResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.AccountNumberInfoResponse"
                 },
                 "errors": {
                     "type": "array",
@@ -1713,6 +1877,28 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "model.AccountNumberInfoRequest": {
+            "type": "object",
+            "properties": {
+                "desAccountNumber": {
+                    "type": "string"
+                },
+                "srcBankCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.AccountNumberInfoResponse": {
+            "type": "object",
+            "properties": {
+                "desAccountName": {
+                    "type": "string"
+                },
+                "desAccountNumber": {
+                    "type": "string"
                 }
             }
         },
@@ -1849,6 +2035,17 @@ const docTemplate = `{
                 }
             }
         },
+        "model.GetExternalAccountNameRequest": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "bankId": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.GetTransactionsByCustomerResponse": {
             "type": "object",
             "properties": {
@@ -1939,6 +2136,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logoUrl": {
+                    "type": "string"
+                },
+                "publicKey": {
                     "type": "string"
                 },
                 "researchApi": {

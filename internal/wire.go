@@ -36,6 +36,7 @@ var handlerSet = wire.NewSet(
 	v1.NewSavedReceiverHandler,
 	v1.NewCustomerHandler,
 	v1.NewAdminHandler,
+	v1.NewPartnerBankHandler,
 )
 
 var serviceSet = wire.NewSet(
@@ -66,6 +67,8 @@ var repositorySet = wire.NewSet(
 
 var middlewareSet = wire.NewSet(
 	middleware.NewAuthMiddleware,
+	middleware.NewExternalSearchMiddleware,
+	middleware.NewRSAMiddleware,
 )
 var beanSet = wire.NewSet(
 	beanimplement.NewBcryptPasswordEncoder,

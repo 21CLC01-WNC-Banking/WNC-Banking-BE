@@ -196,3 +196,11 @@ func (handler *TransactionHandler) PreDebtTransfer(ctx *gin.Context) {
 	}
 	ctx.AbortWithStatus(200)
 }
+
+func (handler *TransactionHandler) PreExternalTransfer(ctx *gin.Context) {
+	var request model.ExternalTransactionRequest
+	if err := validation.BindJsonAndValidate(ctx, &request); err != nil {
+		return
+	}
+
+}

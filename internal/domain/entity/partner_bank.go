@@ -10,6 +10,7 @@ type PartnerBank struct {
 	LogoUrl     string     `db:"logo_url" json:"logoUrl,omitempty"`
 	ResearchApi string     `db:"research_api" json:"researchApi,omitempty"`
 	TransferApi string     `db:"transfer_api," json:"transferApi,omitempty"`
+	PublicKey   string     `db:"public_key" json:"publicKey,omitempty"`
 	CreatedAt   *time.Time `db:"created_at" json:"createdAt"`
 	UpdatedAt   *time.Time `db:"updated_at" json:"updatedAt"`
 	DeletedAt   *time.Time `db:"deleted_at" json:"deletedAt"`

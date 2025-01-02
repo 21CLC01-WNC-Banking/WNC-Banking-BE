@@ -7,4 +7,10 @@ type PartnerBankRequest struct {
 	LogoUrl     string `json:"logoUrl"`
 	ResearchApi string `json:"researchApi"`
 	TransferApi string `json:"transferApi"`
+	PublicKey   string `json:"publicKey"`
+}
+
+type GetExternalAccountNameRequest struct {
+	BankId        int64  `json:"bankId"`
+	AccountNumber string `json:"accountNumber"`
 }

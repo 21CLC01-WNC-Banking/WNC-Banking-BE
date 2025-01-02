@@ -17,8 +17,8 @@ func NewPartnerBankRepository(db database.Db) repository.PartnerBankRepository {
 }
 
 func (repo *PartnerBankRepository) CreateCommand(ctx context.Context, partnerBank *entity.PartnerBank) error {
-	insertQuery := `INSERT INTO partner_banks(bank_code,bank_name,short_name,logo_url,research_api,transfer_api)
-				VALUES (:bank_code,:bank_name,:short_name,:logo_url,:research_api,:transfer_api)`
+	insertQuery := `INSERT INTO partner_banks(bank_code,bank_name,short_name,logo_url,research_api,transfer_api,public_key)
+				VALUES (:bank_code,:bank_name,:short_name,:logo_url,:research_api,:transfer_api,:public_key)`
 	_, err := repo.db.NamedExecContext(ctx, insertQuery, partnerBank)
 	if err != nil {
 		return err
@@ -27,7 +27,7 @@ func (repo *PartnerBankRepository) CreateCommand(ctx context.Context, partnerBan
 }
 
 func (repo *PartnerBankRepository) GetOneByBankCode(ctx context.Context, bankCode string) (*entity.PartnerBank, error) {
-	query := `SELECT id,bank_code,bank_name,short_name,logo_url,research_api,transfer_api
+	query := `SELECT id,bank_code,bank_name,short_name,logo_url,research_api,transfer_api,public_key
 				FROM partner_banks WHERE bank_code=?`
 	var partnerBank entity.PartnerBank
 	err := repo.db.QueryRowxContext(ctx, query, bankCode).StructScan(&partnerBank)
@@ -35,4 +35,15 @@ func (repo *PartnerBankRepository) GetOneByBankCode(ctx context.Context, bankCod
 		return nil, err
 	}
 	return &partnerBank, nil
+}
+
+func (repo *PartnerBankRepository) GetListBank(ctx context.Context) ([]entity.PartnerBank, error) {
+	query := `SELECT id, bank_code,bank_name,short_name,logo_url
+				FROM partner_banks`
+	var partnerBanks []entity.PartnerBank
+	err := repo.db.SelectContext(ctx, &partnerBanks, query)
+	if err != nil {
+		return nil, err
+	}
+	return partnerBanks, nil
 }

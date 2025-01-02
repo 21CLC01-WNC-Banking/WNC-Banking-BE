@@ -17,4 +17,5 @@ type TransactionService interface {
 	GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error)
 	GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error)
 	PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error
+	ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalTransactionRequest, partnerBankId int64) error
 }

@@ -13,15 +13,18 @@ import (
 )
 
 type Server struct {
-	authHandler          *v1.AuthHandler
-	coreHandler          *v1.CoreHandler
-	accountHandler       *v1.AccountHandler
-	staffHandler         *v1.StaffHandler
-	authMiddleware       *middleware.AuthMiddleware
-	transactionHandler   *v1.TransactionHandler
-	savedReceiverHandler *v1.SavedReceiverHandler
-	customerHandler      *v1.CustomerHandler
-	adminHandler         *v1.AdminHandler
+	authHandler              *v1.AuthHandler
+	coreHandler              *v1.CoreHandler
+	accountHandler           *v1.AccountHandler
+	staffHandler             *v1.StaffHandler
+	authMiddleware           *middleware.AuthMiddleware
+	transactionHandler       *v1.TransactionHandler
+	savedReceiverHandler     *v1.SavedReceiverHandler
+	customerHandler          *v1.CustomerHandler
+	adminHandler             *v1.AdminHandler
+	partnerBankHandler       *v1.PartnerBankHandler
+	externalSearchMiddleware *middleware.ExternalSearchMiddleware
+	rsaMiddleware            *middleware.RSAMiddleware
 }
 
 func NewServer(authHandler *v1.AuthHandler,
@@ -33,17 +36,23 @@ func NewServer(authHandler *v1.AuthHandler,
 	savedReceiverHandler *v1.SavedReceiverHandler,
 	customerHandler *v1.CustomerHandler,
 	adminHandler *v1.AdminHandler,
+	partnerBankHandler *v1.PartnerBankHandler,
+	externalSearchMiddleware *middleware.ExternalSearchMiddleware,
+	rsaMiddleware *middleware.RSAMiddleware,
 ) *Server {
 	return &Server{
-		authHandler:          authHandler,
-		authMiddleware:       authMiddleware,
-		coreHandler:          coreHandler,
-		accountHandler:       accountHandler,
-		staffHandler:         staffHandler,
-		transactionHandler:   transactionHandler,
-		savedReceiverHandler: savedReceiverHandler,
-		customerHandler:      customerHandler,
-		adminHandler:         adminHandler,
+		authHandler:              authHandler,
+		authMiddleware:           authMiddleware,
+		coreHandler:              coreHandler,
+		accountHandler:           accountHandler,
+		staffHandler:             staffHandler,
+		transactionHandler:       transactionHandler,
+		savedReceiverHandler:     savedReceiverHandler,
+		customerHandler:          customerHandler,
+		adminHandler:             adminHandler,
+		partnerBankHandler:       partnerBankHandler,
+		externalSearchMiddleware: externalSearchMiddleware,
+		rsaMiddleware:            rsaMiddleware,
 	}
 }
 
@@ -55,7 +64,7 @@ func (s *Server) Run() {
 		Handler: router,
 	}
 
-	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler, s.savedReceiverHandler, s.customerHandler, s.adminHandler)
+	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler, s.savedReceiverHandler, s.customerHandler, s.adminHandler, s.partnerBankHandler, s.externalSearchMiddleware, s.rsaMiddleware)
 	err := httpServerInstance.ListenAndServe()
 	if err != nil {
 		return

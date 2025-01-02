@@ -26,6 +26,7 @@ func (service *PartnerBankService) AddPartnerBank(c *gin.Context, request model.
 		LogoUrl:     request.LogoUrl,
 		ResearchApi: request.ResearchApi,
 		TransferApi: request.TransferApi,
+		PublicKey:   request.PublicKey,
 	}
 	err := service.partnerBankRepo.CreateCommand(c, partnerBank)
 	if err != nil {
@@ -43,4 +44,8 @@ func (service *PartnerBankService) GetPartnerBankByBankCode(c *gin.Context, bank
 		return nil, err
 	}
 	return partnerBank, nil
+}
+
+func (service *PartnerBankService) GetListPartnerBank(c *gin.Context) ([]entity.PartnerBank, error) {
+	return service.partnerBankRepo.GetListBank(c)
 }

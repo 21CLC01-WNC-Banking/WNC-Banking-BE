@@ -556,3 +556,112 @@ func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq
 	}
 	return nil
 }
+
+func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalTransactionRequest, partnerBankId int64) error {
+	//update to DB
+	//balance for target account
+	newTargetBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, transferReq.Amount, transferReq.DesAccountNumber)
+	if err != nil {
+		return err
+	}
+	transaction := &entity.Transaction{
+		SourceAccountNumber: transferReq.SrcAccountNumber,
+		TargetAccountNumber: transferReq.DesAccountNumber,
+		Amount:              transferReq.Amount,
+		BankId:              &partnerBankId,
+		Type:                "external",
+		Description:         transferReq.Description,
+		Status:              "success",
+		IsSourceFee:         transferReq.IsSourceFee,
+		SourceBalance:       0,
+		TargetBalance:       newTargetBalance,
+	}
+	//save transaction
+	_, err = service.transactionRepository.CreateCommand(ctx, transaction)
+	if err != nil {
+		return err
+	}
+	//check notify
+	//find user by desAccountNumber -> notify
+	return nil
+}
+
+func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transferReq model.PreExternalTransferRequest) (string, error) {
+	//check input account number
+	if transferReq.SourceAccountNumber == transferReq.TargetAccountNumber {
+		return "", errors.New("source account number can not equal to target account number")
+	}
+	//get customer
+	customerId := middleware.GetUserIdHelper(ctx)
+	//check customerId
+	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return "", errors.New("customer not found")
+		}
+		return "", err
+	}
+	//get account by customerId and check sourceNumber is internal
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.Id)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return "", errors.New("source account not found")
+		}
+		return "", err
+	}
+	if sourceAccount.Number != transferReq.SourceAccountNumber {
+		return "", errors.New("source account not match")
+	}
+
+	//check targetNumber is in partner bank
+	/*
+		here...
+	*/
+	//estimate fee
+	fee, err := service.coreService.EstimateTransferFee(ctx, transferReq.Amount)
+	if err != nil {
+		return "", err
+	}
+
+	//check is source fee and change balance
+	checkFee := *transferReq.IsSourceFee
+	if checkFee {
+		totalDeduction := transferReq.Amount + fee
+		if *sourceAccount.Balance < totalDeduction {
+			return "", errors.New("insufficient balance in source account")
+		}
+		*sourceAccount.Balance = -(totalDeduction)
+	} else {
+		if *sourceAccount.Balance < transferReq.Amount {
+			return "", errors.New("insufficient balance in source account")
+		}
+		*sourceAccount.Balance = -(transferReq.Amount)
+	}
+
+	//store transaction
+	transaction := &entity.Transaction{
+		SourceAccountNumber: sourceAccount.Number,
+		TargetAccountNumber: transferReq.TargetAccountNumber,
+		Amount:              transferReq.Amount,
+		BankId:              &transferReq.PartnerBankId,
+		Type:                transferReq.Type,
+		Description:         transferReq.Description,
+		Status:              "pending",
+		IsSourceFee:         transferReq.IsSourceFee,
+		SourceBalance:       *sourceAccount.Balance,
+		TargetBalance:       0,
+	}
+
+	//save transaction
+	transactionId, err := service.transactionRepository.CreateCommand(ctx, transaction)
+	if err != nil {
+		return "", err
+	}
+
+	//send OTP
+	err = service.SendOTPToEmail(ctx, sourceCustomer.Email, transactionId)
+	if err != nil {
+		return "", err
+	}
+	return transactionId, nil
+}
