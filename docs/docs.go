@@ -76,6 +76,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/account/get-external-account-name": {
+            "post": {
+                "description": "Get external account name by account number from external bank",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Get external account name",
+                "parameters": [
+                    {
+                        "description": "PartnerBank payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GetExternalAccountNameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/partner-bank": {
             "post": {
                 "description": "Add a partner bank",
@@ -900,7 +946,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-array_model_DebtReminderResponse"
+                            "$ref": "#/definitions/httpcommon.HttpResponse-array_entity_PartnerBank"
                         }
                     },
                     "400": {
@@ -947,52 +993,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/httpcommon.HttpResponse-model_AccountNumberInfoResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
-                        }
-                    }
-                }
-            }
-        },
-        "/partner-bank/get-external-account-name": {
-            "post": {
-                "description": "Get external account name by account number from external bank",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Partner bank"
-                ],
-                "summary": "Get external account name",
-                "parameters": [
-                    {
-                        "description": "PartnerBank payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.GetExternalAccountNameRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/httpcommon.HttpResponse-string"
                         }
                     },
                     "400": {
@@ -1617,6 +1617,44 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.PartnerBank": {
+            "type": "object",
+            "properties": {
+                "bankCode": {
+                    "type": "string"
+                },
+                "bankName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "logoUrl": {
+                    "type": "string"
+                },
+                "publicKey": {
+                    "type": "string"
+                },
+                "researchApi": {
+                    "type": "string"
+                },
+                "shortName": {
+                    "type": "string"
+                },
+                "transferApi": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.Transaction": {
             "type": "object",
             "properties": {
@@ -1745,6 +1783,26 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-array_entity_PartnerBank": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.PartnerBank"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-array_entity_Transaction": {
             "type": "object",
             "properties": {
@@ -1772,26 +1830,6 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.User"
-                    }
-                },
-                "errors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/httpcommon.Error"
-                    }
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "httpcommon.HttpResponse-array_model_DebtReminderResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.DebtReminderResponse"
                     }
                 },
                 "errors": {
@@ -2400,6 +2438,12 @@ const docTemplate = `{
                 "receiverNickname"
             ],
             "properties": {
+                "bankId": {
+                    "type": "integer"
+                },
+                "bankShortName": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
