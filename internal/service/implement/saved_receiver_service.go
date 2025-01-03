@@ -39,23 +39,42 @@ func (service *SavedReceiverService) AddReceiver(ctx *gin.Context, receiver mode
 	if account.Number == receiver.ReceiverAccountNumber {
 		return errors.New("cannot add yourself as receiver")
 	}
+	if receiver.BankId != nil {
+		exists, err = service.existsByAccountNumberAndBankID(ctx, receiver.ReceiverAccountNumber, receiver.BankId)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return errors.New("receiver already exists")
+		}
 
-	exists, err = service.existsByAccountNumberAndBankID(ctx, receiver.ReceiverAccountNumber, nil)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return errors.New("receiver already exists")
-	}
+		err = service.savedReceiverRepository.CreateCommand(ctx, &entity.SavedReceiver{
+			CustomerId:            userId.(int64),
+			ReceiverAccountNumber: receiver.ReceiverAccountNumber,
+			ReceiverNickname:      receiver.ReceiverNickname,
+			BankId:                receiver.BankId,
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		exists, err = service.existsByAccountNumberAndBankID(ctx, receiver.ReceiverAccountNumber, nil)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return errors.New("receiver already exists")
+		}
 
-	err = service.savedReceiverRepository.CreateCommand(ctx, &entity.SavedReceiver{
-		CustomerId:            userId.(int64),
-		ReceiverAccountNumber: receiver.ReceiverAccountNumber,
-		ReceiverNickname:      receiver.ReceiverNickname,
-		BankId:                nil,
-	})
-	if err != nil {
-		return err
+		err = service.savedReceiverRepository.CreateCommand(ctx, &entity.SavedReceiver{
+			CustomerId:            userId.(int64),
+			ReceiverAccountNumber: receiver.ReceiverAccountNumber,
+			ReceiverNickname:      receiver.ReceiverNickname,
+			BankId:                nil,
+		})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
