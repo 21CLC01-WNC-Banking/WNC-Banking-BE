@@ -31,6 +31,21 @@ func GenerateToken(duration time.Duration, secretKey string, payload interface{}
 	return signedToken, nil
 }
 
+func GenerateTokenByClaims(claim TokenClaims, secretKey string) (string, error) {
+	claims := jwt.MapClaims{
+		"exp":     claim.ExpiresAt, // Set the expiration time
+		"iat":     claim.IssuedAt,  // Set the issued at time
+		"payload": claim.Payload,   // Include the custom payload
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedToken, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
+}
+
 func VerifyToken(tokenString, secretKey string) (*TokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

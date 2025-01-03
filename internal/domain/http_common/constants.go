@@ -9,6 +9,7 @@ type errorResponseCode struct {
 	InvalidUserInfo     string
 	Unauthorized        string
 	Forbidden           string
+	TimeoutRequest      string
 }
 
 var ErrorResponseCode = errorResponseCode{
@@ -20,6 +21,7 @@ var ErrorResponseCode = errorResponseCode{
 	InvalidUserInfo:     "INVALID_USER_INFO",
 	Unauthorized:        "UNAUTHORIZED",
 	Forbidden:           "FORBIDDEN",
+	TimeoutRequest:      "TIMEOUT_REQUEST",
 }
 
 type customValidationErrCode map[string]string

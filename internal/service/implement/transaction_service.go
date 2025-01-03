@@ -61,6 +61,11 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 		return "", err
 	}
 
+	//check type
+	if transferReq.Type != "internal" {
+		return "", errors.New("invalid transaction type")
+	}
+
 	//estimate fee
 	fee, err := service.coreService.EstimateTransferFee(ctx, transferReq.Amount)
 	if err != nil {
@@ -244,8 +249,7 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 	}
 
 	// notify, response history
-	content, err := service.notificationClient.SaveAndSendHelper(ctx, *notificationForSourceCustomerResp)
-	service.notificationClient.SaveAndSend(ctx, content)
+	service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
 	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
 
 	return existsTransaction, nil
@@ -660,4 +664,221 @@ func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq
 		return err
 	}
 	return nil
+}
+
+func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalTransactionRequest, partnerBankId int64) error {
+	//update to DB
+	//balance for target account
+	newTargetBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, transferReq.Amount, transferReq.DesAccountNumber)
+	if err != nil {
+		return err
+	}
+	transaction := &entity.Transaction{
+		SourceAccountNumber: transferReq.SrcAccountNumber,
+		TargetAccountNumber: transferReq.DesAccountNumber,
+		Amount:              transferReq.Amount,
+		BankId:              &partnerBankId,
+		Type:                "external",
+		Description:         transferReq.Description,
+		Status:              "success",
+		IsSourceFee:         transferReq.IsSourceFee,
+		SourceBalance:       0,
+		TargetBalance:       newTargetBalance,
+	}
+	//save transaction
+	transactionId, err := service.transactionRepository.CreateCommand(ctx, transaction)
+	if err != nil {
+		return err
+	}
+	//check notify
+	//find user by desAccountNumber -> notify
+	existsTransaction, err := service.transactionRepository.GetTransactionByIdQuery(ctx, transactionId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			fmt.Println(err)
+		}
+		fmt.Println(err)
+	}
+
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(targetCustomer.Id),
+		Name:          targetCustomer.Name,
+		Amount:        int(existsTransaction.Amount),
+		TransactionId: existsTransaction.Id,
+		Type:          "incoming_transfer",
+		CreatedAt:     existsTransaction.UpdatedAt,
+	}
+
+	// notify, response history
+	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
+	return nil
+}
+
+func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transferReq model.PreExternalTransferRequest) (string, error) {
+	//check input account number
+	if transferReq.SourceAccountNumber == transferReq.TargetAccountNumber {
+		return "", errors.New("source account number can not equal to target account number")
+	}
+
+	//get customer
+	customerId := middleware.GetUserIdHelper(ctx)
+	//check customerId
+	sourceCustomer, err := service.customerRepository.GetOneByIdQuery(ctx, customerId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return "", errors.New("customer not found")
+		}
+		return "", err
+	}
+
+	//get account by customerId and check sourceNumber is internal
+	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.Id)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return "", errors.New("source account not found")
+		}
+		return "", err
+	}
+	if sourceAccount.Number != transferReq.SourceAccountNumber {
+		return "", errors.New("source account not match")
+	}
+
+	//check targetNumber is in internal bank
+	targetAccount, err := service.accountService.GetAccountByNumber(ctx, transferReq.TargetAccountNumber)
+	if targetAccount != nil {
+		return "", errors.New("target account existed in internal bank")
+	}
+	//check targetNumber is in partner bank
+	/*
+		here...
+	*/
+
+	//check type
+	if transferReq.Type != "external" {
+		return "", errors.New("invalid transaction type")
+	}
+
+	//estimate fee
+	fee, err := service.coreService.EstimateTransferFee(ctx, transferReq.Amount)
+	if err != nil {
+		return "", err
+	}
+
+	//check is source fee and change balance
+	checkFee := *transferReq.IsSourceFee
+	if checkFee {
+		totalDeduction := transferReq.Amount + fee
+		if *sourceAccount.Balance < totalDeduction {
+			return "", errors.New("insufficient balance in source account")
+		}
+		*sourceAccount.Balance = -(totalDeduction)
+	} else {
+		if *sourceAccount.Balance < transferReq.Amount {
+			return "", errors.New("insufficient balance in source account")
+		}
+		*sourceAccount.Balance = -(transferReq.Amount)
+	}
+
+	//store transaction
+	transaction := &entity.Transaction{
+		SourceAccountNumber: sourceAccount.Number,
+		TargetAccountNumber: transferReq.TargetAccountNumber,
+		Amount:              transferReq.Amount,
+		BankId:              &transferReq.PartnerBankId,
+		Type:                transferReq.Type,
+		Description:         transferReq.Description,
+		Status:              "pending",
+		IsSourceFee:         transferReq.IsSourceFee,
+		SourceBalance:       *sourceAccount.Balance,
+		TargetBalance:       0,
+	}
+
+	//save transaction
+	transactionId, err := service.transactionRepository.CreateCommand(ctx, transaction)
+	if err != nil {
+		return "", err
+	}
+
+	//send OTP
+	err = service.SendOTPToEmail(ctx, sourceCustomer.Email, transactionId)
+	if err != nil {
+		return "", err
+	}
+	return transactionId, nil
+}
+
+func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferReq model.TransferRequest) (*entity.Transaction, error) {
+	//get customer and check exists account
+	customerId := middleware.GetUserIdHelper(ctx)
+	existsAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
+	if err != nil {
+		return nil, err
+	}
+
+	//check transaction by account number and transaction id
+	existsTransaction, err := service.transactionRepository.GetTransactionBySourceNumberAndIdQuery(ctx, existsAccount.Number, transferReq.TransactionId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			return nil, errors.New("transaction not found")
+		}
+		return nil, err
+	}
+	//verify OTP
+	err = service.verifyOTP(ctx, transferReq)
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		call api to partner bank to confirm transaction
+	*/
+
+	//update to DB
+	//balance for source
+	fmt.Print(existsAccount.Number)
+	fmt.Print(existsTransaction.SourceAccountNumber)
+	newSourceBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	existsTransaction.Status = "success"
+	existsTransaction.SourceBalance = newSourceBalance
+
+	//transaction
+	err = service.transactionRepository.UpdateBalancesCommand(ctx, existsTransaction)
+	if err != nil {
+		return nil, err
+	}
+	err = service.transactionRepository.UpdateStatusCommand(ctx, existsTransaction)
+	if err != nil {
+		return nil, err
+	}
+	/*
+		notify transfer success
+	*/
+	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.SourceAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(sourceCustomer.Id),
+		Name:          sourceCustomer.Name,
+		Amount:        int(existsTransaction.Amount),
+		TransactionId: existsTransaction.Id,
+		Type:          "outgoing_transfer",
+		CreatedAt:     existsTransaction.UpdatedAt,
+	}
+
+	// notify, response history
+	service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
+
+	// response history
+	return existsTransaction, nil
 }

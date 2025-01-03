@@ -10,4 +10,5 @@ type AuthenticationRepository interface {
 	CreateCommand(ctx context.Context, refreshToken entity.Authentication) error
 	UpdateCommand(ctx context.Context, refreshToken entity.Authentication) error
 	GetOneByCustomerIdQuery(ctx context.Context, customerId int64) (*entity.Authentication, error)
+	DeleteByRefreshToken(ctx context.Context, refreshToken string) error
 }

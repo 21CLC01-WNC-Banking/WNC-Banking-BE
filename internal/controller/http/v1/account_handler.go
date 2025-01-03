@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"net/http"
 
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
@@ -76,4 +77,24 @@ func (handler *AccountHandler) GetAccountByCustomerId(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[model.AccountResponse](&model.AccountResponse{Account: account, Name: customer.Name}))
+}
+
+// @Summary Get external account name
+// @Description Get external account name by account number from external bank
+// @Tags Account
+// @Accept json
+// @Param request body model.GetExternalAccountNameRequest true "PartnerBank payload"
+// @Produce  json
+// @Router /account/get-external-account-name [post]
+// @Success 200 {object} httpcommon.HttpResponse[string]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AccountHandler) GetExternalAccountName(c *gin.Context) {
+	var req model.GetExternalAccountNameRequest
+	err := validation.BindJsonAndValidate(c, &req)
+	if err != nil {
+		return
+	}
+	var name = "FAKE GETNAME"
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&name))
 }

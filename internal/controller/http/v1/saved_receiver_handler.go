@@ -64,7 +64,7 @@ func (handler *SavedReceiverHandler) GetAllReceivers(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[*[]model.SavedReceiverResponse](&savedReceivers))
+	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[[]model.SavedReceiverResponse](savedReceivers))
 }
 
 // RenameReceiver handles the endpoint to rename a saved receiver
