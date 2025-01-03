@@ -583,7 +583,7 @@ func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, tra
 		Description:         transferReq.Description,
 		Status:              "success",
 		IsSourceFee:         transferReq.IsSourceFee,
-		SourceBalance:       0,
+		SourceBalance:       -1,
 		TargetBalance:       newTargetBalance,
 	}
 	//save transaction
@@ -672,7 +672,7 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		Status:              "pending",
 		IsSourceFee:         transferReq.IsSourceFee,
 		SourceBalance:       *sourceAccount.Balance,
-		TargetBalance:       0,
+		TargetBalance:       -1,
 	}
 
 	//save transaction
