@@ -25,8 +25,9 @@ func NewServer() *Server {
 	deviceCons := make(map[int]*DeviceConnection)
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
-			origin := r.Header.Get("Origin")
-			return origin == "http://localhost:3000" || origin == "http://localhost:8080"
+			// origin := r.Header.Get("Origin")
+			// return origin == "http://localhost:3000" || origin == "http://localhost:8080"
+			return true
 		},
 	} // Use default options
 	return &Server{
