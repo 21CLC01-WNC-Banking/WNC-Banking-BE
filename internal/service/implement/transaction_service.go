@@ -546,9 +546,9 @@ func (service *TransactionService) GetSentDebtReminder(ctx *gin.Context) ([]mode
 	return resList, nil
 }
 
-func (service *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error) {
+func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error) {
 	//get account by customerId
-	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
+	sourceAccount, err := s.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
 			return nil, errors.New("source account not found")
@@ -556,7 +556,7 @@ func (service *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context,
 		return nil, err
 	}
 
-	transactions, err := service.transactionRepository.GetTransactionByAccountNumber(ctx, sourceAccount.Number)
+	transactions, err := s.transactionRepository.GetTransactionByAccountNumber(ctx, sourceAccount.Number)
 	if err != nil {
 		return nil, err
 	}
@@ -564,33 +564,15 @@ func (service *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context,
 	transactionResp := make([]model.GetTransactionsResponse, 0)
 
 	for _, transaction := range transactions {
-		var amount int64
-		var balance int64
-		if transaction.TargetAccountNumber == sourceAccount.Number {
-			amount = transaction.Amount
-			balance = transaction.TargetBalance
-		} else {
-			amount = transaction.Amount * -1
-			balance = transaction.SourceBalance
-		}
-		transactionResp = append(transactionResp, model.GetTransactionsResponse{
-			Id:                  transaction.Id,
-			Amount:              amount,
-			CreatedAt:           transaction.CreatedAt,
-			Description:         transaction.Description,
-			Type:                transaction.Type,
-			Balance:             balance,
-			SourceAccountNumber: transaction.SourceAccountNumber,
-			TargetAccountNumber: transaction.TargetAccountNumber,
-		})
+		transactionResp = append(transactionResp, service.TransactionUtils_EntityToResponse(transaction, sourceAccount.Number))
 	}
 
 	return transactionResp, nil
 }
 
-func (service *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
+func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
 	//get account by customerId
-	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
+	sourceAccount, err := s.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
 			return nil, errors.New("source account not found")
@@ -598,32 +580,14 @@ func (service *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Cont
 		return nil, err
 	}
 
-	transaction, err := service.transactionRepository.GetTransactionByAccountNumberAndIdQuery(ctx, sourceAccount.Number, id)
+	transaction, err := s.transactionRepository.GetTransactionByAccountNumberAndIdQuery(ctx, sourceAccount.Number, id)
 	if err != nil {
 		return nil, err
 	}
 
-	var amount int64
-	var balance int64
-	if transaction.TargetAccountNumber == sourceAccount.Number {
-		amount = transaction.Amount
-		balance = transaction.TargetBalance
-	} else {
-		amount = transaction.Amount * -1
-		balance = transaction.SourceBalance
-	}
-	transactionResp := &model.GetTransactionsResponse{
-		Id:                  transaction.Id,
-		Amount:              amount,
-		CreatedAt:           transaction.CreatedAt,
-		Description:         transaction.Description,
-		Type:                transaction.Type,
-		Balance:             balance,
-		SourceAccountNumber: transaction.SourceAccountNumber,
-		TargetAccountNumber: transaction.TargetAccountNumber,
-	}
+	transactionResp := service.TransactionUtils_EntityToResponse(*transaction, sourceAccount.Number)
 
-	return transactionResp, nil
+	return &transactionResp, nil
 }
 
 func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error {
