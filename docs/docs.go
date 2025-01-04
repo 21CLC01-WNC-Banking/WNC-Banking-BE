@@ -124,7 +124,7 @@ const docTemplate = `{
         },
         "/admin/external-transaction": {
             "get": {
-                "description": "Get transactions",
+                "description": "Get external transactions",
                 "consumes": [
                     "application/json"
                 ],
@@ -134,7 +134,7 @@ const docTemplate = `{
                 "tags": [
                     "Admins"
                 ],
-                "summary": "Get transactions",
+                "summary": "Get external transactions",
                 "parameters": [
                     {
                         "type": "string",

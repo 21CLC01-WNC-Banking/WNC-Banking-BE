@@ -53,6 +53,12 @@ func (c *NotificationClient) SaveAndSend(ctx *gin.Context, req interface{}) {
 		fmt.Println(err)
 	}
 
+	message := noti.GenerateContentForTransactionNoti(notiReq)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	// Send notification
-	c.client.SendToDevice(notiReq.DeviceId, noti.GenerateContentForTransactionNoti(notiReq))
+	c.client.SendToDevice(notiReq.DeviceId, string(message))
 }
