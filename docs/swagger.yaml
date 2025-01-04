@@ -760,6 +760,44 @@ paths:
       summary: Get external account name
       tags:
       - Account
+  /admin/external-transaction:
+    get:
+      consumes:
+      - application/json
+      description: Get transactions
+      parameters:
+      - description: yyyy-MM-dd
+        in: query
+        name: fromDate
+        required: true
+        type: string
+      - description: yyyy-MM-dd
+        in: query
+        name: toDate
+        required: true
+        type: string
+      - description: Partner Bank Id
+        in: query
+        name: bankId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-entity_Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Get transactions
+      tags:
+      - Admins
   /admin/partner-bank:
     post:
       consumes:
