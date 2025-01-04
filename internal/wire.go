@@ -11,6 +11,7 @@ import (
 	v1 "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/v1"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/websocket"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	repositoryimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository/implement"
 	serviceimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service/implement"
 	"github.com/google/wire"
@@ -75,10 +76,12 @@ var beanSet = wire.NewSet(
 	beanimplement.NewRedisService,
 	beanimplement.NewMailClient,
 	beanimplement.NewNotificationClient,
+	beanimplement.NewKeyLoader,
 )
 
 func InitializeContainer(
 	db database.Db,
+	path model.KeyPath,
 ) *controller.ApiContainer {
 	wire.Build(serverSet, handlerSet, serviceSet, repositorySet, middlewareSet, beanSet, container)
 	return &controller.ApiContainer{}

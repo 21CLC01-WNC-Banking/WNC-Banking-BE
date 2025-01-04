@@ -14,6 +14,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/v1"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/websocket"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository/implement"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service/implement"
 	"github.com/google/wire"
@@ -21,7 +22,7 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeContainer(db database.Db) *controller.ApiContainer {
+func InitializeContainer(db database.Db, path model.KeyPath) *controller.ApiContainer {
 	customerRepository := repositoryimplement.NewCustomerRepository(db)
 	authenticationRepository := repositoryimplement.NewAuthenticationRepository(db)
 	passwordEncoder := beanimplement.NewBcryptPasswordEncoder()
@@ -56,9 +57,10 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	staffRepository := repositoryimplement.NewStaffRepository(db)
 	adminService := serviceimplement.NewAdminService(staffRepository, passwordEncoder)
 	adminHandler := v1.NewAdminHandler(adminService, partnerBankService)
-	partnerBankHandler := v1.NewPartnerBankHandler(accountService, transactionService, partnerBankService)
 	externalSearchMiddleware := middleware.NewExternalSearchMiddleware(partnerBankService)
-	rsaMiddleware := middleware.NewRSAMiddleware(externalSearchMiddleware, accountService)
+	keyLoader := beanimplement.NewKeyLoader(path)
+	rsaMiddleware := middleware.NewRSAMiddleware(externalSearchMiddleware, accountService, keyLoader)
+	partnerBankHandler := v1.NewPartnerBankHandler(accountService, transactionService, partnerBankService, rsaMiddleware)
 	httpServer := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler, partnerBankHandler, externalSearchMiddleware, rsaMiddleware)
 	apiContainer := controller.NewApiContainer(httpServer, server)
 	return apiContainer
@@ -80,4 +82,4 @@ var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repos
 
 var middlewareSet = wire.NewSet(middleware.NewAuthMiddleware, middleware.NewExternalSearchMiddleware, middleware.NewRSAMiddleware)
 
-var beanSet = wire.NewSet(beanimplement.NewBcryptPasswordEncoder, beanimplement.NewRedisService, beanimplement.NewMailClient, beanimplement.NewNotificationClient)
+var beanSet = wire.NewSet(beanimplement.NewBcryptPasswordEncoder, beanimplement.NewRedisService, beanimplement.NewMailClient, beanimplement.NewNotificationClient, beanimplement.NewKeyLoader)

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"crypto"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
@@ -9,17 +10,17 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
-	"fmt"
+	beanimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean/implement"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/jwt"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
-	"strings"
+	"time"
 )
 
 var rsaSecretKey = os.Getenv("RSA_SECRET_KEY")
@@ -27,15 +28,19 @@ var rsaSecretKey = os.Getenv("RSA_SECRET_KEY")
 type RSAMiddleware struct {
 	externalSearchMiddleware *ExternalSearchMiddleware
 	accountService           service.AccountService
+	keyLoader                *beanimplement.KeyLoader
 }
 
-func NewRSAMiddleware(externalSearchMiddleware *ExternalSearchMiddleware, accountService service.AccountService) *RSAMiddleware {
-	return &RSAMiddleware{externalSearchMiddleware: externalSearchMiddleware, accountService: accountService}
+func NewRSAMiddleware(externalSearchMiddleware *ExternalSearchMiddleware,
+	accountService service.AccountService,
+	keyLoader *beanimplement.KeyLoader) *RSAMiddleware {
+	return &RSAMiddleware{externalSearchMiddleware: externalSearchMiddleware,
+		accountService: accountService,
+		keyLoader:      keyLoader}
 }
 
-func loadPrivateKey() (*rsa.PrivateKey, error) {
-	rsaSecretKey = strings.ReplaceAll(rsaSecretKey, `\n`, "\n")
-	block, _ := pem.Decode([]byte(rsaSecretKey))
+func (middleware *RSAMiddleware) loadRSAPrivateKey() (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(middleware.keyLoader.RSAKey)
 	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		return nil, errors.New("failed to parse private key")
@@ -43,7 +48,7 @@ func loadPrivateKey() (*rsa.PrivateKey, error) {
 	return key, nil
 }
 
-func loadPublicKey(pemKey string) (*rsa.PublicKey, error) {
+func loadRSAPublicKey(pemKey string) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode([]byte(pemKey))
 	key, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
@@ -64,9 +69,26 @@ func (middleware *RSAMiddleware) VerifyAccountNumber(c *gin.Context, accountNumb
 	return nil
 }
 
+func (middleware *RSAMiddleware) SignDataRSA(data string) (string, error) {
+	// Hash the data using SHA256
+	hashed := sha256.Sum256([]byte(data))
+	//get private key
+	privateKey, err := middleware.loadRSAPrivateKey()
+	if err != nil {
+		return "", err
+	}
+	// Sign the hashed data with RSA
+	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed[:])
+	if err != nil {
+		return "", err
+	}
+	// Encode the signature to Base64
+	return base64.StdEncoding.EncodeToString(signature), nil
+}
+
 func (middleware *RSAMiddleware) VerifySignature(partnerBank entity.PartnerBank, data model.ExternalTransactionRequest, signedData string) error {
 	//load public key
-	rsaPublicKey, err := loadPublicKey(partnerBank.PublicKey)
+	rsaPublicKey, err := loadRSAPublicKey(partnerBank.PublicKey)
 	if err != nil {
 		return err
 	}
@@ -78,7 +100,7 @@ func (middleware *RSAMiddleware) VerifySignature(partnerBank entity.PartnerBank,
 	//decode signature
 	signatureBytes, err := base64.StdEncoding.DecodeString(signedData)
 	if err != nil {
-		return fmt.Errorf("failed to decode signature: %v", err)
+		return errors.New("failed to decode signature: %v")
 	}
 	//create hash from data
 	hash := sha256.Sum256(dataBytes)
@@ -87,51 +109,20 @@ func (middleware *RSAMiddleware) VerifySignature(partnerBank entity.PartnerBank,
 }
 
 func (middleware *RSAMiddleware) Verify(c *gin.Context) {
-	//get hashed data in header
-	hashedData := c.GetHeader("hashedData")
-	if hashedData == "" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
-			httpcommon.Error{
-				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
-				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "hashedData",
-			}))
-		return
-	}
-
-	//decode token
-	claim, err := jwt.VerifyToken(hashedData, secretString)
+	//get body
+	var req model.ExternalTransactionData
+	err := validation.BindJsonAndValidate(c, &req)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.TokenExpired {
-			c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
-				httpcommon.Error{
-					Message: "thông tin cũ đã quá hạn",
-					Code:    httpcommon.ErrorResponseCode.TimeoutRequest,
-					Field:   "hashedData",
-				}))
-			return
-		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "hashedData",
+				Field:   "body",
 			}))
 		return
 	}
-	//getPayloadinfo
-	payload, ok := claim.Payload.(map[string]interface{})
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
-			httpcommon.Error{
-				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
-				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "payload",
-			}))
-		return
-	}
-	partnerBankCode := payload["srcBankCode"].(string)
-	partnerBank, err := middleware.externalSearchMiddleware.VerifyPartnerBank(c, partnerBankCode)
+	//check exists bank
+	partnerBank, err := middleware.externalSearchMiddleware.VerifyPartnerBank(c, req.SrcBankCode)
 	if err != nil {
 		if err.Error() == "partner bank not found" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
@@ -143,9 +134,10 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 			return
 		}
 	}
-	//check account number
-	desAccountNumber := payload["desAccountNumber"].(string)
-	err = middleware.VerifyAccountNumber(c, desAccountNumber)
+	//check source account number
+	/* call service to check name */
+	//check target account number
+	err = middleware.VerifyAccountNumber(c, req.DesAccountNumber)
 	if err != nil {
 		if err.Error() == "account not found" {
 			c.AbortWithStatusJSON(http.StatusNotFound, httpcommon.NewErrorResponse(
@@ -157,52 +149,72 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 			return
 		}
 	}
+	//check amount
+	if req.Amount < 1 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: "số tiền chuyển không hợp lệ",
+				Code:    httpcommon.ErrorResponseCode.TimeoutRequest,
+				Field:   "Amount",
+			}))
+		return
+	}
+	//check time
+	if req.Exp.Before(time.Now()) {
+		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: "thông tin cũ đã quá hạn",
+				Code:    httpcommon.ErrorResponseCode.TimeoutRequest,
+				Field:   "Exp",
+			}))
+		return
+	}
 
-	//rehash token
-	var req model.ExternalTransactionData
-	//err = c.ShouldBindJSON(&req)
-	err = validation.BindJsonAndValidate(c, &req)
-	if err != nil {
-		fmt.Print(err.Error())
+	//get hashed data in header
+	hashedData := c.GetHeader("hashedData")
+	if hashedData == "" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "body",
+				Field:   "hashedData",
 			}))
 		return
 	}
-	transactionRequest := model.ExternalTransactionRequest{
+	//check hashed data
+	payloadRequest := model.ExternalTransactionRequest{
 		SrcAccountNumber: req.SrcAccountNumber,
 		SrcBankCode:      req.SrcBankCode,
 		DesAccountNumber: req.DesAccountNumber,
 		Amount:           req.Amount,
 		Description:      req.Description,
 		IsSourceFee:      req.IsSourceFee,
+		Exp:              req.Exp,
 	}
-	claim.Payload = transactionRequest
-	expectedHash, err := jwt.GenerateTokenByClaims(*claim, secretString)
+	data, err := json.Marshal(payloadRequest)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: err.Error(),
 				Code:    httpcommon.ErrorResponseCode.InternalServerError,
-				Field:   "rehash",
+				Field:   "encoding payload",
 			}))
 		return
 	}
-	//check token
-	if expectedHash != hashedData {
+
+	valid := HMAC_signature.VerifyHMAC(string(data), hashedData, secretString)
+	if !valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "map token",
+				Field:   "verify hashed data",
 			}))
 		return
 	}
+
 	//check signature
-	err = middleware.VerifySignature(*partnerBank, transactionRequest, req.SignedData)
+	err = middleware.VerifySignature(*partnerBank, payloadRequest, req.SignedData)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
@@ -213,7 +225,7 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 		return
 	}
 	c.Set("partnerBankId", partnerBank.ID)
-	c.Set("request", transactionRequest)
+	c.Set("request", payloadRequest)
 	c.Next()
 	return
 }
