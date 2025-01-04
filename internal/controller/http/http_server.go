@@ -25,6 +25,7 @@ type Server struct {
 	partnerBankHandler       *v1.PartnerBankHandler
 	externalSearchMiddleware *middleware.ExternalSearchMiddleware
 	rsaMiddleware            *middleware.RSAMiddleware
+	pgpMiddleware            *middleware.PGPMiddleware
 }
 
 func NewServer(authHandler *v1.AuthHandler,
@@ -39,6 +40,7 @@ func NewServer(authHandler *v1.AuthHandler,
 	partnerBankHandler *v1.PartnerBankHandler,
 	externalSearchMiddleware *middleware.ExternalSearchMiddleware,
 	rsaMiddleware *middleware.RSAMiddleware,
+	pgpMiddleware *middleware.PGPMiddleware,
 ) *Server {
 	return &Server{
 		authHandler:              authHandler,
@@ -53,6 +55,7 @@ func NewServer(authHandler *v1.AuthHandler,
 		partnerBankHandler:       partnerBankHandler,
 		externalSearchMiddleware: externalSearchMiddleware,
 		rsaMiddleware:            rsaMiddleware,
+		pgpMiddleware:            pgpMiddleware,
 	}
 }
 
@@ -64,7 +67,7 @@ func (s *Server) Run() {
 		Handler: router,
 	}
 
-	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler, s.savedReceiverHandler, s.customerHandler, s.adminHandler, s.partnerBankHandler, s.externalSearchMiddleware, s.rsaMiddleware)
+	v1.MapRoutes(router, s.authHandler, s.coreHandler, s.accountHandler, s.authMiddleware, s.staffHandler, s.transactionHandler, s.savedReceiverHandler, s.customerHandler, s.adminHandler, s.partnerBankHandler, s.externalSearchMiddleware, s.rsaMiddleware, s.pgpMiddleware)
 	err := httpServerInstance.ListenAndServe()
 	if err != nil {
 		return

@@ -59,9 +59,10 @@ func InitializeContainer(db database.Db, path model.KeyPath) *controller.ApiCont
 	adminHandler := v1.NewAdminHandler(adminService, partnerBankService)
 	externalSearchMiddleware := middleware.NewExternalSearchMiddleware(partnerBankService)
 	keyLoader := beanimplement.NewKeyLoader(path)
-	rsaMiddleware := middleware.NewRSAMiddleware(externalSearchMiddleware, accountService, keyLoader)
-	partnerBankHandler := v1.NewPartnerBankHandler(accountService, transactionService, partnerBankService, rsaMiddleware)
-	httpServer := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler, partnerBankHandler, externalSearchMiddleware, rsaMiddleware)
+	rsaMiddleware := middleware.NewRSAMiddleware(externalSearchMiddleware, keyLoader)
+	pgpMiddleware := middleware.NewPGPMiddleware(externalSearchMiddleware, keyLoader)
+	partnerBankHandler := v1.NewPartnerBankHandler(accountService, transactionService, partnerBankService, rsaMiddleware, pgpMiddleware)
+	httpServer := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler, partnerBankHandler, externalSearchMiddleware, rsaMiddleware, pgpMiddleware)
 	apiContainer := controller.NewApiContainer(httpServer, server)
 	return apiContainer
 }
@@ -80,6 +81,6 @@ var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.N
 
 var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository, repositoryimplement.NewRoleRepository, repositoryimplement.NewTransactionRepository, repositoryimplement.NewSavedReceiverRepository, repositoryimplement.NewNotificationRepository, repositoryimplement.NewDebtReplyRepository, repositoryimplement.NewStaffRepository, repositoryimplement.NewPartnerBankRepository)
 
-var middlewareSet = wire.NewSet(middleware.NewAuthMiddleware, middleware.NewExternalSearchMiddleware, middleware.NewRSAMiddleware)
+var middlewareSet = wire.NewSet(middleware.NewAuthMiddleware, middleware.NewExternalSearchMiddleware, middleware.NewRSAMiddleware, middleware.NewPGPMiddleware)
 
 var beanSet = wire.NewSet(beanimplement.NewBcryptPasswordEncoder, beanimplement.NewRedisService, beanimplement.NewMailClient, beanimplement.NewNotificationClient, beanimplement.NewKeyLoader)

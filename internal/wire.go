@@ -70,6 +70,7 @@ var middlewareSet = wire.NewSet(
 	middleware.NewAuthMiddleware,
 	middleware.NewExternalSearchMiddleware,
 	middleware.NewRSAMiddleware,
+	middleware.NewPGPMiddleware,
 )
 var beanSet = wire.NewSet(
 	beanimplement.NewBcryptPasswordEncoder,
