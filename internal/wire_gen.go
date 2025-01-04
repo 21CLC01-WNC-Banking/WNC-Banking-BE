@@ -55,7 +55,7 @@ func InitializeContainer(db database.Db, path model.KeyPath) *controller.ApiCont
 	notificationService := serviceimplement.NewNotificationService(notificationRepository)
 	customerHandler := v1.NewCustomerHandler(notificationService, transactionService)
 	staffRepository := repositoryimplement.NewStaffRepository(db)
-	adminService := serviceimplement.NewAdminService(staffRepository, passwordEncoder)
+	adminService := serviceimplement.NewAdminService(staffRepository, passwordEncoder, transactionRepository)
 	adminHandler := v1.NewAdminHandler(adminService, partnerBankService)
 	externalSearchMiddleware := middleware.NewExternalSearchMiddleware(partnerBankService)
 	keyLoader := beanimplement.NewKeyLoader(path)

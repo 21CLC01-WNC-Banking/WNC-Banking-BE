@@ -18,3 +18,9 @@ type UpdateStaffRequest struct {
 	PhoneNumber string `json:"phoneNumber"`
 	Password    string `json:"password"`
 }
+
+type GetExternalTransactionRequest struct {
+	BankId   int64  `json:"bankId"`
+	FromDate string `json:"fromDate" binding:"required"` // yyyy-mm-dd
+	ToDate   string `json:"toDate" binding:"required"`   // yyyy-mm-dd
+}

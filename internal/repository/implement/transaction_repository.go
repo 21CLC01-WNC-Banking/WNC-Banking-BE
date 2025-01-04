@@ -139,3 +139,32 @@ func (repo *TransactionRepository) GetTransactionByAccountNumberAndIdQuery(ctx c
 	}
 	return &transaction, nil
 }
+
+func (repo *TransactionRepository) GetExternalTransactionsWithFilter(ctx context.Context, fromDate, toDate string, bankId int64) ([]entity.Transaction, error) {
+	var transactions []entity.Transaction
+
+	query := `
+		SELECT transactions.* 
+		FROM transactions 
+		JOIN partner_banks ON partner_banks.id = transactions.bank_id
+		WHERE transactions.type = 'external' AND transactions.status = 'success'
+		  									 AND transactions.updated_at BETWEEN ? AND ?
+				`
+
+	if bankId > 0 {
+		query += " AND partner_banks.id = ?"
+		err := repo.db.SelectContext(ctx, &transactions, query, fromDate, toDate, bankId)
+		if err != nil {
+			fmt.Println("Error fetching transactions:", err)
+			return nil, err
+		}
+	} else {
+		err := repo.db.SelectContext(ctx, &transactions, query, fromDate, toDate)
+		if err != nil {
+			fmt.Println("Error fetching transactions:", err)
+			return nil, err
+		}
+	}
+
+	return transactions, nil
+}

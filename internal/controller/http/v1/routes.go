@@ -90,6 +90,10 @@ func MapRoutes(router *gin.Engine,
 				authMiddleware.VerifyToken,
 				authMiddleware.AdminRequired,
 				adminHandler.AddPartnerBank)
+			admin.GET("/external-transaction",
+				authMiddleware.VerifyToken,
+				authMiddleware.AdminRequired,
+				adminHandler.GetExternalTransactions)
 		}
 		cores := v1.Group("/core")
 		{

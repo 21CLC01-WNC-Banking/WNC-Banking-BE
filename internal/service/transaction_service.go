@@ -21,3 +21,27 @@ type TransactionService interface {
 	PreExternalTransfer(ctx *gin.Context, transferReq model.PreExternalTransferRequest) (string, error)
 	ExternalTransfer(ctx *gin.Context, transferReq model.TransferRequest) (*entity.Transaction, error)
 }
+
+func TransactionUtils_EntityToResponse(transaction entity.Transaction, sourceAccountNumber string) model.GetTransactionsResponse {
+	var amount int64
+	var balance int64
+
+	if transaction.TargetAccountNumber == sourceAccountNumber {
+		amount = transaction.Amount
+		balance = transaction.TargetBalance
+	} else {
+		amount = transaction.Amount * -1
+		balance = transaction.SourceBalance
+	}
+
+	return model.GetTransactionsResponse{
+		Id:                  transaction.Id,
+		Amount:              amount,
+		CreatedAt:           transaction.CreatedAt,
+		Description:         transaction.Description,
+		Type:                transaction.Type,
+		Balance:             balance,
+		SourceAccountNumber: transaction.SourceAccountNumber,
+		TargetAccountNumber: transaction.TargetAccountNumber,
+	}
+}
