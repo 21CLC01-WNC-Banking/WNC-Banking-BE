@@ -54,7 +54,7 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	notificationService := serviceimplement.NewNotificationService(notificationRepository)
 	customerHandler := v1.NewCustomerHandler(notificationService, transactionService)
 	staffRepository := repositoryimplement.NewStaffRepository(db)
-	adminService := serviceimplement.NewAdminService(staffRepository, passwordEncoder)
+	adminService := serviceimplement.NewAdminService(staffRepository, passwordEncoder, transactionRepository)
 	adminHandler := v1.NewAdminHandler(adminService, partnerBankService)
 	partnerBankHandler := v1.NewPartnerBankHandler(accountService, transactionService, partnerBankService)
 	externalSearchMiddleware := middleware.NewExternalSearchMiddleware(partnerBankService)

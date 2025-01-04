@@ -10,12 +10,13 @@ import (
 )
 
 type AdminService struct {
-	staffRepository repository.StaffRepository
-	passwordEncoder bean.PasswordEncoder
+	staffRepository       repository.StaffRepository
+	passwordEncoder       bean.PasswordEncoder
+	transactionRepository repository.TransactionRepository
 }
 
-func NewAdminService(staffRepository repository.StaffRepository, passwordEncoder bean.PasswordEncoder) service.AdminService {
-	return &AdminService{staffRepository: staffRepository, passwordEncoder: passwordEncoder}
+func NewAdminService(staffRepository repository.StaffRepository, passwordEncoder bean.PasswordEncoder, transactionRepository repository.TransactionRepository) service.AdminService {
+	return &AdminService{staffRepository: staffRepository, passwordEncoder: passwordEncoder, transactionRepository: transactionRepository}
 }
 
 func (a *AdminService) GetAllStaff(ctx *gin.Context) ([]entity.User, error) {
@@ -60,4 +61,8 @@ func (a *AdminService) UpdateOneStaff(ctx *gin.Context, request *model.UpdateSta
 		Password:    request.Password,
 		PhoneNumber: request.PhoneNumber,
 	})
+}
+
+func (a *AdminService) GetExternalTransactions(ctx *gin.Context, filter model.GetExternalTransactionRequest) ([]entity.Transaction, error) {
+	return a.transactionRepository.GetExternalTransactionsWithFilter(ctx, filter.FromDate, filter.ToDate, filter.BankId)
 }
