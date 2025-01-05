@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
@@ -195,4 +196,39 @@ func (handler *AdminHandler) AddPartnerBank(c *gin.Context) {
 		return
 	}
 	c.AbortWithStatus(200)
+}
+
+// @Summary Get external transactions
+// @Description Get external transactions
+// @Tags Admins
+// @Accept json
+// @Param fromDate query string true "yyyy-MM-dd"
+// @Param toDate query string true "yyyy-MM-dd"
+// @Param bankId query int64 false "Partner Bank Id"
+// @Produce  json
+// @Router /admin/external-transaction [get]
+// @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AdminHandler) GetExternalTransactions(c *gin.Context) {
+	BankIdStr := c.Param("BankId")
+	bankId, _ := strconv.ParseInt(BankIdStr, 10, 64)
+	req := model.GetExternalTransactionRequest{
+		BankId:   bankId,
+		FromDate: c.Query("fromDate"),
+		ToDate:   c.Query("toDate"),
+	}
+
+	transactions, err := handler.adminService.GetExternalTransactions(c, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{Message: err.Error()},
+		))
+		return
+	}
+
+	if len(transactions) == 0 {
+		transactions = make([]entity.Transaction, 0)
+	}
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&transactions))
 }

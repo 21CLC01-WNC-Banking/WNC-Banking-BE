@@ -16,4 +16,5 @@ type TransactionRepository interface {
 	GetReceivedDebtReminderByCustomerIdQuery(ctx context.Context, customerId int64) (*[]entity.Transaction, error)
 	GetSentDebtReminderByCustomerIdQuery(ctx context.Context, customerId int64) (*[]entity.Transaction, error)
 	GetTransactionByAccountNumberAndIdQuery(ctx context.Context, accountNumber string, id string) (*entity.Transaction, error)
+	GetExternalTransactionsWithFilter(ctx context.Context, fromDate, toDate string, bankId int64) ([]entity.Transaction, error)
 }

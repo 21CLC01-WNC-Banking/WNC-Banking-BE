@@ -1,7 +1,7 @@
 package model
 
 type Receiver struct {
-	BankId                int64  `json:"bankId"`
+	BankId                *int64 `json:"bankId"`
 	ReceiverAccountNumber string `json:"receiverAccountNumber" binding:"required"`
 	ReceiverNickname      string `json:"receiverNickname" binding:"required"`
 }

@@ -20,13 +20,15 @@ import (
 )
 
 type TransactionService struct {
-	transactionRepository repository.TransactionRepository
-	customerRepository    repository.CustomerRepository
-	accountService        service.AccountService
-	coreService           service.CoreService
-	redisClient           bean.RedisClient
-	mailClient            bean.MailClient
-	debtReply             repository.DebtReplyRepository
+	transactionRepository  repository.TransactionRepository
+	customerRepository     repository.CustomerRepository
+	accountService         service.AccountService
+	coreService            service.CoreService
+	redisClient            bean.RedisClient
+	mailClient             bean.MailClient
+	debtReply              repository.DebtReplyRepository
+	notificationRepository repository.NotificationRepository
+	notificationClient     bean.NotificationClient
 }
 
 func NewTransactionService(transactionRepository repository.TransactionRepository,
@@ -35,15 +37,20 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 	coreService service.CoreService,
 	redisClient bean.RedisClient,
 	mailClient bean.MailClient,
-	debtReply repository.DebtReplyRepository) service.TransactionService {
+	debtReply repository.DebtReplyRepository,
+	notificationRepository repository.NotificationRepository,
+	notificationClient bean.NotificationClient,
+) service.TransactionService {
 	return &TransactionService{
-		transactionRepository: transactionRepository,
-		customerRepository:    customerRepository,
-		accountService:        accountService,
-		coreService:           coreService,
-		redisClient:           redisClient,
-		mailClient:            mailClient,
-		debtReply:             debtReply,
+		transactionRepository:  transactionRepository,
+		customerRepository:     customerRepository,
+		accountService:         accountService,
+		coreService:            coreService,
+		redisClient:            redisClient,
+		mailClient:             mailClient,
+		debtReply:              debtReply,
+		notificationRepository: notificationRepository,
+		notificationClient:     notificationClient,
 	}
 }
 
@@ -113,6 +120,8 @@ func (service *TransactionService) PreInternalTransfer(ctx *gin.Context, transfe
 func (service *TransactionService) SendOTPToEmail(ctx *gin.Context, email string, transactionId string) error {
 	// generate otp
 	otp := mail.GenerateOTP(6)
+
+	fmt.Println("OTP: ", otp)
 
 	// store otp in redis
 	baseKey := constants.VERIFY_TRANSFER_KEY
@@ -210,11 +219,39 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 		return nil, err
 	}
 
-	/*
-		notify
-	*/
+	// create notification response
+	//get source customer and target customer's name
+	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.SourceAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(sourceCustomer.Id),
+		Name:          sourceCustomer.Name,
+		Amount:        int(existsTransaction.Amount),
+		TransactionId: existsTransaction.Id,
+		Type:          "outgoing_transfer",
+		CreatedAt:     existsTransaction.UpdatedAt,
+	}
+
+	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(targetCustomer.Id),
+		Name:          targetCustomer.Name,
+		Amount:        int(existsTransaction.Amount),
+		TransactionId: existsTransaction.Id,
+		Type:          "incoming_transfer",
+		CreatedAt:     existsTransaction.UpdatedAt,
+	}
 
 	// notify, response history
+	service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
+	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
+
 	return existsTransaction, nil
 }
 
@@ -288,10 +325,33 @@ func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminde
 	}
 
 	//save transaction
-	_, err = service.transactionRepository.CreateCommand(ctx, transaction)
+	targetTransactionId, err := service.transactionRepository.CreateCommand(ctx, transaction)
 	if err != nil {
 		return err
 	}
+
+	targetTransaction, err := service.transactionRepository.GetTransactionByIdQuery(ctx, targetTransactionId)
+
+	//get target customer's name
+	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.SourceAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// create notification response
+	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(sourceCustomer.Id),
+		Name:          sourceCustomer.Name,
+		Amount:        int(transaction.Amount),
+		TransactionId: transaction.Id,
+		Type:          "debt_reminder",
+		CreatedAt:     targetTransaction.CreatedAt,
+	}
+	fmt.Println(notificationForTargetCustomerResp)
+
+	// notify, response history
+	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
+
 	return nil
 }
 
@@ -349,6 +409,45 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 	}
 
 	//notify...
+	//if current user is source, then find the other user to notify
+	if sourceAccount.Number == debtReminder.SourceAccountNumber {
+		creditor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.TargetAccountNumber)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// create notification response
+		notificationForTargetCustomerResp := &model.TransactionNotificationContent{
+			DeviceId:      int(creditor.Id),
+			Name:          creditor.Name,
+			Amount:        int(debtReminder.Amount),
+			TransactionId: debtReminder.Id,
+			Type:          "debt_cancel",
+			CreatedAt:     debtReminder.CreatedAt,
+		}
+
+		// notify, response history
+		service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
+	} else {
+		//if current user is target, then find the other user to notify
+		debtor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.SourceAccountNumber)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// create notification response
+		notificationForSourceCustomerResp := &model.TransactionNotificationContent{
+			DeviceId:      int(debtor.Id),
+			Name:          debtor.Name,
+			Amount:        int(debtReminder.Amount),
+			TransactionId: debtReminder.Id,
+			Type:          "debt_cancel",
+			CreatedAt:     debtReminder.CreatedAt,
+		}
+
+		// notify, response history
+		service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
+	}
 	return nil
 }
 
@@ -447,9 +546,9 @@ func (service *TransactionService) GetSentDebtReminder(ctx *gin.Context) ([]mode
 	return resList, nil
 }
 
-func (service *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error) {
+func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error) {
 	//get account by customerId
-	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
+	sourceAccount, err := s.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
 			return nil, errors.New("source account not found")
@@ -457,7 +556,7 @@ func (service *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context,
 		return nil, err
 	}
 
-	transactions, err := service.transactionRepository.GetTransactionByAccountNumber(ctx, sourceAccount.Number)
+	transactions, err := s.transactionRepository.GetTransactionByAccountNumber(ctx, sourceAccount.Number)
 	if err != nil {
 		return nil, err
 	}
@@ -465,33 +564,15 @@ func (service *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context,
 	transactionResp := make([]model.GetTransactionsResponse, 0)
 
 	for _, transaction := range transactions {
-		var amount int64
-		var balance int64
-		if transaction.TargetAccountNumber == sourceAccount.Number {
-			amount = transaction.Amount
-			balance = transaction.TargetBalance
-		} else {
-			amount = transaction.Amount * -1
-			balance = transaction.SourceBalance
-		}
-		transactionResp = append(transactionResp, model.GetTransactionsResponse{
-			Id:                  transaction.Id,
-			Amount:              amount,
-			CreatedAt:           transaction.CreatedAt,
-			Description:         transaction.Description,
-			Type:                transaction.Type,
-			Balance:             balance,
-			SourceAccountNumber: transaction.SourceAccountNumber,
-			TargetAccountNumber: transaction.TargetAccountNumber,
-		})
+		transactionResp = append(transactionResp, service.TransactionUtils_EntityToResponse(transaction, sourceAccount.Number))
 	}
 
 	return transactionResp, nil
 }
 
-func (service *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
+func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
 	//get account by customerId
-	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, customerId)
+	sourceAccount, err := s.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
 		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
 			return nil, errors.New("source account not found")
@@ -499,32 +580,14 @@ func (service *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Cont
 		return nil, err
 	}
 
-	transaction, err := service.transactionRepository.GetTransactionByAccountNumberAndIdQuery(ctx, sourceAccount.Number, id)
+	transaction, err := s.transactionRepository.GetTransactionByAccountNumberAndIdQuery(ctx, sourceAccount.Number, id)
 	if err != nil {
 		return nil, err
 	}
 
-	var amount int64
-	var balance int64
-	if transaction.TargetAccountNumber == sourceAccount.Number {
-		amount = transaction.Amount
-		balance = transaction.TargetBalance
-	} else {
-		amount = transaction.Amount * -1
-		balance = transaction.SourceBalance
-	}
-	transactionResp := &model.GetTransactionsResponse{
-		Id:                  transaction.Id,
-		Amount:              amount,
-		CreatedAt:           transaction.CreatedAt,
-		Description:         transaction.Description,
-		Type:                transaction.Type,
-		Balance:             balance,
-		SourceAccountNumber: transaction.SourceAccountNumber,
-		TargetAccountNumber: transaction.TargetAccountNumber,
-	}
+	transactionResp := service.TransactionUtils_EntityToResponse(*transaction, sourceAccount.Number)
 
-	return transactionResp, nil
+	return &transactionResp, nil
 }
 
 func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error {
@@ -583,16 +646,40 @@ func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, tra
 		Description:         transferReq.Description,
 		Status:              "success",
 		IsSourceFee:         transferReq.IsSourceFee,
-		SourceBalance:       0,
+		SourceBalance:       -1,
 		TargetBalance:       newTargetBalance,
 	}
 	//save transaction
-	_, err = service.transactionRepository.CreateCommand(ctx, transaction)
+	transactionId, err := service.transactionRepository.CreateCommand(ctx, transaction)
 	if err != nil {
 		return err
 	}
 	//check notify
 	//find user by desAccountNumber -> notify
+	existsTransaction, err := service.transactionRepository.GetTransactionByIdQuery(ctx, transactionId)
+	if err != nil {
+		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
+			fmt.Println(err)
+		}
+		fmt.Println(err)
+	}
+
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(targetCustomer.Id),
+		Name:          targetCustomer.Name,
+		Amount:        int(existsTransaction.Amount),
+		TransactionId: existsTransaction.Id,
+		Type:          "incoming_transfer",
+		CreatedAt:     existsTransaction.UpdatedAt,
+	}
+
+	// notify, response history
+	service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
 	return nil
 }
 
@@ -672,7 +759,7 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		Status:              "pending",
 		IsSourceFee:         transferReq.IsSourceFee,
 		SourceBalance:       *sourceAccount.Balance,
-		TargetBalance:       0,
+		TargetBalance:       -1,
 	}
 
 	//save transaction
@@ -739,6 +826,22 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 	/*
 		notify transfer success
 	*/
+	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.SourceAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
+		DeviceId:      int(sourceCustomer.Id),
+		Name:          sourceCustomer.Name,
+		Amount:        int(existsTransaction.Amount),
+		TransactionId: existsTransaction.Id,
+		Type:          "outgoing_transfer",
+		CreatedAt:     existsTransaction.UpdatedAt,
+	}
+
+	// notify, response history
+	service.notificationClient.SaveAndSend(ctx, *notificationForSourceCustomerResp)
 
 	// response history
 	return existsTransaction, nil
