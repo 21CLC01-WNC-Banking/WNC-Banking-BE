@@ -333,15 +333,15 @@ func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminde
 	targetTransaction, err := service.transactionRepository.GetTransactionByIdQuery(ctx, targetTransactionId)
 
 	//get target customer's name
-	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.TargetAccountNumber)
+	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.SourceAccountNumber)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	// create notification response
 	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
-		DeviceId:      int(targetCustomer.Id),
-		Name:          targetCustomer.Name,
+		DeviceId:      int(sourceCustomer.Id),
+		Name:          sourceCustomer.Name,
 		Amount:        int(transaction.Amount),
 		TransactionId: transaction.Id,
 		Type:          "debt_reminder",
@@ -422,7 +422,7 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 			Name:          creditor.Name,
 			Amount:        int(debtReminder.Amount),
 			TransactionId: debtReminder.Id,
-			Type:          "debt_reminder",
+			Type:          "debt_cancel",
 			CreatedAt:     debtReminder.CreatedAt,
 		}
 
@@ -441,7 +441,7 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 			Name:          debtor.Name,
 			Amount:        int(debtReminder.Amount),
 			TransactionId: debtReminder.Id,
-			Type:          "debt_reminder",
+			Type:          "debt_cancel",
 			CreatedAt:     debtReminder.CreatedAt,
 		}
 
