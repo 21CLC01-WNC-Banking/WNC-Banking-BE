@@ -22,7 +22,7 @@ func NewNotificationRepository(db database.Db) repository.NotificationRepository
 func (n *NotificationRepository) GetAllByUserId(ctx context.Context, userId int64) ([]entity.Notification, error) {
 	query := `
 		SELECT 
-			id, type, title, content, is_seen, user_id, created_at, updated_at, deleted_at
+			id, type, content, is_seen, user_id, created_at, updated_at, deleted_at
 		FROM 
 			notifications
 		WHERE 

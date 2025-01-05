@@ -14,7 +14,7 @@ type RedisService struct {
 
 func NewRedisService() bean.RedisClient {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "13.212.59.131:6379",
 		Password: "",
 		DB:       0,
 	})
