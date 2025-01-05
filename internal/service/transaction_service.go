@@ -22,7 +22,7 @@ type TransactionService interface {
 	ExternalTransfer(ctx *gin.Context, transferReq model.TransferRequest) (*entity.Transaction, error)
 }
 
-func TransactionUtils_EntityToResponse(transaction entity.Transaction, sourceAccountNumber string) model.GetTransactionsResponse {
+func TransactionUtilsEntityToResponse(transaction entity.Transaction, sourceAccountNumber string) model.GetTransactionsResponse {
 	var amount int64
 	var balance int64
 

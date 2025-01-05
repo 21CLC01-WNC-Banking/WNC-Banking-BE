@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,4 +12,5 @@ type AccountService interface {
 	UpdateBalanceByAccountNumber(ctx *gin.Context, amount int64, number string) (int64, error)
 	GetAccountByCustomerId(ctx *gin.Context, customerId int64) (*entity.Account, error)
 	GetAccountByNumber(ctx *gin.Context, number string) (*entity.Account, error)
+	GetExternalAccountName(ctx *gin.Context, detail model.GetExternalAccountNameRequest) (string, error)
 }

@@ -564,7 +564,7 @@ func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, custo
 	transactionResp := make([]model.GetTransactionsResponse, 0)
 
 	for _, transaction := range transactions {
-		transactionResp = append(transactionResp, service.TransactionUtils_EntityToResponse(transaction, sourceAccount.Number))
+		transactionResp = append(transactionResp, service.TransactionUtilsEntityToResponse(transaction, sourceAccount.Number))
 	}
 
 	return transactionResp, nil
@@ -585,7 +585,7 @@ func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, c
 		return nil, err
 	}
 
-	transactionResp := service.TransactionUtils_EntityToResponse(*transaction, sourceAccount.Number)
+	transactionResp := service.TransactionUtilsEntityToResponse(*transaction, sourceAccount.Number)
 
 	return &transactionResp, nil
 }

@@ -29,3 +29,9 @@ type AccountNumberInfoResponse struct {
 	DesAccountNumber string `json:"desAccountNumber"`
 	DesAccountName   string `json:"desAccountName"`
 }
+
+type SearchExternalAccountRequest struct {
+	BankId        int64  `json:"bankId" binding:"required"`
+	TimeStamp     int64  `json:"timestamp" binding:"required"`
+	AccountNumber string `json:"accountNumber" binding:"required"`
+}

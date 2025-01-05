@@ -135,6 +135,7 @@ func MapRoutes(router *gin.Engine,
 			transactions.POST("/pre-debt-transfer", authMiddleware.VerifyToken, transactionHandler.PreDebtTransfer)
 			transactions.POST("/pre-external-transfer", authMiddleware.VerifyToken, transactionHandler.PreExternalTransfer)
 			transactions.POST("/external-transfer", authMiddleware.VerifyToken, transactionHandler.ExternalTransfer)
+			transactions.GET("/demo", transactionHandler.demo)
 		}
 		partnerBanks := v1.Group("/partner-bank")
 		{

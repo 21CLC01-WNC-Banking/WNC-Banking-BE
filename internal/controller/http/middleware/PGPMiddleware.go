@@ -10,12 +10,15 @@ import (
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
 )
+
+var passPhrase, _ = env.GetEnv("PGP_PASS_PHRASE")
 
 type PGPMiddleware struct {
 	externalSearchMiddleware *ExternalSearchMiddleware
@@ -31,7 +34,7 @@ func NewPGPMiddleware(externalSearchMiddleware *ExternalSearchMiddleware,
 }
 
 func (middleware *PGPMiddleware) loadPGPPrivateKey() (*crypto.Key, error) {
-	privateKey, err := crypto.NewKeyFromArmored(string(middleware.keyLoader.PGPKey))
+	privateKey, err := crypto.NewPrivateKeyFromArmored(string(middleware.keyLoader.PGPKey), []byte(`12345`))
 	if err != nil {
 		return nil, errors.New("failed to parse private key")
 	}
@@ -47,11 +50,12 @@ func loadPGPPublicKey(pemKey string) (*crypto.Key, error) {
 }
 
 func (middleware *PGPMiddleware) SignDataPGP(data string) (string, error) {
-	keyRing, err := middleware.loadPGPPrivateKey()
+	key, err := middleware.loadPGPPrivateKey()
 	if err != nil {
 		return "", err
 	}
-	signer, err := crypto.PGP().Sign().SigningKey(keyRing).Detached().New()
+	pgp := crypto.PGP()
+	signer, err := pgp.Sign().SigningKey(key).Detached().New()
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +63,7 @@ func (middleware *PGPMiddleware) SignDataPGP(data string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(signature), nil
+	return string(signature), nil
 }
 
 func (middleware *PGPMiddleware) VerifyPGPSignature(partnerBank entity.PartnerBank, data model.ExternalTransactionRequest, signedData string) error {
