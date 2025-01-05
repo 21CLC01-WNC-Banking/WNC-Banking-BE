@@ -14,3 +14,8 @@ type GetExternalAccountNameRequest struct {
 	BankId        int64  `json:"bankId"`
 	AccountNumber string `json:"accountNumber"`
 }
+
+type ExternalTransferResponse struct {
+	Data       string `json:"data"`
+	SignedData string `json:"signedData"`
+}

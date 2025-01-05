@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -128,5 +129,25 @@ func (handler *PartnerBankHandler) ReceiveExternalTransfer(c *gin.Context) {
 		return
 	}
 	//encode response
-	c.AbortWithStatus(200)
+	responseString := "transfer success"
+	var res string
+	middlewareType, _ := c.Get("middlewareType")
+	if middlewareType == "RSA" {
+		res, err = middleware.SignWithRSAPrivateKey(responseString)
+	} else {
+		res = ""
+	}
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+				Code:    httpcommon.ErrorResponseCode.InternalServerError,
+				Field:   "",
+			}))
+		return
+	}
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[model.ExternalTransferResponse](&model.ExternalTransferResponse{
+		Data:       responseString,
+		SignedData: res,
+	}))
 }
