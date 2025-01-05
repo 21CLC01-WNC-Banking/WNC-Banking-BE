@@ -232,7 +232,7 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 
 	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(sourceCustomer.Id),
-		Name:          sourceCustomer.Name,
+		Name:          targetCustomer.Name,
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "outgoing_transfer",
@@ -241,7 +241,7 @@ func (service *TransactionService) InternalTransfer(ctx *gin.Context, transferRe
 
 	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(targetCustomer.Id),
-		Name:          targetCustomer.Name,
+		Name:          sourceCustomer.Name,
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "incoming_transfer",
@@ -332,8 +332,12 @@ func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminde
 
 	targetTransaction, err := service.transactionRepository.GetTransactionByIdQuery(ctx, targetTransactionId)
 
-	//get target customer's name
+	//get target and source customer's name
 	sourceCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.SourceAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, transaction.TargetAccountNumber)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -341,7 +345,7 @@ func (service *TransactionService) AddDebtReminder(ctx *gin.Context, debtReminde
 	// create notification response
 	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(sourceCustomer.Id),
-		Name:          sourceCustomer.Name,
+		Name:          targetCustomer.Name,
 		Amount:        int(transaction.Amount),
 		TransactionId: transaction.Id,
 		Type:          "debt_reminder",
@@ -415,11 +419,15 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 		if err != nil {
 			fmt.Println(err)
 		}
+		debtor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.SourceAccountNumber)
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		// create notification response
 		notificationForTargetCustomerResp := &model.TransactionNotificationContent{
 			DeviceId:      int(creditor.Id),
-			Name:          creditor.Name,
+			Name:          debtor.Name,
 			Amount:        int(debtReminder.Amount),
 			TransactionId: debtReminder.Id,
 			Type:          "debt_cancel",
@@ -430,6 +438,10 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 		service.notificationClient.SaveAndSend(ctx, *notificationForTargetCustomerResp)
 	} else {
 		//if current user is target, then find the other user to notify
+		creditor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.TargetAccountNumber)
+		if err != nil {
+			fmt.Println(err)
+		}
 		debtor, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, debtReminder.SourceAccountNumber)
 		if err != nil {
 			fmt.Println(err)
@@ -438,7 +450,7 @@ func (service *TransactionService) CancelDebtReminder(ctx *gin.Context, debtRemi
 		// create notification response
 		notificationForSourceCustomerResp := &model.TransactionNotificationContent{
 			DeviceId:      int(debtor.Id),
-			Name:          debtor.Name,
+			Name:          creditor.Name,
 			Amount:        int(debtReminder.Amount),
 			TransactionId: debtReminder.Id,
 			Type:          "debt_cancel",
@@ -671,7 +683,7 @@ func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, tra
 
 	notificationForTargetCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(targetCustomer.Id),
-		Name:          targetCustomer.Name,
+		Name:          "ABC", // will call api get source customer name later
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "incoming_transfer",
@@ -830,10 +842,14 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 	if err != nil {
 		fmt.Println(err)
 	}
+	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(sourceCustomer.Id),
-		Name:          sourceCustomer.Name,
+		Name:          targetCustomer.Name,
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "outgoing_transfer",
