@@ -26,7 +26,7 @@ import (
 )
 
 type TransferRSATeamResponse struct {
-	Success bool     `json:"success"`
+	Success *bool    `json:"success"`
 	Message []string `json:"message"`
 	Data    struct {
 		AccountNumber        string    `json:"accountNumber"`
@@ -720,11 +720,6 @@ func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, tra
 }
 
 func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transferReq model.PreExternalTransferRequest) (string, error) {
-	//check input account number
-	if transferReq.SourceAccountNumber == transferReq.TargetAccountNumber {
-		return "", errors.New("source account number can not equal to target account number")
-	}
-
 	//get customer
 	customerId := middleware.GetUserIdHelper(ctx)
 	//check customerId
@@ -735,34 +730,27 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		}
 		return "", err
 	}
-
 	//get account by customerId and check sourceNumber is internal
 	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.Id)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return "", errors.New("source account not found")
-		}
 		return "", err
 	}
 	if sourceAccount.Number != transferReq.SourceAccountNumber {
 		return "", errors.New("source account not match")
 	}
-
-	//check targetNumber is in internal bank
-	targetAccount, err := service.accountService.GetAccountByNumber(ctx, transferReq.TargetAccountNumber)
-	if targetAccount != nil {
-		return "", errors.New("target account existed in internal bank")
-	}
 	//check targetNumber is in partner bank
-	/*
-		here...
-	*/
+	_, err = service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
+		BankId:        transferReq.PartnerBankId,
+		AccountNumber: transferReq.TargetAccountNumber,
+	})
+	if err != nil {
+		return "", err
+	}
 
 	//check type
 	if transferReq.Type != "external" {
 		return "", errors.New("invalid transaction type")
 	}
-
 	//estimate fee
 	fee, err := service.coreService.EstimateTransferFee(ctx, transferReq.Amount)
 	if err != nil {
@@ -829,10 +817,10 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 		return nil, err
 	}
 	//verify OTP
-	err = service.verifyOTP(ctx, transferReq)
-	if err != nil {
-		return nil, err
-	}
+	//err = service.verifyOTP(ctx, transferReq)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	/*
 		call api to partner bank to confirm transaction
@@ -843,8 +831,6 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 	}
 	//update to DB
 	//balance for source
-	fmt.Print(existsAccount.Number)
-	fmt.Print(existsTransaction.SourceAccountNumber)
 	newSourceBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
 	if err != nil {
 		return nil, err
@@ -869,14 +855,18 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 	if err != nil {
 		fmt.Println(err)
 	}
-	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
+	//get target name
+	targetAccountName, err := service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
+		BankId:        *existsTransaction.BankId,
+		AccountNumber: existsTransaction.TargetAccountNumber,
+	})
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
-
+	//noti
 	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(sourceCustomer.Id),
-		Name:          targetCustomer.Name,
+		Name:          targetAccountName,
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "outgoing_transfer",
@@ -933,14 +923,25 @@ func (service *TransactionService) callExternalTransfer(ctx *gin.Context, transa
 	}
 	defer response.Body.Close()
 	body, _ := io.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Println(string(body))
+		return errors.New(response.Status)
+	}
 	//handler response
 	var res TransferRSATeamResponse
 	err = json.Unmarshal(body, &res)
 	if err != nil {
 		return err
 	}
-	if response.StatusCode != http.StatusOK {
+	if *res.Success != true {
 		return errors.New(res.Message[0])
+	}
+	//Verify signature
+	partnerSignature := response.Header.Get("RSA-Signature")
+	dataBytes, _ := json.Marshal(res)
+	err = service.rsaMiddleware.VerifyRSASignature(*partnerBank, dataBytes, partnerSignature)
+	if err != nil {
+		return err
 	}
 	return nil
 }

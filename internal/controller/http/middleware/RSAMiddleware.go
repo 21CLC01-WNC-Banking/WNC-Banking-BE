@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	beanimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean/implement"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
@@ -44,6 +43,9 @@ func (middleware *RSAMiddleware) loadRSAPrivateKey() (*rsa.PrivateKey, error) {
 
 func loadRSAPublicKey(pemKey string) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode([]byte(pemKey))
+	if block == nil {
+		return nil, errors.New("failed to decode PEM block, invalid format")
+	}
 	key, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
 		return nil, errors.New("failed to parse public key")
@@ -72,14 +74,9 @@ func (middleware *RSAMiddleware) SignDataRSA(data string) (string, error) {
 	return base64.StdEncoding.EncodeToString(signature), nil
 }
 
-func (middleware *RSAMiddleware) VerifyRSASignature(partnerBank entity.PartnerBank, data model.ExternalPayload, signedData string) error {
+func (middleware *RSAMiddleware) VerifyRSASignature(partnerBank entity.PartnerBank, data []byte, signedData string) error {
 	//load public key
 	rsaPublicKey, err := loadRSAPublicKey(partnerBank.PublicKey)
-	if err != nil {
-		return err
-	}
-	//change struct to json
-	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
@@ -89,7 +86,7 @@ func (middleware *RSAMiddleware) VerifyRSASignature(partnerBank entity.PartnerBa
 		return errors.New("failed to decode signature: %v")
 	}
 	//create hash from data
-	hash := sha256.Sum256(dataBytes)
+	hash := sha256.Sum256(data)
 	//verify signature
 	return rsa.VerifyPKCS1v15(rsaPublicKey, crypto.SHA256, hash[:], signatureBytes)
 }
@@ -146,7 +143,6 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 		Exp:              req.Exp,
 	}
 	data, err := json.Marshal(payloadRequest)
-	fmt.Print(string(data))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
@@ -168,7 +164,8 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 		return
 	}
 	//check signature
-	err = middleware.VerifyRSASignature(*partnerBank, payloadRequest, req.SignedData)
+	dataBytes, _ := json.Marshal(data)
+	err = middleware.VerifyRSASignature(*partnerBank, dataBytes, req.SignedData)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
