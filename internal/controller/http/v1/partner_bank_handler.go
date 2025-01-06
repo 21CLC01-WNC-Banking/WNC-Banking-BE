@@ -103,7 +103,7 @@ func (handler *PartnerBankHandler) GetListPartnerBank(c *gin.Context) {
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *PartnerBankHandler) ReceiveExternalTransfer(c *gin.Context) {
 	req, _ := c.Get("request")
-	externalTransaction := req.(model.ExternalTransactionRequest)
+	externalTransaction := req.(model.ExternalPayload)
 	partnerBankId, _ := c.Get("partnerBankId")
 	secureType, _ := c.Get("secureType")
 	//check source account number

@@ -66,7 +66,7 @@ func (middleware *PGPMiddleware) SignDataPGP(data string) (string, error) {
 	return string(signature), nil
 }
 
-func (middleware *PGPMiddleware) VerifyPGPSignature(partnerBank entity.PartnerBank, data model.ExternalTransactionRequest, signedData string) error {
+func (middleware *PGPMiddleware) VerifyPGPSignature(partnerBank entity.PartnerBank, data model.ExternalPayload, signedData string) error {
 	publicKey, err := loadPGPPublicKey(partnerBank.PublicKey)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (middleware *PGPMiddleware) VerifyPGPSignature(partnerBank entity.PartnerBa
 
 func (middleware *PGPMiddleware) Verify(c *gin.Context) {
 	//get body
-	var req model.ExternalTransactionData
+	var req model.ExternalTransferRequest
 	err := validation.BindJsonAndValidate(c, &req)
 	if err != nil {
 		return
@@ -137,7 +137,7 @@ func (middleware *PGPMiddleware) Verify(c *gin.Context) {
 		return
 	}
 	//check hashed data
-	payloadRequest := model.ExternalTransactionRequest{
+	payloadRequest := model.ExternalPayload{
 		SrcAccountNumber: req.SrcAccountNumber,
 		SrcBankCode:      req.SrcBankCode,
 		DesAccountNumber: req.DesAccountNumber,

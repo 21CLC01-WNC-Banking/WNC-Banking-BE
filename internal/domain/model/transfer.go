@@ -20,7 +20,7 @@ type PreDebtTransferRequest struct {
 	TransactionId string `json:"transactionId" binding:"required"`
 }
 
-type ExternalTransactionRequest struct {
+type ExternalPayload struct {
 	SrcAccountNumber string    `json:"srcAccountNumber" binding:"required"`
 	SrcBankCode      string    `json:"srcBankCode" binding:"required"`
 	DesAccountNumber string    `json:"desAccountNumber" binding:"required"`
@@ -30,7 +30,7 @@ type ExternalTransactionRequest struct {
 	Exp              time.Time `json:"exp" binding:"required"`
 }
 
-type ExternalTransactionData struct {
+type ExternalTransferRequest struct {
 	SrcAccountNumber string    `json:"srcAccountNumber" binding:"required"`
 	SrcBankCode      string    `json:"srcBankCode" binding:"required"`
 	DesAccountNumber string    `json:"desAccountNumber" binding:"required"`
@@ -54,4 +54,13 @@ type PreExternalTransferRequest struct {
 	IsSourceFee         *bool  `json:"isSourceFee" binding:"required"`
 	Description         string `json:"description" binding:"required"`
 	Type                string `json:"type" binding:"required"`
+}
+
+type ExternalTransferToRSATeam struct {
+	BankId               int64  `json:"bankId" binding:"required"`
+	AccountNumber        string `json:"accountNumber" binding:"required"`
+	ForeignAccountNumber string `json:"foreignAccountNumber" binding:"required"`
+	Amount               int64  `json:"amount" binding:"required,min=0"`
+	Description          string `json:"description" binding:"required"`
+	Timestamp            int64  `json:"timestamp" binding:"required"`
 }

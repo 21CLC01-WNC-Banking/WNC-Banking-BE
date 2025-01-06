@@ -1,9 +1,15 @@
 package serviceimplement
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
+	"io"
+	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 
@@ -19,6 +25,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type TransferRSATeamResponse struct {
+	Success bool     `json:"success"`
+	Message []string `json:"message"`
+	Data    struct {
+		AccountNumber        string    `json:"accountNumber"`
+		Amount               int64     `json:"amount"`
+		Type                 string    `json:"type"`
+		CreatedAt            time.Time `json:"createdAt"`
+		ForeignAccountNumber string    `json:"foreignAccountNumber"`
+	} `json:"data"`
+}
+
 type TransactionService struct {
 	transactionRepository  repository.TransactionRepository
 	customerRepository     repository.CustomerRepository
@@ -29,6 +47,8 @@ type TransactionService struct {
 	debtReply              repository.DebtReplyRepository
 	notificationRepository repository.NotificationRepository
 	notificationClient     bean.NotificationClient
+	partnerBankService     service.PartnerBankService
+	rsaMiddleware          *middleware.RSAMiddleware
 }
 
 func NewTransactionService(transactionRepository repository.TransactionRepository,
@@ -40,6 +60,8 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 	debtReply repository.DebtReplyRepository,
 	notificationRepository repository.NotificationRepository,
 	notificationClient bean.NotificationClient,
+	partnerBankService service.PartnerBankService,
+	rsaMiddleware *middleware.RSAMiddleware,
 ) service.TransactionService {
 	return &TransactionService{
 		transactionRepository:  transactionRepository,
@@ -51,6 +73,8 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 		debtReply:              debtReply,
 		notificationRepository: notificationRepository,
 		notificationClient:     notificationClient,
+		partnerBankService:     partnerBankService,
+		rsaMiddleware:          rsaMiddleware,
 	}
 }
 
@@ -642,7 +666,7 @@ func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq
 	return nil
 }
 
-func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalTransactionRequest, partnerBankId int64) error {
+func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalPayload, partnerBankId int64) error {
 	//update to DB
 	//balance for target account
 	newTargetBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, transferReq.Amount, transferReq.DesAccountNumber)
@@ -813,7 +837,10 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 	/*
 		call api to partner bank to confirm transaction
 	*/
-
+	err = service.callExternalTransfer(ctx, existsTransaction)
+	if err != nil {
+		return nil, err
+	}
 	//update to DB
 	//balance for source
 	fmt.Print(existsAccount.Number)
@@ -861,4 +888,59 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 
 	// response history
 	return existsTransaction, nil
+}
+
+func (service *TransactionService) callExternalTransfer(ctx *gin.Context, transaction *entity.Transaction) error {
+	//setup payload
+	bankIdInRsaTeamInt, err := strconv.ParseInt(bankIdTeam3, 10, 64)
+	if err != nil {
+		return err
+	}
+	//get partner bank info
+	partnerBank, err := service.partnerBankService.GetBankById(ctx, *transaction.BankId)
+	if err != nil {
+		return err
+	}
+	//setup payload and call api
+	payload := &model.ExternalTransferToRSATeam{
+		BankId:               bankIdInRsaTeamInt,
+		AccountNumber:        transaction.TargetAccountNumber,
+		ForeignAccountNumber: transaction.SourceAccountNumber,
+		Amount:               transaction.Amount,
+		Description:          transaction.Description,
+		Timestamp:            time.Now().Unix(),
+	}
+	reqBytes, err := json.Marshal(payload)
+	//hash data
+	hashedData := HMAC_signature.GenerateHMAC(string(reqBytes), privateKeyRsaTeam)
+	//sign data
+	signedData, err := service.rsaMiddleware.SignDataRSA(string(reqBytes))
+	if err != nil {
+		return err
+	}
+	//setup and call to partner bank server
+	request, err := http.NewRequest("POST", partnerBank.TransferApi, bytes.NewBuffer(reqBytes))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("HMAC", hashedData)
+	request.Header.Set("RSA-Signature", signedData)
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	body, _ := io.ReadAll(response.Body)
+	//handler response
+	var res TransferRSATeamResponse
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+	if response.StatusCode != http.StatusOK {
+		return errors.New(res.Message[0])
+	}
+	return nil
 }

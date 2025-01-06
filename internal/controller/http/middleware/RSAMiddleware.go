@@ -72,7 +72,7 @@ func (middleware *RSAMiddleware) SignDataRSA(data string) (string, error) {
 	return base64.StdEncoding.EncodeToString(signature), nil
 }
 
-func (middleware *RSAMiddleware) VerifyRSASignature(partnerBank entity.PartnerBank, data model.ExternalTransactionRequest, signedData string) error {
+func (middleware *RSAMiddleware) VerifyRSASignature(partnerBank entity.PartnerBank, data model.ExternalPayload, signedData string) error {
 	//load public key
 	rsaPublicKey, err := loadRSAPublicKey(partnerBank.PublicKey)
 	if err != nil {
@@ -96,7 +96,7 @@ func (middleware *RSAMiddleware) VerifyRSASignature(partnerBank entity.PartnerBa
 
 func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 	//get body
-	var req model.ExternalTransactionData
+	var req model.ExternalTransferRequest
 	err := validation.BindJsonAndValidate(c, &req)
 	if err != nil {
 		return
@@ -136,7 +136,7 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 		return
 	}
 	//check hashed data
-	payloadRequest := model.ExternalTransactionRequest{
+	payloadRequest := model.ExternalPayload{
 		SrcAccountNumber: req.SrcAccountNumber,
 		SrcBankCode:      req.SrcBankCode,
 		DesAccountNumber: req.DesAccountNumber,

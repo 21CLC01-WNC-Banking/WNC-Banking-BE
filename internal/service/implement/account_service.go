@@ -22,10 +22,10 @@ import (
 
 var (
 	privateKeyRsaTeam, _ = env.GetEnv("SECRET_KEY_OF_RSA_TEAM")
-	bankIdInRsaTeam, _   = env.GetEnv("BANK_ID_IN_RSA_TEAM")
+	bankIdTeam3, _       = env.GetEnv("BANK_ID_IN_RSA_TEAM")
 )
 
-type Response struct {
+type SearchRSATeamResponse struct {
 	Success bool     `json:"success"`
 	Message []string `json:"message"`
 	Data    struct {
@@ -114,7 +114,7 @@ func (service *AccountService) GetExternalAccountName(ctx *gin.Context, detail m
 	if err != nil {
 		return "", err
 	}
-	bankIdInRsaTeamInt, err := strconv.ParseInt(bankIdInRsaTeam, 10, 64)
+	bankIdInRsaTeamInt, err := strconv.ParseInt(bankIdTeam3, 10, 64)
 	if err != nil {
 		return "", err
 	}
@@ -142,7 +142,7 @@ func (service *AccountService) GetExternalAccountName(ctx *gin.Context, detail m
 	defer response.Body.Close()
 	body, _ := io.ReadAll(response.Body)
 	//handler response
-	var resp Response
+	var resp SearchRSATeamResponse
 	if err := json.Unmarshal(body, &resp); err != nil {
 		return "", err
 	}
