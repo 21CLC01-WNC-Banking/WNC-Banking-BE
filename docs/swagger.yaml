@@ -989,6 +989,27 @@ paths:
       summary: Change Password
       tags:
       - Auths
+  /auth/close:
+    post:
+      consumes:
+      - application/json
+      description: Close account
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Close account
+      tags:
+      - Auths
   /auth/forgot-password:
     post:
       consumes:

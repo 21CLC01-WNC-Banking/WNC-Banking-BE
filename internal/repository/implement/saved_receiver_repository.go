@@ -34,7 +34,7 @@ func (repo *SavedReceiverRepository) ExistsByAccountNumberAndBankID(ctx context.
 	query := `
 		SELECT EXISTS(
 			SELECT 1 FROM saved_receivers
-			WHERE receiver_account_number = ? AND (bank_id = ? OR (? IS NULL AND bank_id IS NULL))
+			WHERE receiver_account_number = ? AND (bank_id = ? OR (? IS NULL AND bank_id IS NULL)) AND deleted_at IS NULL
 		)
 	`
 	err := repo.db.QueryRowContext(ctx, query, accountNumber, bankID, bankID).Scan(&exists)
@@ -43,7 +43,7 @@ func (repo *SavedReceiverRepository) ExistsByAccountNumberAndBankID(ctx context.
 
 func (repo *SavedReceiverRepository) GetAllByCustomerIdQuery(ctx context.Context, userId int64) (*[]entity.SavedReceiver, error) {
 	var receivers []entity.SavedReceiver
-	query := `SELECT * FROM saved_receivers WHERE customer_id = ?`
+	query := `SELECT * FROM saved_receivers WHERE customer_id = ? AND deleted_at IS NULL`
 	err := repo.db.SelectContext(ctx, &receivers, query, userId)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (repo *SavedReceiverRepository) UpdateNameByIdQuery(ctx context.Context, id
 	query := `
 		UPDATE saved_receivers
 		SET receiver_nickname = ?
-		WHERE id = ? AND customer_id = ?
+		WHERE id = ? AND customer_id = ? AND deleted_at IS NULL
 	`
 	result, err := repo.db.ExecContext(ctx, query, newNickname, id, userId)
 	if err != nil {
