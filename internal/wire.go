@@ -38,6 +38,7 @@ var handlerSet = wire.NewSet(
 	v1.NewCustomerHandler,
 	v1.NewAdminHandler,
 	v1.NewPartnerBankHandler,
+	v1.NewDebtReplyHandler,
 )
 
 var serviceSet = wire.NewSet(
@@ -51,6 +52,7 @@ var serviceSet = wire.NewSet(
 	serviceimplement.NewNotificationService,
 	serviceimplement.NewAdminService,
 	serviceimplement.NewPartnerBankService,
+	serviceimplement.NewDebtReplyService,
 )
 
 var repositorySet = wire.NewSet(

@@ -21,6 +21,7 @@ func MapRoutes(router *gin.Engine,
 	externalSearchMiddleware *middleware.ExternalSearchMiddleware,
 	rsaMiddleware *middleware.RSAMiddleware,
 	pgpMiddleware *middleware.PGPMiddleware,
+	debtReplyHandler *DebtReplyHandler,
 ) {
 	router.Use(middleware.CorsMiddleware())
 	v1 := router.Group("/api/v1")
@@ -144,6 +145,10 @@ func MapRoutes(router *gin.Engine,
 			partnerBanks.POST("/external-transfer-rsa", rsaMiddleware.Verify, partnerBankHandler.ReceiveExternalTransfer)
 			partnerBanks.GET("/", authMiddleware.VerifyToken, partnerBankHandler.GetListPartnerBank)
 			partnerBanks.POST("external-transfer-pgp", pgpMiddleware.Verify, partnerBankHandler.ReceiveExternalTransfer)
+		}
+		debtReplys := v1.Group("/debt-reply")
+		{
+			debtReplys.GET("/:debtReminderId", authMiddleware.VerifyToken, debtReplyHandler.GetReplyByDebtReminderId)
 		}
 	}
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

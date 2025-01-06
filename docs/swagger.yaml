@@ -228,6 +228,17 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-entity_DebtReply:
+    properties:
+      data:
+        $ref: '#/definitions/entity.DebtReply'
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-entity_Transaction:
     properties:
       data:
@@ -1391,6 +1402,33 @@ paths:
       summary: Get Transaction By Id
       tags:
       - Customer
+  /debt-reply/{debtReminderId}:
+    get:
+      description: User get debt reply by a debt reminder id
+      parameters:
+      - description: debtReminder Id
+        in: path
+        name: debtReminderId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-entity_DebtReply'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: User get debt reply
+      tags:
+      - Debt Reminder
   /partner-bank/:
     get:
       consumes:

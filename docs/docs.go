@@ -1029,6 +1029,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/debt-reply/{debtReminderId}": {
+            "get": {
+                "description": "User get debt reply by a debt reminder id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Debt Reminder"
+                ],
+                "summary": "User get debt reply",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "debtReminder Id",
+                        "name": "debtReminderId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-entity_DebtReply"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/partner-bank/": {
             "get": {
                 "description": "get list partner banks",
@@ -2003,6 +2044,23 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.SavedReceiverResponse"
                     }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "httpcommon.HttpResponse-entity_DebtReply": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entity.DebtReply"
                 },
                 "errors": {
                     "type": "array",
