@@ -32,7 +32,7 @@ func (repo *AccountRepository) UpdateBalanceCommand(ctx context.Context, number 
 	query := `
 	UPDATE accounts
 	SET balance = balance + ?
-	WHERE number = ?
+	WHERE number = ? AND deleted_at IS NULL
 	`
 
 	_, err := repo.db.ExecContext(ctx, query, amount, number)
@@ -43,7 +43,7 @@ func (repo *AccountRepository) UpdateBalanceCommand(ctx context.Context, number 
 	selectQuery := `
 	SELECT balance
 	FROM accounts
-	WHERE number = ?
+	WHERE number = ? AND deleted_at IS NULL
 	`
 	err = repo.db.GetContext(ctx, &newBalance, selectQuery, number)
 	if err != nil {
@@ -54,7 +54,7 @@ func (repo *AccountRepository) UpdateBalanceCommand(ctx context.Context, number 
 
 func (repo *AccountRepository) GetOneByNumberQuery(ctx context.Context, number string) (*entity.Account, error) {
 	var account entity.Account
-	query := "SELECT * FROM accounts WHERE number = ?"
+	query := "SELECT * FROM accounts WHERE number = ? AND deleted_at IS NULL"
 	err := repo.db.QueryRowxContext(ctx, query, number).StructScan(&account)
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (repo *AccountRepository) GetOneByNumberQuery(ctx context.Context, number s
 
 func (repo *AccountRepository) GetOneByCustomerIdQuery(ctx context.Context, customerId int64) (*entity.Account, error) {
 	var account entity.Account
-	query := "SELECT * FROM accounts WHERE customer_id = ?"
+	query := "SELECT * FROM accounts WHERE customer_id = ? AND deleted_at IS NULL"
 	err := repo.db.QueryRowxContext(ctx, query, customerId).StructScan(&account)
 	if err != nil {
 		return nil, err

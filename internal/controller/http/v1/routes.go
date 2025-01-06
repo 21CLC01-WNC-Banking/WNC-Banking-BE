@@ -33,6 +33,7 @@ func MapRoutes(router *gin.Engine,
 			auth.POST("/forgot-password", authHandler.SetPassword)
 			auth.POST("/logout", authHandler.Logout)
 			auth.POST("/change-password", authMiddleware.VerifyToken, authHandler.ChangePassword)
+			auth.POST("/close", authMiddleware.VerifyToken, authHandler.CloseAccount)
 		}
 		customer := v1.Group("/customer")
 		{
