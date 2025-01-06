@@ -3,6 +3,7 @@ package serviceimplement
 import (
 	"database/sql"
 	"errors"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 
@@ -258,4 +259,24 @@ func (service *AuthService) Logout(ctx *gin.Context, refreshToken string) {
 		false,
 		true,
 	)
+}
+
+func (service *AuthService) ChangePassword(ctx *gin.Context, request model.ChangePasswordRequest) error {
+	userId := middleware.GetUserIdHelper(ctx)
+
+	user, err := service.GetUserById(ctx, userId)
+	if err != nil {
+		return err
+	}
+
+	if !service.passwordEncoder.Compare(user.Password, request.Password) {
+		return errors.New("invalid password")
+	}
+
+	newPasswordHashed, err := service.passwordEncoder.Encrypt(request.NewPassword)
+	if err != nil {
+		return err
+	}
+	err = service.customerRepository.UpdatePasswordByIdQuery(ctx, userId, newPasswordHashed)
+	return err
 }

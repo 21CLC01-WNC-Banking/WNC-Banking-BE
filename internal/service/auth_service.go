@@ -15,4 +15,5 @@ type AuthService interface {
 	SetPassword(ctx *gin.Context, setPasswordRequest model.SetPasswordRequest) error
 	GetUserById(ctx *gin.Context, userId int64) (*entity.User, error)
 	Logout(ctx *gin.Context, refreshToken string)
+	ChangePassword(ctx *gin.Context, request model.ChangePasswordRequest) error
 }

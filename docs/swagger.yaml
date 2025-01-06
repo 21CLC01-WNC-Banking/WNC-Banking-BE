@@ -363,6 +363,20 @@ definitions:
     - accountNumber
     - amount
     type: object
+  model.ChangePasswordRequest:
+    properties:
+      newPassword:
+        maxLength: 255
+        minLength: 8
+        type: string
+      password:
+        maxLength: 255
+        minLength: 8
+        type: string
+    required:
+    - newPassword
+    - password
+    type: object
   model.CreateStaffRequest:
     properties:
       email:
@@ -947,6 +961,34 @@ paths:
       summary: Admin get one staff
       tags:
       - Admins
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change password for logged in users
+      parameters:
+      - description: Set Password payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Change Password
+      tags:
+      - Auths
   /auth/forgot-password:
     post:
       consumes:
