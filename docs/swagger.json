@@ -3,6 +3,7 @@
     "info": {
         "contact": {}
     },
+    "basePath": "/api/v1",
     "paths": {
         "/account/": {
             "get": {

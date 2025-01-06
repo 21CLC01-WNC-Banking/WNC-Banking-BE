@@ -2,6 +2,8 @@ package beanimplement
 
 import (
 	"context"
+	"fmt"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/constants"
@@ -13,8 +15,13 @@ type RedisService struct {
 }
 
 func NewRedisService() bean.RedisClient {
+	redisHost, err := env.GetEnv("REDIS_HOST")
+	redisPort, err := env.GetEnv("REDIS_PORT")
+	if err != nil {
+		panic(err)
+	}
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     fmt.Sprintf("%s:%s", redisHost, redisPort),
 		Password: "",
 		DB:       0,
 	})
