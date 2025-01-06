@@ -16,4 +16,5 @@ type AuthService interface {
 	GetUserById(ctx *gin.Context, userId int64) (*entity.User, error)
 	Logout(ctx *gin.Context, refreshToken string)
 	ChangePassword(ctx *gin.Context, request model.ChangePasswordRequest) error
+	Close(ctx *gin.Context) error
 }

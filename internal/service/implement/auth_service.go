@@ -280,3 +280,9 @@ func (service *AuthService) ChangePassword(ctx *gin.Context, request model.Chang
 	err = service.customerRepository.UpdatePasswordByIdQuery(ctx, userId, newPasswordHashed)
 	return err
 }
+
+func (service *AuthService) Close(ctx *gin.Context) error {
+	userId := middleware.GetUserIdHelper(ctx)
+
+	return service.customerRepository.DeleteById(ctx, userId)
+}

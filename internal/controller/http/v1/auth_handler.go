@@ -191,3 +191,23 @@ func (handler *AuthHandler) ChangePassword(ctx *gin.Context) {
 	}
 	ctx.AbortWithStatus(204)
 }
+
+// @Summary Close account
+// @Description Close account
+// @Tags Auths
+// @Accept json
+// @Produce json
+// @Router /auth/close [post]
+// @Success 204 "No Content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AuthHandler) CloseAccount(ctx *gin.Context) {
+	err := handler.authService.Close(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{Message: err.Error(), Code: httpcommon.ErrorResponseCode.InvalidRequest},
+		))
+		return
+	}
+	ctx.AbortWithStatus(204)
+}
