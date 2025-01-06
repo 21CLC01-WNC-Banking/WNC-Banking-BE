@@ -59,7 +59,9 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	partnerBankHandler := v1.NewPartnerBankHandler(accountService, transactionService, partnerBankService)
 	externalSearchMiddleware := middleware.NewExternalSearchMiddleware(partnerBankService)
 	rsaMiddleware := middleware.NewRSAMiddleware(externalSearchMiddleware, accountService)
-	httpServer := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler, partnerBankHandler, externalSearchMiddleware, rsaMiddleware)
+	debtReplyService := serviceimplement.NewDebtReplyService(debtReplyRepository)
+	debtReplyHandler := v1.NewDebtReplyHandler(debtReplyService)
+	httpServer := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler, partnerBankHandler, externalSearchMiddleware, rsaMiddleware, debtReplyHandler)
 	apiContainer := controller.NewApiContainer(httpServer, server)
 	return apiContainer
 }
@@ -72,9 +74,9 @@ var container = wire.NewSet(controller.NewApiContainer)
 var serverSet = wire.NewSet(http.NewServer, websocket.NewServer)
 
 // handler === controller | with service and repository layers to form 3 layers architecture
-var handlerSet = wire.NewSet(v1.NewAuthHandler, v1.NewCoreHandler, v1.NewAccountHandler, v1.NewStaffHandler, v1.NewTransactionHandler, v1.NewSavedReceiverHandler, v1.NewCustomerHandler, v1.NewAdminHandler, v1.NewPartnerBankHandler)
+var handlerSet = wire.NewSet(v1.NewAuthHandler, v1.NewCoreHandler, v1.NewAccountHandler, v1.NewStaffHandler, v1.NewTransactionHandler, v1.NewSavedReceiverHandler, v1.NewCustomerHandler, v1.NewAdminHandler, v1.NewPartnerBankHandler, v1.NewDebtReplyHandler)
 
-var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.NewAccountService, serviceimplement.NewCoreService, serviceimplement.NewRoleService, serviceimplement.NewTransactionService, serviceimplement.NewSavedReceiverService, serviceimplement.NewStaffService, serviceimplement.NewNotificationService, serviceimplement.NewAdminService, serviceimplement.NewPartnerBankService)
+var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.NewAccountService, serviceimplement.NewCoreService, serviceimplement.NewRoleService, serviceimplement.NewTransactionService, serviceimplement.NewSavedReceiverService, serviceimplement.NewStaffService, serviceimplement.NewNotificationService, serviceimplement.NewAdminService, serviceimplement.NewPartnerBankService, serviceimplement.NewDebtReplyService)
 
 var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository, repositoryimplement.NewRoleRepository, repositoryimplement.NewTransactionRepository, repositoryimplement.NewSavedReceiverRepository, repositoryimplement.NewNotificationRepository, repositoryimplement.NewDebtReplyRepository, repositoryimplement.NewStaffRepository, repositoryimplement.NewPartnerBankRepository)
 
