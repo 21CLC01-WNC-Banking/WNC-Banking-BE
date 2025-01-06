@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
@@ -228,7 +227,7 @@ func (handler *AdminHandler) GetExternalTransactions(c *gin.Context) {
 	}
 
 	if len(transactions) == 0 {
-		transactions = make([]entity.Transaction, 0)
+		transactions = make([]model.GetExternalTransactionResponse, 0)
 	}
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse(&transactions))
 }

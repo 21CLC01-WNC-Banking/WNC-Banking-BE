@@ -3,6 +3,7 @@ package repositoryimplement
 import (
 	"context"
 	"fmt"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
@@ -140,11 +141,11 @@ func (repo *TransactionRepository) GetTransactionByAccountNumberAndIdQuery(ctx c
 	return &transaction, nil
 }
 
-func (repo *TransactionRepository) GetExternalTransactionsWithFilter(ctx context.Context, fromDate, toDate string, bankId int64) ([]entity.Transaction, error) {
-	var transactions []entity.Transaction
+func (repo *TransactionRepository) GetExternalTransactionsWithFilter(ctx context.Context, fromDate, toDate string, bankId int64) ([]model.GetExternalTransactionResponse, error) {
+	var transactions []model.GetExternalTransactionResponse
 
 	query := `
-		SELECT transactions.* 
+		SELECT transactions.*, partner_banks.id as bank_id, partner_banks.short_name as bank_short_name, partner_banks.bank_name as bank_name, partner_banks.bank_code
 		FROM transactions 
 		JOIN partner_banks ON partner_banks.id = transactions.bank_id
 		WHERE transactions.type = 'external' AND transactions.status = 'success'
