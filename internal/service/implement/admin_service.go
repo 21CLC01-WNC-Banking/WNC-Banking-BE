@@ -63,6 +63,6 @@ func (a *AdminService) UpdateOneStaff(ctx *gin.Context, request *model.UpdateSta
 	})
 }
 
-func (a *AdminService) GetExternalTransactions(ctx *gin.Context, filter model.GetExternalTransactionRequest) ([]entity.Transaction, error) {
+func (a *AdminService) GetExternalTransactions(ctx *gin.Context, filter model.GetExternalTransactionRequest) ([]model.GetExternalTransactionResponse, error) {
 	return a.transactionRepository.GetExternalTransactionsWithFilter(ctx, filter.FromDate, filter.ToDate, filter.BankId)
 }

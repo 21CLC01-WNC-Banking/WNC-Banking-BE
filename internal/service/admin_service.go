@@ -12,5 +12,5 @@ type AdminService interface {
 	CreateOneStaff(ctx *gin.Context, request *model.CreateStaffRequest) (int64, error) // return created staff id
 	DeleteOneStaff(ctx *gin.Context, staffId int64) error
 	UpdateOneStaff(ctx *gin.Context, request *model.UpdateStaffRequest) error
-	GetExternalTransactions(ctx *gin.Context, filter model.GetExternalTransactionRequest) ([]entity.Transaction, error)
+	GetExternalTransactions(ctx *gin.Context, filter model.GetExternalTransactionRequest) ([]model.GetExternalTransactionResponse, error)
 }

@@ -164,3 +164,30 @@ func (handler *AuthHandler) Logout(ctx *gin.Context) {
 	handler.authService.Logout(ctx, refreshToken)
 	ctx.AbortWithStatus(204)
 }
+
+// @Summary Change Password
+// @Description Change password for logged in users
+// @Tags Auths
+// @Accept json
+// @Param request body model.ChangePasswordRequest true "Set Password payload"
+// @Produce json
+// @Router /auth/change-password [post]
+// @Success 204 "No Content"
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
+func (handler *AuthHandler) ChangePassword(ctx *gin.Context) {
+	var request model.ChangePasswordRequest
+
+	if err := validation.BindJsonAndValidate(ctx, &request); err != nil {
+		return
+	}
+
+	err := handler.authService.ChangePassword(ctx, request)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
+			httpcommon.Error{Message: err.Error(), Code: httpcommon.ErrorResponseCode.InvalidRequest},
+		))
+		return
+	}
+	ctx.AbortWithStatus(204)
+}

@@ -38,3 +38,8 @@ type SetPasswordRequest struct {
 	OTP      string `json:"otp" binding:"required,min=6,max=6"`
 	Password string `json:"password" binding:"required,min=8,max=255"`
 }
+
+type ChangePasswordRequest struct {
+	Password    string `json:"password" binding:"required,min=8,max=255"`
+	NewPassword string `json:"newPassword" binding:"required,min=8,max=255"`
+}
