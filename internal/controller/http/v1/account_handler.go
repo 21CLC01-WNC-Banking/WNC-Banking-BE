@@ -95,6 +95,12 @@ func (handler *AccountHandler) GetExternalAccountName(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	var name = "FAKE GETNAME"
-	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&name))
+	accountName, err := handler.accountService.GetExternalAccountName(c, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&accountName))
 }

@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -12,10 +13,13 @@ import (
 
 type TransactionHandler struct {
 	transactionService service.TransactionService
+	pgpMiddleware      *middleware.PGPMiddleware
 }
 
-func NewTransactionHandler(transactionService service.TransactionService) *TransactionHandler {
-	return &TransactionHandler{transactionService: transactionService}
+func NewTransactionHandler(transactionService service.TransactionService,
+	pgpMiddleware *middleware.PGPMiddleware) *TransactionHandler {
+	return &TransactionHandler{transactionService: transactionService,
+		pgpMiddleware: pgpMiddleware}
 }
 
 // @Summary Internal transaction
@@ -246,4 +250,16 @@ func (handler *TransactionHandler) ExternalTransfer(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[*entity.Transaction](&transaction))
+}
+
+func (handler *TransactionHandler) demo(ctx *gin.Context) {
+	signedData, err := handler.pgpMiddleware.SignDataPGP("ahihi")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+		}))
+		return
+	}
+	ctx.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&signedData))
+
 }

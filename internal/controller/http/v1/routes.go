@@ -20,6 +20,7 @@ func MapRoutes(router *gin.Engine,
 	partnerBankHandler *PartnerBankHandler,
 	externalSearchMiddleware *middleware.ExternalSearchMiddleware,
 	rsaMiddleware *middleware.RSAMiddleware,
+	pgpMiddleware *middleware.PGPMiddleware,
 	debtReplyHandler *DebtReplyHandler,
 ) {
 	router.Use(middleware.CorsMiddleware())
@@ -137,12 +138,14 @@ func MapRoutes(router *gin.Engine,
 			transactions.POST("/pre-debt-transfer", authMiddleware.VerifyToken, transactionHandler.PreDebtTransfer)
 			transactions.POST("/pre-external-transfer", authMiddleware.VerifyToken, transactionHandler.PreExternalTransfer)
 			transactions.POST("/external-transfer", authMiddleware.VerifyToken, transactionHandler.ExternalTransfer)
+			transactions.GET("/demo", transactionHandler.demo)
 		}
 		partnerBanks := v1.Group("/partner-bank")
 		{
 			partnerBanks.POST("/get-account-information", externalSearchMiddleware.VerifyAPI, partnerBankHandler.GetAccountNumberInfo)
 			partnerBanks.POST("/external-transfer-rsa", rsaMiddleware.Verify, partnerBankHandler.ReceiveExternalTransfer)
 			partnerBanks.GET("/", authMiddleware.VerifyToken, partnerBankHandler.GetListPartnerBank)
+			partnerBanks.POST("external-transfer-pgp", pgpMiddleware.Verify, partnerBankHandler.ReceiveExternalTransfer)
 		}
 		debtReplys := v1.Group("/debt-reply")
 		{

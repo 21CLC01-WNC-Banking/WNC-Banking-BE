@@ -1,14 +1,16 @@
 package middleware
 
 import (
+	"encoding/json"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/jwt"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
+	"time"
 )
 
 var secretString = os.Getenv("SECRET_KEY_FOR_EXTERNAL_BANK")
@@ -32,51 +34,20 @@ func (middleware *ExternalSearchMiddleware) VerifyPartnerBank(c *gin.Context, ba
 }
 
 func (middleware *ExternalSearchMiddleware) VerifyAPI(c *gin.Context) {
-	//get hashed data in header
-	hashedData := c.GetHeader("hashedData")
-	if hashedData == "" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
-			httpcommon.Error{
-				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
-				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "hashedData",
-			}))
-		return
-	}
-
-	//decode token
-	claim, err := jwt.VerifyToken(hashedData, secretString)
+	//get body
+	var req model.AccountNumberInfoRequest
+	err := c.ShouldBindJSON(&req)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.TokenExpired {
-			c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
-				httpcommon.Error{
-					Message: "thông tin cũ đã quá hạn",
-					Code:    httpcommon.ErrorResponseCode.TimeoutRequest,
-					Field:   "hashedData",
-				}))
-			return
-		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "hashedData",
+				Field:   "body",
 			}))
 		return
 	}
-	//getPayloadinfo
-	payload, ok := claim.Payload.(map[string]interface{})
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
-			httpcommon.Error{
-				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
-				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "payload",
-			}))
-		return
-	}
-	partnerBankCode := payload["srcBankCode"].(string)
-	_, err = middleware.VerifyPartnerBank(c, partnerBankCode)
+	//check exists bank
+	_, err = middleware.VerifyPartnerBank(c, req.SrcBankCode)
 	if err != nil {
 		if err.Error() == "partner bank not found" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
@@ -87,38 +58,53 @@ func (middleware *ExternalSearchMiddleware) VerifyAPI(c *gin.Context) {
 				}))
 			return
 		}
+		c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: err.Error(),
+				Code:    httpcommon.ErrorResponseCode.InternalServerError,
+				Field:   "srcBankCode",
+			}))
+		return
+	}
+	//check time
+	if req.Exp.Before(time.Now()) {
+		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: "thông tin cũ đã quá hạn",
+				Code:    httpcommon.ErrorResponseCode.TimeoutRequest,
+				Field:   "Exp",
+			}))
+		return
 	}
 
-	//rehash token
-	var req model.AccountNumberInfoRequest
-	err = c.ShouldBindJSON(&req)
-	if err != nil {
+	//get hashed data in header and check valid
+	hashedData := c.GetHeader("hashedData")
+	if hashedData == "" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "body",
+				Field:   "hashedData",
 			}))
 		return
 	}
-	claim.Payload = req
-	expectedHash, err := jwt.GenerateTokenByClaims(*claim, secretString)
+	data, err := json.Marshal(req)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: err.Error(),
 				Code:    httpcommon.ErrorResponseCode.InternalServerError,
-				Field:   "rehash",
+				Field:   "encoding body",
 			}))
 		return
 	}
-	//check token
-	if expectedHash != hashedData {
+	valid := HMAC_signature.VerifyHMAC(string(data), hashedData, secretString)
+	if !valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "map token",
+				Field:   "verify hashed data",
 			}))
 		return
 	}

@@ -1,9 +1,15 @@
 package serviceimplement
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
+	"io"
+	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 
@@ -19,6 +25,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type TransferRSATeamResponse struct {
+	Success *bool    `json:"success"`
+	Message []string `json:"message"`
+	Data    struct {
+		AccountNumber        string    `json:"accountNumber"`
+		Amount               int64     `json:"amount"`
+		Type                 string    `json:"type"`
+		CreatedAt            time.Time `json:"createdAt"`
+		ForeignAccountNumber string    `json:"foreignAccountNumber"`
+	} `json:"data"`
+}
+
 type TransactionService struct {
 	transactionRepository  repository.TransactionRepository
 	customerRepository     repository.CustomerRepository
@@ -29,6 +47,8 @@ type TransactionService struct {
 	debtReply              repository.DebtReplyRepository
 	notificationRepository repository.NotificationRepository
 	notificationClient     bean.NotificationClient
+	partnerBankService     service.PartnerBankService
+	rsaMiddleware          *middleware.RSAMiddleware
 }
 
 func NewTransactionService(transactionRepository repository.TransactionRepository,
@@ -40,6 +60,8 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 	debtReply repository.DebtReplyRepository,
 	notificationRepository repository.NotificationRepository,
 	notificationClient bean.NotificationClient,
+	partnerBankService service.PartnerBankService,
+	rsaMiddleware *middleware.RSAMiddleware,
 ) service.TransactionService {
 	return &TransactionService{
 		transactionRepository:  transactionRepository,
@@ -51,6 +73,8 @@ func NewTransactionService(transactionRepository repository.TransactionRepositor
 		debtReply:              debtReply,
 		notificationRepository: notificationRepository,
 		notificationClient:     notificationClient,
+		partnerBankService:     partnerBankService,
+		rsaMiddleware:          rsaMiddleware,
 	}
 }
 
@@ -576,7 +600,7 @@ func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, custo
 	transactionResp := make([]model.GetTransactionsResponse, 0)
 
 	for _, transaction := range transactions {
-		transactionResp = append(transactionResp, service.TransactionUtils_EntityToResponse(transaction, sourceAccount.Number))
+		transactionResp = append(transactionResp, service.TransactionUtilsEntityToResponse(transaction, sourceAccount.Number))
 	}
 
 	return transactionResp, nil
@@ -597,7 +621,7 @@ func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, c
 		return nil, err
 	}
 
-	transactionResp := service.TransactionUtils_EntityToResponse(*transaction, sourceAccount.Number)
+	transactionResp := service.TransactionUtilsEntityToResponse(*transaction, sourceAccount.Number)
 
 	return &transactionResp, nil
 }
@@ -642,7 +666,7 @@ func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq
 	return nil
 }
 
-func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalTransactionRequest, partnerBankId int64) error {
+func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalPayload, partnerBankId int64) error {
 	//update to DB
 	//balance for target account
 	newTargetBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, transferReq.Amount, transferReq.DesAccountNumber)
@@ -696,11 +720,6 @@ func (service *TransactionService) ReceiveExternalTransfer(ctx *gin.Context, tra
 }
 
 func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transferReq model.PreExternalTransferRequest) (string, error) {
-	//check input account number
-	if transferReq.SourceAccountNumber == transferReq.TargetAccountNumber {
-		return "", errors.New("source account number can not equal to target account number")
-	}
-
 	//get customer
 	customerId := middleware.GetUserIdHelper(ctx)
 	//check customerId
@@ -711,34 +730,27 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		}
 		return "", err
 	}
-
 	//get account by customerId and check sourceNumber is internal
 	sourceAccount, err := service.accountService.GetAccountByCustomerId(ctx, sourceCustomer.Id)
 	if err != nil {
-		if err.Error() == httpcommon.ErrorMessage.SqlxNoRow {
-			return "", errors.New("source account not found")
-		}
 		return "", err
 	}
 	if sourceAccount.Number != transferReq.SourceAccountNumber {
 		return "", errors.New("source account not match")
 	}
-
-	//check targetNumber is in internal bank
-	targetAccount, err := service.accountService.GetAccountByNumber(ctx, transferReq.TargetAccountNumber)
-	if targetAccount != nil {
-		return "", errors.New("target account existed in internal bank")
-	}
 	//check targetNumber is in partner bank
-	/*
-		here...
-	*/
+	_, err = service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
+		BankId:        transferReq.PartnerBankId,
+		AccountNumber: transferReq.TargetAccountNumber,
+	})
+	if err != nil {
+		return "", err
+	}
 
 	//check type
 	if transferReq.Type != "external" {
 		return "", errors.New("invalid transaction type")
 	}
-
 	//estimate fee
 	fee, err := service.coreService.EstimateTransferFee(ctx, transferReq.Amount)
 	if err != nil {
@@ -805,19 +817,20 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 		return nil, err
 	}
 	//verify OTP
-	err = service.verifyOTP(ctx, transferReq)
-	if err != nil {
-		return nil, err
-	}
+	//err = service.verifyOTP(ctx, transferReq)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	/*
 		call api to partner bank to confirm transaction
 	*/
-
+	err = service.callExternalTransfer(ctx, existsTransaction)
+	if err != nil {
+		return nil, err
+	}
 	//update to DB
 	//balance for source
-	fmt.Print(existsAccount.Number)
-	fmt.Print(existsTransaction.SourceAccountNumber)
 	newSourceBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
 	if err != nil {
 		return nil, err
@@ -842,14 +855,18 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 	if err != nil {
 		fmt.Println(err)
 	}
-	targetCustomer, err := service.customerRepository.GetCustomerByAccountNumberQuery(ctx, existsTransaction.TargetAccountNumber)
+	//get target name
+	targetAccountName, err := service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
+		BankId:        *existsTransaction.BankId,
+		AccountNumber: existsTransaction.TargetAccountNumber,
+	})
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
-
+	//noti
 	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(sourceCustomer.Id),
-		Name:          targetCustomer.Name,
+		Name:          targetAccountName,
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "outgoing_transfer",
@@ -861,4 +878,70 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 
 	// response history
 	return existsTransaction, nil
+}
+
+func (service *TransactionService) callExternalTransfer(ctx *gin.Context, transaction *entity.Transaction) error {
+	//setup payload
+	bankIdInRsaTeamInt, err := strconv.ParseInt(bankIdTeam3, 10, 64)
+	if err != nil {
+		return err
+	}
+	//get partner bank info
+	partnerBank, err := service.partnerBankService.GetBankById(ctx, *transaction.BankId)
+	if err != nil {
+		return err
+	}
+	//setup payload and call api
+	payload := &model.ExternalTransferToRSATeam{
+		BankId:               bankIdInRsaTeamInt,
+		AccountNumber:        transaction.TargetAccountNumber,
+		ForeignAccountNumber: transaction.SourceAccountNumber,
+		Amount:               transaction.Amount,
+		Description:          transaction.Description,
+		Timestamp:            time.Now().Unix(),
+	}
+	reqBytes, err := json.Marshal(payload)
+	//hash data
+	hashedData := HMAC_signature.GenerateHMAC(string(reqBytes), privateKeyRsaTeam)
+	//sign data
+	signedData, err := service.rsaMiddleware.SignDataRSA(string(reqBytes))
+	if err != nil {
+		return err
+	}
+	//setup and call to partner bank server
+	request, err := http.NewRequest("POST", partnerBank.TransferApi, bytes.NewBuffer(reqBytes))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("HMAC", hashedData)
+	request.Header.Set("RSA-Signature", signedData)
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	body, _ := io.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Println(string(body))
+		return errors.New(response.Status)
+	}
+	//handler response
+	var res TransferRSATeamResponse
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+	if *res.Success != true {
+		return errors.New(res.Message[0])
+	}
+	//Verify signature
+	partnerSignature := response.Header.Get("RSA-Signature")
+	dataBytes, _ := json.Marshal(res)
+	err = service.rsaMiddleware.VerifyRSASignature(*partnerBank, dataBytes, partnerSignature)
+	if err != nil {
+		return err
+	}
+	return nil
 }

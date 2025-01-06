@@ -14,6 +14,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/v1"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/websocket"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/repository/implement"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service/implement"
 	"github.com/google/wire"
@@ -21,13 +22,15 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeContainer(db database.Db) *controller.ApiContainer {
+func InitializeContainer(db database.Db, path model.KeyPath) *controller.ApiContainer {
 	customerRepository := repositoryimplement.NewCustomerRepository(db)
 	authenticationRepository := repositoryimplement.NewAuthenticationRepository(db)
 	passwordEncoder := beanimplement.NewBcryptPasswordEncoder()
 	redisClient := beanimplement.NewRedisService()
 	accountRepository := repositoryimplement.NewAccountRepository(db)
-	accountService := serviceimplement.NewAccountService(accountRepository, customerRepository)
+	partnerBankRepository := repositoryimplement.NewPartnerBankRepository(db)
+	partnerBankService := serviceimplement.NewPartnerBankService(partnerBankRepository)
+	accountService := serviceimplement.NewAccountService(accountRepository, customerRepository, partnerBankService)
 	mailClient := beanimplement.NewMailClient()
 	roleRepository := repositoryimplement.NewRoleRepository(db)
 	authService := serviceimplement.NewAuthService(customerRepository, authenticationRepository, passwordEncoder, redisClient, accountService, mailClient, roleRepository)
@@ -38,8 +41,6 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	notificationClient := beanimplement.NewNotificationClient(server, notificationRepository)
 	coreHandler := v1.NewCoreHandler(coreService, notificationClient)
 	savedReceiverRepository := repositoryimplement.NewSavedReceiverRepository(db)
-	partnerBankRepository := repositoryimplement.NewPartnerBankRepository(db)
-	partnerBankService := serviceimplement.NewPartnerBankService(partnerBankRepository)
 	savedReceiverService := serviceimplement.NewSavedReceiverService(savedReceiverRepository, accountService, partnerBankService)
 	accountHandler := v1.NewAccountHandler(accountService, savedReceiverService, authService)
 	transactionRepository := repositoryimplement.NewTransactionRepository(db)
@@ -48,20 +49,22 @@ func InitializeContainer(db database.Db) *controller.ApiContainer {
 	roleService := serviceimplement.NewRoleService(roleRepository)
 	authMiddleware := middleware.NewAuthMiddleware(authService, roleService)
 	debtReplyRepository := repositoryimplement.NewDebtReplyRepository(db)
-	transactionService := serviceimplement.NewTransactionService(transactionRepository, customerRepository, accountService, coreService, redisClient, mailClient, debtReplyRepository, notificationRepository, notificationClient)
-	transactionHandler := v1.NewTransactionHandler(transactionService)
+	externalSearchMiddleware := middleware.NewExternalSearchMiddleware(partnerBankService)
+	keyLoader := beanimplement.NewKeyLoader(path)
+	rsaMiddleware := middleware.NewRSAMiddleware(externalSearchMiddleware, keyLoader)
+	transactionService := serviceimplement.NewTransactionService(transactionRepository, customerRepository, accountService, coreService, redisClient, mailClient, debtReplyRepository, notificationRepository, notificationClient, partnerBankService, rsaMiddleware)
+	pgpMiddleware := middleware.NewPGPMiddleware(externalSearchMiddleware, keyLoader)
+	transactionHandler := v1.NewTransactionHandler(transactionService, pgpMiddleware)
 	savedReceiverHandler := v1.NewSavedReceiverHandler(savedReceiverService)
 	notificationService := serviceimplement.NewNotificationService(notificationRepository)
 	customerHandler := v1.NewCustomerHandler(notificationService, transactionService)
 	staffRepository := repositoryimplement.NewStaffRepository(db)
 	adminService := serviceimplement.NewAdminService(staffRepository, passwordEncoder, transactionRepository)
 	adminHandler := v1.NewAdminHandler(adminService, partnerBankService)
-	partnerBankHandler := v1.NewPartnerBankHandler(accountService, transactionService, partnerBankService)
-	externalSearchMiddleware := middleware.NewExternalSearchMiddleware(partnerBankService)
-	rsaMiddleware := middleware.NewRSAMiddleware(externalSearchMiddleware, accountService)
+	partnerBankHandler := v1.NewPartnerBankHandler(accountService, transactionService, partnerBankService, rsaMiddleware, pgpMiddleware)
 	debtReplyService := serviceimplement.NewDebtReplyService(debtReplyRepository)
 	debtReplyHandler := v1.NewDebtReplyHandler(debtReplyService)
-	httpServer := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler, partnerBankHandler, externalSearchMiddleware, rsaMiddleware, debtReplyHandler)
+	httpServer := http.NewServer(authHandler, coreHandler, accountHandler, staffHandler, authMiddleware, transactionHandler, savedReceiverHandler, customerHandler, adminHandler, partnerBankHandler, externalSearchMiddleware, rsaMiddleware, pgpMiddleware, debtReplyHandler)
 	apiContainer := controller.NewApiContainer(httpServer, server)
 	return apiContainer
 }
@@ -80,6 +83,6 @@ var serviceSet = wire.NewSet(serviceimplement.NewAuthService, serviceimplement.N
 
 var repositorySet = wire.NewSet(repositoryimplement.NewCustomerRepository, repositoryimplement.NewAuthenticationRepository, repositoryimplement.NewAccountRepository, repositoryimplement.NewRoleRepository, repositoryimplement.NewTransactionRepository, repositoryimplement.NewSavedReceiverRepository, repositoryimplement.NewNotificationRepository, repositoryimplement.NewDebtReplyRepository, repositoryimplement.NewStaffRepository, repositoryimplement.NewPartnerBankRepository)
 
-var middlewareSet = wire.NewSet(middleware.NewAuthMiddleware, middleware.NewExternalSearchMiddleware, middleware.NewRSAMiddleware)
+var middlewareSet = wire.NewSet(middleware.NewAuthMiddleware, middleware.NewExternalSearchMiddleware, middleware.NewRSAMiddleware, middleware.NewPGPMiddleware)
 
-var beanSet = wire.NewSet(beanimplement.NewBcryptPasswordEncoder, beanimplement.NewRedisService, beanimplement.NewMailClient, beanimplement.NewNotificationClient)
+var beanSet = wire.NewSet(beanimplement.NewBcryptPasswordEncoder, beanimplement.NewRedisService, beanimplement.NewMailClient, beanimplement.NewNotificationClient, beanimplement.NewKeyLoader)

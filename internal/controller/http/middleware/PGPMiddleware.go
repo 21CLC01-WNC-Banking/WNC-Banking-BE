@@ -1,97 +1,103 @@
 package middleware
 
 import (
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"encoding/pem"
 	"errors"
+	"fmt"
 	beanimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean/implement"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
+	"github.com/ProtonMail/gopenpgp/v3/crypto"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
 )
 
-type RSAMiddleware struct {
+var passPhrase, _ = env.GetEnv("PGP_PASS_PHRASE")
+
+type PGPMiddleware struct {
 	externalSearchMiddleware *ExternalSearchMiddleware
 	keyLoader                *beanimplement.KeyLoader
 }
 
-func NewRSAMiddleware(externalSearchMiddleware *ExternalSearchMiddleware,
-	keyLoader *beanimplement.KeyLoader) *RSAMiddleware {
-	return &RSAMiddleware{externalSearchMiddleware: externalSearchMiddleware,
-		keyLoader: keyLoader}
+func NewPGPMiddleware(externalSearchMiddleware *ExternalSearchMiddleware,
+	keyLoader *beanimplement.KeyLoader) *PGPMiddleware {
+	return &PGPMiddleware{
+		externalSearchMiddleware: externalSearchMiddleware,
+		keyLoader:                keyLoader,
+	}
 }
 
-func (middleware *RSAMiddleware) loadRSAPrivateKey() (*rsa.PrivateKey, error) {
-	block, _ := pem.Decode(middleware.keyLoader.RSAKey)
-	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+func (middleware *PGPMiddleware) loadPGPPrivateKey() (*crypto.Key, error) {
+	privateKey, err := crypto.NewPrivateKeyFromArmored(string(middleware.keyLoader.PGPKey), []byte(`12345`))
 	if err != nil {
 		return nil, errors.New("failed to parse private key")
 	}
-	return key, nil
+	return privateKey, nil
 }
 
-func loadRSAPublicKey(pemKey string) (*rsa.PublicKey, error) {
-	block, _ := pem.Decode([]byte(pemKey))
-	if block == nil {
-		return nil, errors.New("failed to decode PEM block, invalid format")
-	}
-	key, err := x509.ParsePKIXPublicKey(block.Bytes)
+func loadPGPPublicKey(pemKey string) (*crypto.Key, error) {
+	publicKey, err := crypto.NewKeyFromArmored(pemKey)
 	if err != nil {
 		return nil, errors.New("failed to parse public key")
 	}
-	rsaKey, ok := key.(*rsa.PublicKey)
-	if !ok {
-		return nil, errors.New("not an RSA public key")
-	}
-	return rsaKey, nil
+	return publicKey, nil
 }
 
-func (middleware *RSAMiddleware) SignDataRSA(data string) (string, error) {
-	// Hash the data using SHA256
-	hashed := sha256.Sum256([]byte(data))
-	//get private key
-	privateKey, err := middleware.loadRSAPrivateKey()
+func (middleware *PGPMiddleware) SignDataPGP(data string) (string, error) {
+	key, err := middleware.loadPGPPrivateKey()
 	if err != nil {
 		return "", err
 	}
-	// Sign the hashed data with RSA
-	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed[:])
+	pgp := crypto.PGP()
+	signer, err := pgp.Sign().SigningKey(key).Detached().New()
 	if err != nil {
 		return "", err
 	}
-	// Encode the signature to Base64
-	return base64.StdEncoding.EncodeToString(signature), nil
+	signature, err := signer.Sign([]byte(data), crypto.Armor)
+	if err != nil {
+		return "", err
+	}
+	return string(signature), nil
 }
 
-func (middleware *RSAMiddleware) VerifyRSASignature(partnerBank entity.PartnerBank, data []byte, signedData string) error {
-	//load public key
-	rsaPublicKey, err := loadRSAPublicKey(partnerBank.PublicKey)
+func (middleware *PGPMiddleware) VerifyPGPSignature(partnerBank entity.PartnerBank, data model.ExternalPayload, signedData string) error {
+	publicKey, err := loadPGPPublicKey(partnerBank.PublicKey)
 	if err != nil {
 		return err
 	}
-	//decode signature
+
 	signatureBytes, err := base64.StdEncoding.DecodeString(signedData)
 	if err != nil {
-		return errors.New("failed to decode signature: %v")
+		return errors.New("failed to decode signature")
 	}
-	//create hash from data
-	hash := sha256.Sum256(data)
-	//verify signature
-	return rsa.VerifyPKCS1v15(rsaPublicKey, crypto.SHA256, hash[:], signatureBytes)
+
+	verifier, err := crypto.PGP().Verify().VerificationKey(publicKey).New()
+	if err != nil {
+		return err
+	}
+
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	verifyResult, err := verifier.VerifyDetached(dataBytes, signatureBytes, crypto.Armor)
+	if err != nil {
+		return errors.New("signature verification failed")
+	}
+	if sigErr := verifyResult.SignatureError(); sigErr != nil {
+		return sigErr
+	}
+	return nil
 }
 
-func (middleware *RSAMiddleware) Verify(c *gin.Context) {
+func (middleware *PGPMiddleware) Verify(c *gin.Context) {
 	//get body
 	var req model.ExternalTransferRequest
 	err := validation.BindJsonAndValidate(c, &req)
@@ -101,21 +107,19 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 	//check exists bank
 	partnerBank, err := middleware.externalSearchMiddleware.VerifyPartnerBank(c, req.SrcBankCode)
 	if err != nil {
-		if err.Error() == "partner bank not found" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
-				httpcommon.Error{
-					Message: "ngân hàng chưa được đăng ký",
-					Code:    httpcommon.ErrorResponseCode.Unauthorized,
-					Field:   "srcBankCode",
-				}))
-			return
-		}
+		c.AbortWithStatusJSON(http.StatusUnauthorized, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: "Bank not registered",
+				Code:    httpcommon.ErrorResponseCode.Unauthorized,
+				Field:   "srcBankCode",
+			}))
+		return
 	}
 	//check time
 	if req.Exp.Before(time.Now()) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
-				Message: "thông tin cũ đã quá hạn",
+				Message: "Expired information",
 				Code:    httpcommon.ErrorResponseCode.TimeoutRequest,
 				Field:   "Exp",
 			}))
@@ -126,7 +130,7 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 	if hashedData == "" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
-				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
+				Message: "Invalid package information",
 				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
 				Field:   "hashedData",
 			}))
@@ -164,8 +168,9 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 		return
 	}
 	//check signature
-	err = middleware.VerifyRSASignature(*partnerBank, data, req.SignedData)
+	err = middleware.VerifyPGPSignature(*partnerBank, payloadRequest, req.SignedData)
 	if err != nil {
+		fmt.Println(err.Error())
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
@@ -174,9 +179,10 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 			}))
 		return
 	}
+
 	c.Set("partnerBankId", partnerBank.ID)
 	c.Set("request", payloadRequest)
-	c.Set("secureType", "RSA")
+	c.Set("secureType", "PGP")
 	c.Next()
 	return
 }

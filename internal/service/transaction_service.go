@@ -17,12 +17,12 @@ type TransactionService interface {
 	GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error)
 	GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error)
 	PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error
-	ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalTransactionRequest, partnerBankId int64) error
+	ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalPayload, partnerBankId int64) error
 	PreExternalTransfer(ctx *gin.Context, transferReq model.PreExternalTransferRequest) (string, error)
 	ExternalTransfer(ctx *gin.Context, transferReq model.TransferRequest) (*entity.Transaction, error)
 }
 
-func TransactionUtils_EntityToResponse(transaction entity.Transaction, sourceAccountNumber string) model.GetTransactionsResponse {
+func TransactionUtilsEntityToResponse(transaction entity.Transaction, sourceAccountNumber string) model.GetTransactionsResponse {
 	var amount int64
 	var balance int64
 

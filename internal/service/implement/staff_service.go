@@ -194,7 +194,7 @@ func (s *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, accountN
 	transactionResp := make([]model.GetTransactionsResponse, 0)
 
 	for _, transaction := range transactions {
-		transactionResp = append(transactionResp, service.TransactionUtils_EntityToResponse(transaction, accountNumber))
+		transactionResp = append(transactionResp, service.TransactionUtilsEntityToResponse(transaction, accountNumber))
 	}
 
 	return &model.GetTransactionsByCustomerResponse{

@@ -15,16 +15,22 @@ type PartnerBankHandler struct {
 	accountService     service.AccountService
 	transactionService service.TransactionService
 	partnerBankService service.PartnerBankService
+	middlewareRSA      *middleware.RSAMiddleware
+	middlewarePGP      *middleware.PGPMiddleware
 }
 
 func NewPartnerBankHandler(
 	accountService service.AccountService,
 	transactionService service.TransactionService,
-	partnerBankService service.PartnerBankService) *PartnerBankHandler {
+	partnerBankService service.PartnerBankService,
+	middlewareRSA *middleware.RSAMiddleware,
+	middlewarePGP *middleware.PGPMiddleware) *PartnerBankHandler {
 	return &PartnerBankHandler{
 		accountService:     accountService,
 		transactionService: transactionService,
-		partnerBankService: partnerBankService}
+		partnerBankService: partnerBankService,
+		middlewareRSA:      middlewareRSA,
+		middlewarePGP:      middlewarePGP}
 }
 
 // @Summary Get account name
@@ -86,39 +92,49 @@ func (handler *PartnerBankHandler) GetListPartnerBank(c *gin.Context) {
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[[]entity.PartnerBank](&listBank))
 }
 
+// @Summary Partner bank
+// @Description receive external transfer from partner banks
+// @Tags Partner bank
+// @Accept json
+// @Produce  json
+// @Router /partner-bank/external-transfer-rsa [POST]
+// @Success 200 {object} httpcommon.HttpResponse[model.ExternalTransactionResponse]
+// @Failure 400 {object} httpcommon.HttpResponse[any]
+// @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *PartnerBankHandler) ReceiveExternalTransfer(c *gin.Context) {
 	req, _ := c.Get("request")
-	externalTransaction := req.(model.ExternalTransactionRequest)
-	//check account number
-	if externalTransaction.SrcAccountNumber == externalTransaction.DesAccountNumber {
-		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
-			httpcommon.Error{
-				Message: "thông tin gói không chính xác hoặc bị chỉnh sửa",
-				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "srcAccountNumber",
-			}))
-		return
-	}
-	//check src account number in our bank
-	account, _ := handler.accountService.GetCustomerByAccountNumber(c, externalTransaction.SrcAccountNumber)
-	if account != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
-			httpcommon.Error{
-				Message: "tài khoản nguồn đã tồn tại trong ngân hàng",
-				Code:    httpcommon.ErrorResponseCode.InvalidRequest,
-				Field:   "srcAccountNumber",
-			}))
-		return
-	}
-	//check src account number in partner bank
+	externalTransaction := req.(model.ExternalPayload)
 	partnerBankId, _ := c.Get("partnerBankId")
-	/*
-		check when we have api
-	*/
+	secureType, _ := c.Get("secureType")
+	//check source account number
+
+	/* call service to check name */
+
+	//check target account number
+	_, err := handler.accountService.GetAccountByNumber(c, externalTransaction.DesAccountNumber)
+	if err != nil {
+		if err.Error() == "account not found" {
+			c.AbortWithStatusJSON(http.StatusNotFound, httpcommon.NewErrorResponse(
+				httpcommon.Error{
+					Message: "không tìm thấy thông tin tài khoản",
+					Code:    httpcommon.ErrorResponseCode.RecordNotFound,
+					Field:   "desAccountNumber",
+				}))
+			return
+		}
+	}
+	//check amount
+	if externalTransaction.Amount < 1 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
+			httpcommon.Error{
+				Message: "số tiền chuyển không hợp lệ",
+				Code:    httpcommon.ErrorResponseCode.TimeoutRequest,
+				Field:   "Amount",
+			}))
+		return
+	}
 	//save
-	fmt.Println(partnerBankId)
-	fmt.Print(externalTransaction)
-	err := handler.transactionService.ReceiveExternalTransfer(c, externalTransaction, partnerBankId.(int64))
+	err = handler.transactionService.ReceiveExternalTransfer(c, externalTransaction, partnerBankId.(int64))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
 			httpcommon.Error{
@@ -130,24 +146,32 @@ func (handler *PartnerBankHandler) ReceiveExternalTransfer(c *gin.Context) {
 	}
 	//encode response
 	responseString := "transfer success"
-	var res string
-	middlewareType, _ := c.Get("middlewareType")
-	if middlewareType == "RSA" {
-		res, err = middleware.SignWithRSAPrivateKey(responseString)
+	var signedResponse string
+	if secureType == "RSA" {
+		signedResponse, err = handler.middlewareRSA.SignDataRSA(responseString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+				httpcommon.Error{
+					Message: err.Error(),
+					Code:    httpcommon.ErrorResponseCode.InternalServerError,
+					Field:   "",
+				}))
+			return
+		}
+		fmt.Print(signedResponse)
 	} else {
-		res = ""
+		signedResponse, err = handler.middlewarePGP.SignDataPGP(responseString)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
+				httpcommon.Error{
+					Message: err.Error(),
+					Code:    httpcommon.ErrorResponseCode.InternalServerError,
+					Field:   "",
+				}))
+			return
+		}
 	}
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(
-			httpcommon.Error{
-				Message: err.Error(),
-				Code:    httpcommon.ErrorResponseCode.InternalServerError,
-				Field:   "",
-			}))
-		return
-	}
-	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[model.ExternalTransferResponse](&model.ExternalTransferResponse{
-		Data:       responseString,
-		SignedData: res,
-	}))
+
+	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[model.ExternalTransactionResponse](&model.ExternalTransactionResponse{
+		Data: responseString, SignedData: signedResponse}))
 }

@@ -1137,6 +1137,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/partner-bank/external-transfer-rsa": {
+            "post": {
+                "description": "receive external transfer from partner banks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Partner bank"
+                ],
+                "summary": "Partner bank",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-model_ExternalTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httpcommon.HttpResponse-any"
+                        }
+                    }
+                }
+            }
+        },
         "/partner-bank/get-account-information": {
             "post": {
                 "description": "Get account name in our bank by account number from external bank",
@@ -2189,6 +2224,23 @@ const docTemplate = `{
                 }
             }
         },
+        "httpcommon.HttpResponse-model_ExternalTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/model.ExternalTransactionResponse"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpcommon.Error"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse": {
             "type": "object",
             "properties": {
@@ -2227,6 +2279,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "desAccountNumber": {
+                    "type": "string"
+                },
+                "exp": {
                     "type": "string"
                 },
                 "srcBankCode": {
@@ -2385,6 +2440,17 @@ const docTemplate = `{
                     "$ref": "#/definitions/entity.DebtReply"
                 },
                 "sender": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.ExternalTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "signedData": {
                     "type": "string"
                 }
             }

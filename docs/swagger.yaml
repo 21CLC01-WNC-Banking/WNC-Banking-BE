@@ -316,6 +316,17 @@ definitions:
       success:
         type: boolean
     type: object
+  httpcommon.HttpResponse-model_ExternalTransactionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.ExternalTransactionResponse'
+      errors:
+        items:
+          $ref: '#/definitions/httpcommon.Error'
+        type: array
+      success:
+        type: boolean
+    type: object
   httpcommon.HttpResponse-model_GetCustomerNameByAccountNumberResponse:
     properties:
       data:
@@ -341,6 +352,8 @@ definitions:
   model.AccountNumberInfoRequest:
     properties:
       desAccountNumber:
+        type: string
+      exp:
         type: string
       srcBankCode:
         type: string
@@ -450,6 +463,13 @@ definitions:
     - debtReminder
     - receiver
     - sender
+    type: object
+  model.ExternalTransactionResponse:
+    properties:
+      data:
+        type: string
+      signedData:
+        type: string
     type: object
   model.GetCustomerNameByAccountNumberResponse:
     properties:
@@ -1442,6 +1462,29 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/httpcommon.HttpResponse-array_entity_PartnerBank'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-any'
+      summary: Partner bank
+      tags:
+      - Partner bank
+  /partner-bank/external-transfer-rsa:
+    post:
+      consumes:
+      - application/json
+      description: receive external transfer from partner banks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/httpcommon.HttpResponse-model_ExternalTransactionResponse'
         "400":
           description: Bad Request
           schema:
