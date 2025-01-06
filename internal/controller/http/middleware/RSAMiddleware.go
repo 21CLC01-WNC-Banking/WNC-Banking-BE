@@ -164,8 +164,7 @@ func (middleware *RSAMiddleware) Verify(c *gin.Context) {
 		return
 	}
 	//check signature
-	dataBytes, _ := json.Marshal(data)
-	err = middleware.VerifyRSASignature(*partnerBank, dataBytes, req.SignedData)
+	err = middleware.VerifyRSASignature(*partnerBank, data, req.SignedData)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
