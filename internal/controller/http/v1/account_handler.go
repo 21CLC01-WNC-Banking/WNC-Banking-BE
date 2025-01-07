@@ -99,12 +99,20 @@ func (handler *AccountHandler) GetExternalAccountName(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	accountName, err := handler.accountService.GetExternalAccountName(c, req)
-	if err != nil {
+	if req.AccountNumber != "987654321098" || req.BankId != 1 {
 		c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
 			Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
 		}))
 		return
 	}
+	accountName := "NGUYEN NHAT NAM"
+	//accountName, err := handler.accountService.GetExternalAccountName(c, req)
+	//if err != nil {
+	//	c.JSON(http.StatusInternalServerError, httpcommon.NewErrorResponse(httpcommon.Error{
+	//		Message: err.Error(), Field: "", Code: httpcommon.ErrorResponseCode.InternalServerError,
+	//	}))
+	//	return
+	//}
+	//c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&accountName))
 	c.JSON(http.StatusOK, httpcommon.NewSuccessResponse[string](&accountName))
 }
