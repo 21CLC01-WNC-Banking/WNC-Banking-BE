@@ -27,6 +27,7 @@ func NewSavedReceiverHandler(savedReceiverService service.SavedReceiverService) 
 // @Accept  json
 // @Produce  json
 // @Param receiver body model.Receiver true "Receiver Payload"
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No Content"
 // @Failure 500 {object} httpcommon.HttpResponse[any] "Internal Server Error"
 // @Router /customer/saved-receiver [post]
@@ -52,6 +53,7 @@ func (handler *SavedReceiverHandler) AddReceiver(ctx *gin.Context) {
 // @Tags Receivers
 // @Accept  json
 // @Produce  json
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[[]model.SavedReceiverResponse]
 // @Failure 500 {object} httpcommon.HttpResponse[any] "Internal Server Error"
 // @Router /customer/saved-receiver [get]
@@ -75,6 +77,7 @@ func (handler *SavedReceiverHandler) GetAllReceivers(ctx *gin.Context) {
 // @Produce  json
 // @Param id path int64 true "Receiver Id"
 // @Param body body model.UpdateReceiverRequest true "Request body for renaming the receiver"
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -111,6 +114,7 @@ func (handler *SavedReceiverHandler) RenameReceiver(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param id path int64 true "Receiver Id"
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]

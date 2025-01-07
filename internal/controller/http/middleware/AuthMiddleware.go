@@ -1,13 +1,16 @@
 package middleware
 
 import (
+	"fmt"
+	"net/http"
+	"strings"
+
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/constants"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/jwt"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type AuthMiddleware struct {
@@ -58,7 +61,19 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 	}
 
 	// Retrieve the access token from the header or cookies
-	accessToken := getAccessToken(c)
+	authHeader := c.GetHeader("Authorization")
+	fmt.Println("header ", authHeader)
+	var accessToken string
+	if authHeader != "" {
+		// Split the "Bearer <token>" string and extract the token
+		parts := strings.Split(authHeader, " ")
+		if len(parts) == 2 {
+			accessToken = parts[1]
+		}
+	} else {
+		accessToken = getAccessToken(c)
+	}
+
 	claims, err := jwt.VerifyToken(accessToken, jwtSecret)
 	if err == nil {
 		// If the access token is valid, extract customer Id and proceed

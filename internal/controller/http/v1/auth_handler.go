@@ -172,6 +172,7 @@ func (handler *AuthHandler) Logout(ctx *gin.Context) {
 // @Param request body model.ChangePasswordRequest true "Set Password payload"
 // @Produce json
 // @Router /auth/change-password [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -198,6 +199,7 @@ func (handler *AuthHandler) ChangePassword(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Router /auth/close [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]

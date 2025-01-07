@@ -25,6 +25,15 @@ const docTemplate = `{
                     "Accounts"
                 ],
                 "summary": "Get Account by Customer Id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -57,6 +66,13 @@ const docTemplate = `{
                         "description": "Account payload",
                         "name": "accountNumber",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -98,6 +114,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.GetExternalAccountNameRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -155,6 +178,13 @@ const docTemplate = `{
                         "description": "Partner Bank Id",
                         "name": "bankId",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -201,6 +231,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.PartnerBankRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -232,6 +269,15 @@ const docTemplate = `{
                     "Admins"
                 ],
                 "summary": "Admin get all staff",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -265,6 +311,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.UpdateStaffRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -303,6 +356,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.CreateStaffRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -344,6 +404,13 @@ const docTemplate = `{
                         "name": "staffId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -382,6 +449,13 @@ const docTemplate = `{
                         "description": "Staff Id",
                         "name": "staffId",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -426,6 +500,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.ChangePasswordRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -460,6 +541,15 @@ const docTemplate = `{
                     "Auths"
                 ],
                 "summary": "Close account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "204": {
                         "description": "No Content"
@@ -777,6 +867,15 @@ const docTemplate = `{
                     "Customer"
                 ],
                 "summary": "Get All Notification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -814,6 +913,13 @@ const docTemplate = `{
                         "name": "id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -848,6 +954,15 @@ const docTemplate = `{
                     "Receivers"
                 ],
                 "summary": "Get all saved receivers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -884,6 +999,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.Receiver"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -928,6 +1050,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.UpdateReceiverRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -967,6 +1096,13 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -998,6 +1134,15 @@ const docTemplate = `{
                     "Customer"
                 ],
                 "summary": "Get All Transactions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1036,6 +1181,13 @@ const docTemplate = `{
                         "description": "Transaction Id",
                         "name": "transactionId",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -1078,6 +1230,13 @@ const docTemplate = `{
                         "name": "debtReminderId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1115,6 +1274,15 @@ const docTemplate = `{
                     "Partner bank"
                 ],
                 "summary": "Partner bank",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1240,6 +1408,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.AddAmountToAccountRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1283,6 +1458,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.RegisterRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1323,6 +1505,13 @@ const docTemplate = `{
                         "description": "Account payload",
                         "name": "accountNumber",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -1377,6 +1566,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.DebtReminderReplyRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1420,6 +1616,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.DebtReminderRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1463,6 +1666,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.TransferRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1509,6 +1719,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.TransferRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1555,6 +1772,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.PreDebtTransferRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1598,6 +1822,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.PreExternalTransferRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1644,6 +1875,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/model.PreInternalTransferRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1681,6 +1919,15 @@ const docTemplate = `{
                     "Transaction"
                 ],
                 "summary": "Debt reminder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1716,6 +1963,15 @@ const docTemplate = `{
                     "Transaction"
                 ],
                 "summary": "Debt reminder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization: Bearer",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

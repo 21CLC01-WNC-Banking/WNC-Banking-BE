@@ -13,10 +13,11 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Email  string `json:"email"`
-	Name   string `json:"name"`
-	Role   string `json:"role"`
-	UserId int64  `json:"userId"`
+	Email        string `json:"email"`
+	Name         string `json:"name"`
+	Role         string `json:"role"`
+	UserId       int64  `json:"userId"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 type AuthenticationRequest struct {

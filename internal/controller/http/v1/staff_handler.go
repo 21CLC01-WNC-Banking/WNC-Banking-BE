@@ -25,6 +25,7 @@ func NewStaffHandler(staffService service.StaffService) *StaffHandler {
 // @Param request body model.RegisterRequest true "Auth payload"
 // @Produce  json
 // @Router /staff/register-customer [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -52,6 +53,7 @@ func (handler *StaffHandler) RegisterCustomer(ctx *gin.Context) {
 // @Param request body model.AddAmountToAccountRequest true "AddAmount payload"
 // @Produce  json
 // @Router /staff/add-amount [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -79,6 +81,7 @@ func (handler *StaffHandler) AddAmountToAccount(ctx *gin.Context) {
 // @Param accountNumber query string true "Account payload"
 // @Produce  json
 // @Router /staff/transactions-by-account [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[[]model.GetTransactionsByCustomerResponse]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
