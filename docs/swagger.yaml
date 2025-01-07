@@ -739,6 +739,12 @@ paths:
   /account/:
     get:
       description: Get Account by Customer Id
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -760,6 +766,11 @@ paths:
       - description: Account payload
         in: query
         name: accountNumber
+        required: true
+        type: string
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -788,6 +799,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.GetExternalAccountNameRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -826,6 +842,11 @@ paths:
         in: query
         name: bankId
         type: integer
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -856,6 +877,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.PartnerBankRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -875,6 +901,12 @@ paths:
   /admin/staff:
     get:
       description: Admin get all staff
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -898,6 +930,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.CreateStaffRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -925,6 +962,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.UpdateStaffRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -950,6 +992,11 @@ paths:
         name: staffId
         required: true
         type: integer
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -974,6 +1021,11 @@ paths:
         name: staffId
         required: true
         type: integer
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1004,6 +1056,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.ChangePasswordRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1025,6 +1082,12 @@ paths:
       consumes:
       - application/json
       description: Close account
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1232,6 +1295,12 @@ paths:
   /customer/notification:
     get:
       description: Get All Notification
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1258,6 +1327,11 @@ paths:
         name: id
         required: true
         type: integer
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1279,6 +1353,12 @@ paths:
       consumes:
       - application/json
       description: Fetches all saved receivers for the authenticated user
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1304,6 +1384,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.Receiver'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1327,6 +1412,11 @@ paths:
         name: id
         required: true
         type: integer
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1359,6 +1449,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.UpdateReceiverRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1378,6 +1473,12 @@ paths:
   /customer/transaction:
     get:
       description: Get All Transactions
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1403,6 +1504,11 @@ paths:
       - description: Transaction Id
         in: path
         name: transactionId
+        required: true
+        type: string
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -1432,6 +1538,11 @@ paths:
         name: debtReminderId
         required: true
         type: string
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1455,6 +1566,12 @@ paths:
       consumes:
       - application/json
       description: get list partner banks
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1538,6 +1655,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.AddAmountToAccountRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1566,6 +1688,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.RegisterRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1591,6 +1718,11 @@ paths:
       - description: Account payload
         in: query
         name: accountNumber
+        required: true
+        type: string
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
         required: true
         type: string
       produces:
@@ -1628,6 +1760,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.DebtReminderReplyRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1656,6 +1793,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.DebtReminderRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1684,6 +1826,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.TransferRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1714,6 +1861,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.TransferRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1744,6 +1896,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.PreDebtTransferRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1772,6 +1929,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.PreExternalTransferRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1802,6 +1964,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/model.PreInternalTransferRequest'
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1825,6 +1992,12 @@ paths:
       consumes:
       - application/json
       description: get list Receive reminder
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -1848,6 +2021,12 @@ paths:
       consumes:
       - application/json
       description: get list Sent reminder
+      parameters:
+      - description: 'Authorization: Bearer'
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:

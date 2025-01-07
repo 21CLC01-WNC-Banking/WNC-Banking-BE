@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"net/http"
+	"strconv"
+
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type AdminHandler struct {
@@ -27,6 +28,7 @@ func NewAdminHandler(adminService service.AdminService, partnerBankService servi
 // @Tags Admins
 // @Produce  json
 // @Router /admin/staff [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[[]entity.User]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *AdminHandler) GetAllStaff(c *gin.Context) {
@@ -46,6 +48,7 @@ func (handler *AdminHandler) GetAllStaff(c *gin.Context) {
 // @Produce  json
 // @Param staffId path int64 true "Staff Id"
 // @Router /admin/staff/{staffId} [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[entity.User]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -84,6 +87,7 @@ func (handler *AdminHandler) GetOneStaff(c *gin.Context) {
 // @Produce  json
 // @Param request body model.CreateStaffRequest true "Staff payload"
 // @Router /admin/staff [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[model.CreateStaffResponse]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -112,6 +116,7 @@ func (handler *AdminHandler) CreateOneStaff(c *gin.Context) {
 // @Produce  json
 // @Param staffId path int64 true "Staff Id"
 // @Router /admin/staff/{staffId} [delete]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -150,6 +155,7 @@ func (handler *AdminHandler) DeleteOneStaff(c *gin.Context) {
 // @Produce  json
 // @Param request body model.UpdateStaffRequest true "Staff payload"
 // @Router /admin/staff [put]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -179,6 +185,7 @@ func (handler *AdminHandler) UpdateOneStaff(c *gin.Context) {
 // @Param request body model.PartnerBankRequest true "PartnerBank payload"
 // @Produce  json
 // @Router /admin/partner-bank [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -206,6 +213,7 @@ func (handler *AdminHandler) AddPartnerBank(c *gin.Context) {
 // @Param bankId query int64 false "Partner Bank Id"
 // @Produce  json
 // @Router /admin/external-transaction [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]

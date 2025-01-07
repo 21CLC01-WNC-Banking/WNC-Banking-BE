@@ -29,6 +29,7 @@ func NewCustomerHandler(notificationService service.NotificationService, transac
 // @Param id query int64 true "Id of notification"
 // @Produce  json
 // @Router /customer/notification [patch]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 204 "No content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -59,6 +60,7 @@ func (h *CustomerHandler) SeenNotification(c *gin.Context) {
 // @Tags Customer
 // @Produce  json
 // @Router /customer/notification [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[[]entity.Notification]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -85,6 +87,7 @@ func (h *CustomerHandler) GetNotifications(c *gin.Context) {
 // @Tags Customer
 // @Produce  json
 // @Router /customer/transaction [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[[]entity.Transaction]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -109,6 +112,7 @@ func (h *CustomerHandler) GetTransactions(c *gin.Context) {
 // @Produce json
 // @Param transactionId path string true "Transaction Id"
 // @Router /customer/transaction/{transactionId} [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]

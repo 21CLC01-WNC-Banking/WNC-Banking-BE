@@ -2,13 +2,14 @@ package v1
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type PartnerBankHandler struct {
@@ -76,6 +77,7 @@ func (handler *PartnerBankHandler) GetAccountNumberInfo(c *gin.Context) {
 // @Accept json
 // @Produce  json
 // @Router /partner-bank/ [GET]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[[]entity.PartnerBank]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]

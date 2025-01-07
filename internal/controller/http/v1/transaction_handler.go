@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
@@ -8,7 +10,6 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type TransactionHandler struct {
@@ -29,6 +30,7 @@ func NewTransactionHandler(transactionService service.TransactionService,
 // @Param request body model.PreInternalTransferRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/pre-internal-transfer [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[string]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -55,6 +57,7 @@ func (handler *TransactionHandler) PreInternalTransfer(ctx *gin.Context) {
 // @Param request body model.TransferRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/internal-transfer [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -81,6 +84,7 @@ func (handler *TransactionHandler) InternalTransfer(ctx *gin.Context) {
 // @Param request body model.DebtReminderRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/debt-reminder [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -107,6 +111,7 @@ func (handler *TransactionHandler) AddDebtReminder(ctx *gin.Context) {
 // @Param request body model.DebtReminderReplyRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/cancel-debt-reminder/:id [PUT]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -142,6 +147,7 @@ func (handler *TransactionHandler) CancelDebtReminder(ctx *gin.Context) {
 // @Accept json
 // @Produce  json
 // @Router /transaction/received-debt-reminder [GET]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[model.DebtReminderResponse]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -162,6 +168,7 @@ func (handler *TransactionHandler) GetReceivedDebtReminder(ctx *gin.Context) {
 // @Accept json
 // @Produce  json
 // @Router /transaction/sent-debt-reminder [GET]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[model.DebtReminderResponse]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -183,6 +190,7 @@ func (handler *TransactionHandler) GetSentDebtReminder(ctx *gin.Context) {
 // @Param request body model.PreDebtTransferRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/pre-debt-transfer [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 "No Content"
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -208,6 +216,7 @@ func (handler *TransactionHandler) PreDebtTransfer(ctx *gin.Context) {
 // @Param request body model.PreExternalTransferRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/pre-external-transfer [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[string]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
@@ -233,6 +242,7 @@ func (handler *TransactionHandler) PreExternalTransfer(ctx *gin.Context) {
 // @Param request body model.TransferRequest true "Transaction payload"
 // @Produce  json
 // @Router /transaction/external-transfer [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[entity.Transaction]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]

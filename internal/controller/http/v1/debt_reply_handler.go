@@ -1,11 +1,12 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type DebtReplyHandler struct {
@@ -24,6 +25,7 @@ func NewDebtReplyHandler(debtReplyService service.DebtReplyService) *DebtReplyHa
 // @Produce  json
 // @Param debtReminderId path string true "debtReminder Id"
 // @Router /debt-reply/{debtReminderId} [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[entity.DebtReply]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]

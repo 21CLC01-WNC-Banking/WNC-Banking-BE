@@ -1,8 +1,9 @@
 package v1
 
 import (
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"net/http"
+
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -30,6 +31,7 @@ func NewAccountHandler(accountService service.AccountService, savedReceiverServi
 // @Param accountNumber query string true "Account payload"
 // @Produce  json
 // @Router /account/customer-name [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[model.GetCustomerNameByAccountNumberResponse]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *AccountHandler) GetCustomerNameByAccountNumber(ctx *gin.Context) {
@@ -51,6 +53,7 @@ func (handler *AccountHandler) GetCustomerNameByAccountNumber(ctx *gin.Context) 
 // @Tags Accounts
 // @Produce  json
 // @Router /account/ [get]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[model.AccountResponse]
 // @Failure 500 {object} httpcommon.HttpResponse[any]
 func (handler *AccountHandler) GetAccountByCustomerId(ctx *gin.Context) {
@@ -86,6 +89,7 @@ func (handler *AccountHandler) GetAccountByCustomerId(ctx *gin.Context) {
 // @Param request body model.GetExternalAccountNameRequest true "PartnerBank payload"
 // @Produce  json
 // @Router /account/get-external-account-name [post]
+// @Param  Authorization header string true "Authorization: Bearer"
 // @Success 200 {object} httpcommon.HttpResponse[string]
 // @Failure 400 {object} httpcommon.HttpResponse[any]
 // @Failure 500 {object} httpcommon.HttpResponse[any]

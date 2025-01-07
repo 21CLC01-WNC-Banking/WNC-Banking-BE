@@ -3,6 +3,7 @@ package serviceimplement
 import (
 	"database/sql"
 	"errors"
+
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller/http/middleware"
 
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
@@ -139,10 +140,12 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 	}
 
 	return &model.LoginResponse{
-		Name:   existsCustomer.Name,
-		Email:  existsCustomer.Email,
-		UserId: existsCustomer.Id,
-		Role:   role.Name,
+		Name:         existsCustomer.Name,
+		Email:        existsCustomer.Email,
+		UserId:       existsCustomer.Id,
+		Role:         role.Name,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}, nil
 }
 
