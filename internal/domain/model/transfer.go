@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type PreInternalTransferRequest struct {
 	SourceAccountNumber string `json:"sourceAccountNumber" binding:"required"`
 	TargetAccountNumber string `json:"targetAccountNumber" binding:"required"`
@@ -21,24 +19,24 @@ type PreDebtTransferRequest struct {
 }
 
 type ExternalPayload struct {
-	SrcAccountNumber string    `json:"srcAccountNumber" binding:"required"`
-	SrcBankCode      string    `json:"srcBankCode" binding:"required"`
-	DesAccountNumber string    `json:"desAccountNumber" binding:"required"`
-	Amount           int64     `json:"amount" binding:"required,min=0"`
-	Description      string    `json:"description" binding:"required"`
-	IsSourceFee      *bool     `json:"isSourceFee" binding:"required"`
-	Exp              time.Time `json:"exp" binding:"required"`
+	SrcAccountNumber string `json:"srcAccountNumber" binding:"required"`
+	SrcBankCode      string `json:"srcBankCode" binding:"required"`
+	DesAccountNumber string `json:"desAccountNumber" binding:"required"`
+	Amount           int64  `json:"amount" binding:"required,min=0"`
+	Description      string `json:"description" binding:"required"`
+	IsSourceFee      *bool  `json:"isSourceFee" binding:"required"`
+	Exp              string `json:"exp" binding:"required"`
 }
 
 type ExternalTransferRequest struct {
-	SrcAccountNumber string    `json:"srcAccountNumber" binding:"required"`
-	SrcBankCode      string    `json:"srcBankCode" binding:"required"`
-	DesAccountNumber string    `json:"desAccountNumber" binding:"required"`
-	Amount           int64     `json:"amount" binding:"required,min=0"`
-	Description      string    `json:"description" binding:"required"`
-	IsSourceFee      *bool     `json:"isSourceFee" binding:"required"`
-	Exp              time.Time `json:"exp" binding:"required"`
-	SignedData       string    `json:"signedData" binding:"required"`
+	SrcAccountNumber string `json:"srcAccountNumber" binding:"required"`
+	SrcBankCode      string `json:"srcBankCode" binding:"required"`
+	DesAccountNumber string `json:"desAccountNumber" binding:"required"`
+	Amount           int64  `json:"amount" binding:"required,min=0"`
+	Description      string `json:"description" binding:"required"`
+	IsSourceFee      *bool  `json:"isSourceFee" binding:"required"`
+	Exp              string `json:"exp" binding:"required"`
+	SignedData       string `json:"signedData" binding:"required"`
 }
 
 type ExternalTransactionResponse struct {
