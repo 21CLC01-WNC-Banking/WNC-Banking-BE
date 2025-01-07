@@ -144,6 +144,7 @@ func (service *AuthService) Login(ctx *gin.Context, loginRequest model.LoginRequ
 		Email:        existsCustomer.Email,
 		UserId:       existsCustomer.Id,
 		Role:         role.Name,
+		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
 }

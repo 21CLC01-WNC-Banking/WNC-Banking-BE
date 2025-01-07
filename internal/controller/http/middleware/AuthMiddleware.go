@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -26,11 +25,21 @@ func NewAuthMiddleware(authService service.AuthService, roleService service.Role
 }
 
 func getAccessToken(c *gin.Context) (token string) {
-	token, err := c.Cookie("access_token")
-	if err != nil {
-		return ""
+	authHeader := c.GetHeader("Authorization")
+	var accessToken string
+	if authHeader != "" {
+		parts := strings.Split(authHeader, " ")
+		if len(parts) == 2 {
+			accessToken = parts[1]
+		}
+	} else {
+		var err error
+		accessToken, err = c.Cookie("access_token")
+		if err != nil {
+			return ""
+		}
 	}
-	return token
+	return accessToken
 }
 
 func getRefreshToken(c *gin.Context) (token string) {
@@ -61,18 +70,7 @@ func (a *AuthMiddleware) VerifyToken(c *gin.Context) {
 	}
 
 	// Retrieve the access token from the header or cookies
-	authHeader := c.GetHeader("Authorization")
-	fmt.Println("header ", authHeader)
-	var accessToken string
-	if authHeader != "" {
-		// Split the "Bearer <token>" string and extract the token
-		parts := strings.Split(authHeader, " ")
-		if len(parts) == 2 {
-			accessToken = parts[1]
-		}
-	} else {
-		accessToken = getAccessToken(c)
-	}
+	accessToken := getAccessToken(c)
 
 	claims, err := jwt.VerifyToken(accessToken, jwtSecret)
 	if err == nil {
