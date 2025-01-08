@@ -10,6 +10,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -22,12 +23,12 @@ import (
 )
 
 var (
-	privateKeyRsaTeam, _ = env.GetEnv("SECRET_KEY_OF_RSA_TEAM")
-	bankIdTeam3, _       = env.GetEnv("BANK_ID_IN_RSA_TEAM")
+	bankIdTeam3, _ = env.GetEnv("BANK_ID_IN_RSA_TEAM")
+	secretString   = os.Getenv("SECRET_KEY_FOR_EXTERNAL_BANK")
 )
 
 type SearchRSATeamResponse struct {
-	Success bool     `json:"success"`
+	Success *bool    `json:"success"`
 	Message []string `json:"message"`
 	Data    struct {
 		CustomerName string  `json:"customerName"`
@@ -132,9 +133,7 @@ func (service *AccountService) GetExternalAccountName(ctx *gin.Context, detail m
 	}
 	reqBytes, err := json.Marshal(req)
 	//hash data
-	hashData := HMAC_signature.GenerateHMAC(string(reqBytes), privateKeyRsaTeam)
-	fmt.Println(string(reqBytes))
-	fmt.Println(hashData)
+	hashData := HMAC_signature.GenerateHMAC(string(reqBytes), secretString)
 	//setup and call to partner bank server
 	request, err := http.NewRequest("POST", partnerBank.ResearchApi, bytes.NewBuffer(reqBytes))
 	if err != nil {
@@ -147,7 +146,6 @@ func (service *AccountService) GetExternalAccountName(ctx *gin.Context, detail m
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(1)
 
 	defer response.Body.Close()
 	body, _ := io.ReadAll(response.Body)
