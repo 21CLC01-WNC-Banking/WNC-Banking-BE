@@ -817,11 +817,10 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 		return nil, err
 	}
 	//verify OTP
-	//err = service.verifyOTP(ctx, transferReq)
-	//if err != nil {
-	//	return nil, err
-	//}
-
+	err = service.verifyOTP(ctx, transferReq)
+	if err != nil {
+		return nil, err
+	}
 	/*
 		call api to partner bank to confirm transaction
 	*/

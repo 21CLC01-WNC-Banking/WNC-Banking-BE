@@ -2,7 +2,6 @@ package model
 
 import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
-	"time"
 )
 
 type SearchInternalAccountRequest struct {
@@ -20,9 +19,9 @@ type AccountResponse struct {
 }
 
 type AccountNumberInfoRequest struct {
-	SrcBankCode      string    `json:"srcBankCode"`
-	DesAccountNumber string    `json:"desAccountNumber"`
-	Exp              time.Time `json:"exp"`
+	SrcBankCode      string `json:"srcBankCode"`
+	DesAccountNumber string `json:"desAccountNumber"`
+	Exp              string `json:"exp"`
 }
 
 type AccountNumberInfoResponse struct {
