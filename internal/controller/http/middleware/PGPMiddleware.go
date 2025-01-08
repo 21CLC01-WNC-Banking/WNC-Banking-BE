@@ -116,7 +116,8 @@ func (middleware *PGPMiddleware) Verify(c *gin.Context) {
 		return
 	}
 	//check time
-	if req.Exp.Before(time.Now()) {
+	expTime, err := time.Parse(time.RFC3339Nano, req.Exp)
+	if expTime.Before(time.Now()) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, httpcommon.NewErrorResponse(
 			httpcommon.Error{
 				Message: "Expired information",
