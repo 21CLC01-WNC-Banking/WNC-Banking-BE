@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
@@ -119,14 +120,21 @@ func (service *AccountService) GetExternalAccountName(ctx *gin.Context, detail m
 		return "", err
 	}
 	//setup payload
+	utcTime := time.Now().UTC()
+	formattedTime := fmt.Sprintf("%04d-%02d-%02dT%02d:%02d:%02d.%09dZ",
+		utcTime.Year(), utcTime.Month(), utcTime.Day(),
+		utcTime.Hour(), utcTime.Minute(), utcTime.Second(),
+		utcTime.Nanosecond())
 	req := &model.SearchExternalAccountRequest{
 		BankId:        bankIdInRsaTeamInt,
-		TimeStamp:     time.Now().Unix(),
+		TimeStamp:     formattedTime,
 		AccountNumber: detail.AccountNumber,
 	}
 	reqBytes, err := json.Marshal(req)
 	//hash data
 	hashData := HMAC_signature.GenerateHMAC(string(reqBytes), privateKeyRsaTeam)
+	fmt.Println(string(reqBytes))
+	fmt.Println(hashData)
 	//setup and call to partner bank server
 	request, err := http.NewRequest("POST", partnerBank.ResearchApi, bytes.NewBuffer(reqBytes))
 	if err != nil {
@@ -139,8 +147,11 @@ func (service *AccountService) GetExternalAccountName(ctx *gin.Context, detail m
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(1)
+
 	defer response.Body.Close()
 	body, _ := io.ReadAll(response.Body)
+
 	//handler response
 	var resp SearchRSATeamResponse
 	if err := json.Unmarshal(body, &resp); err != nil {

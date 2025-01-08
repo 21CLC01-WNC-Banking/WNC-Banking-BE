@@ -31,6 +31,6 @@ type AccountNumberInfoResponse struct {
 
 type SearchExternalAccountRequest struct {
 	BankId        int64  `json:"bankId" binding:"required"`
-	TimeStamp     int64  `json:"timestamp" binding:"required"`
+	TimeStamp     string `json:"timestamp" binding:"required"`
 	AccountNumber string `json:"accountNumber" binding:"required"`
 }
