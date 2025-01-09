@@ -8,6 +8,7 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -28,13 +29,7 @@ import (
 type TransferRSATeamResponse struct {
 	Success *bool    `json:"success"`
 	Message []string `json:"message"`
-	Data    struct {
-		AccountNumber        string    `json:"accountNumber"`
-		Amount               int64     `json:"amount"`
-		Type                 string    `json:"type"`
-		CreatedAt            time.Time `json:"createdAt"`
-		ForeignAccountNumber string    `json:"foreignAccountNumber"`
-	} `json:"data"`
+	Data    string   `json:"data"`
 }
 
 type TransactionService struct {
@@ -739,10 +734,12 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		return "", errors.New("source account not match")
 	}
 	//check targetNumber is in partner bank
+	fmt.Print(1)
 	_, err = service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
 		BankId:        transferReq.PartnerBankId,
 		AccountNumber: transferReq.TargetAccountNumber,
 	})
+
 	if err != nil {
 		return "", err
 	}
@@ -891,17 +888,23 @@ func (service *TransactionService) callExternalTransfer(ctx *gin.Context, transa
 		return err
 	}
 	//setup payload and call api
+	utcTime := time.Now().UTC()
+	formattedTime := fmt.Sprintf("%04d-%02d-%02dT%02d:%02d:%02d.%09dZ",
+		utcTime.Year(), utcTime.Month(), utcTime.Day(),
+		utcTime.Hour(), utcTime.Minute(), utcTime.Second(),
+		utcTime.Nanosecond())
 	payload := &model.ExternalTransferToRSATeam{
 		BankId:               bankIdInRsaTeamInt,
 		AccountNumber:        transaction.TargetAccountNumber,
 		ForeignAccountNumber: transaction.SourceAccountNumber,
 		Amount:               transaction.Amount,
 		Description:          transaction.Description,
-		Timestamp:            time.Now().Unix(),
+		Timestamp:            formattedTime,
 	}
 	reqBytes, err := json.Marshal(payload)
 	//hash data
-	hashedData := HMAC_signature.GenerateHMAC(string(reqBytes), privateKeyRsaTeam)
+	secretString := os.Getenv("SECRET_KEY_FOR_EXTERNAL_BANK")
+	hashedData := HMAC_signature.GenerateHMAC(string(reqBytes), secretString)
 	//sign data
 	signedData, err := service.rsaMiddleware.SignDataRSA(string(reqBytes))
 	if err != nil {
@@ -922,10 +925,6 @@ func (service *TransactionService) callExternalTransfer(ctx *gin.Context, transa
 	}
 	defer response.Body.Close()
 	body, _ := io.ReadAll(response.Body)
-	if response.StatusCode != 200 {
-		fmt.Println(string(body))
-		return errors.New(response.Status)
-	}
 	//handler response
 	var res TransferRSATeamResponse
 	err = json.Unmarshal(body, &res)

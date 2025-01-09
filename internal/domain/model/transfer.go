@@ -60,5 +60,5 @@ type ExternalTransferToRSATeam struct {
 	ForeignAccountNumber string `json:"foreignAccountNumber" binding:"required"`
 	Amount               int64  `json:"amount" binding:"required,min=0"`
 	Description          string `json:"description" binding:"required"`
-	Timestamp            int64  `json:"timestamp" binding:"required"`
+	Timestamp            string `json:"timestamp" binding:"required"`
 }
