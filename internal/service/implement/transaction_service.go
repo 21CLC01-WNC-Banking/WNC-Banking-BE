@@ -648,7 +648,7 @@ func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, c
 		}
 	}
 
-	return &transactionRes, nil
+	return transactionRes, nil
 }
 
 func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error {
