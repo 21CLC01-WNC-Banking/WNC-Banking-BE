@@ -19,3 +19,14 @@ migration:
 migrate-up:
 	@echo "Running migrations (up)..."
 	@go run main.go migrate-up
+
+build:
+	docker build -t vukhoa23/banking-be:$(tag) .
+
+# Push the Docker image to the registry
+push:
+	docker push vukhoa23/banking-be:$(tag)
+	docker rmi vukhoa23/banking-be:$(tag)
+
+# Build and push the Docker image
+build-push: build push
