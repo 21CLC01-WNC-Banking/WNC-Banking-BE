@@ -616,7 +616,7 @@ func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, custo
 	return transactionResp, nil
 }
 
-func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
+func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponseSum, error) {
 	//get account by customerId
 	sourceAccount, err := s.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
@@ -630,10 +630,25 @@ func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, c
 	if err != nil {
 		return nil, err
 	}
-
 	transactionResp := service.TransactionUtilsEntityToResponse(*transaction, sourceAccount.Number)
+	var bankInfo *entity.PartnerBank
+	var transactionRes *model.GetTransactionsResponseSum
+	if transaction.BankId != nil {
+		bankInfo, _ = s.partnerBankService.GetBankById(ctx, *transaction.BankId)
+		transactionRes = &model.GetTransactionsResponseSum{
+			Transaction: transactionResp,
+			BankCode:    &bankInfo.BankCode,
+			BankName:    &bankInfo.BankName,
+		}
+	} else {
+		transactionRes = &model.GetTransactionsResponseSum{
+			Transaction: transactionResp,
+			BankCode:    nil,
+			BankName:    nil,
+		}
+	}
 
-	return &transactionResp, nil
+	return &transactionRes, nil
 }
 
 func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error {
