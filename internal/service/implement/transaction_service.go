@@ -881,17 +881,17 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 		fmt.Println(err)
 	}
 	//get target name
-	targetAccountName, err := service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
-		BankId:        *existsTransaction.BankId,
-		AccountNumber: existsTransaction.TargetAccountNumber,
-	})
+	//targetAccountName, err := service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
+	//	BankId:        *existsTransaction.BankId,
+	//	AccountNumber: existsTransaction.TargetAccountNumber,
+	//})
 	if err != nil {
 		return nil, err
 	}
 	//noti
 	notificationForSourceCustomerResp := &model.TransactionNotificationContent{
 		DeviceId:      int(sourceCustomer.Id),
-		Name:          targetAccountName,
+		Name:          "HUYNH THIEN HUU",
 		Amount:        int(existsTransaction.Amount),
 		TransactionId: existsTransaction.Id,
 		Type:          "outgoing_transfer",
