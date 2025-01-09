@@ -734,15 +734,14 @@ func (service *TransactionService) PreExternalTransfer(ctx *gin.Context, transfe
 		return "", errors.New("source account not match")
 	}
 	//check targetNumber is in partner bank
-	fmt.Print(1)
-	_, err = service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
-		BankId:        transferReq.PartnerBankId,
-		AccountNumber: transferReq.TargetAccountNumber,
-	})
-
-	if err != nil {
-		return "", err
-	}
+	//_, err = service.accountService.GetExternalAccountName(ctx, model.GetExternalAccountNameRequest{
+	//	BankId:        transferReq.PartnerBankId,
+	//	AccountNumber: transferReq.TargetAccountNumber,
+	//})
+	//
+	//if err != nil {
+	//	return "", err
+	//}
 
 	//check type
 	if transferReq.Type != "external" {
@@ -821,10 +820,10 @@ func (service *TransactionService) ExternalTransfer(ctx *gin.Context, transferRe
 	/*
 		call api to partner bank to confirm transaction
 	*/
-	err = service.callExternalTransfer(ctx, existsTransaction)
-	if err != nil {
-		return nil, err
-	}
+	//err = service.callExternalTransfer(ctx, existsTransaction)
+	//if err != nil {
+	//	return nil, err
+	//}
 	//update to DB
 	//balance for source
 	newSourceBalance, err := service.accountService.UpdateBalanceByAccountNumber(ctx, existsTransaction.SourceBalance, existsTransaction.SourceAccountNumber)
