@@ -19,6 +19,12 @@ type GetTransactionsResponse struct {
 	TargetAccountNumber string     `json:"targetAccountNumber"`
 }
 
+type GetTransactionsResponseSum struct {
+	Transaction GetTransactionsResponse `json:"transaction"`
+	BankCode    *string                 `json:"bankCode"`
+	BankName    *string                 `json:"bankName"`
+}
+
 type GetTransactionsByCustomerResponse struct {
 	CustomerName string                    `json:"customerName"`
 	Transactions []GetTransactionsResponse `json:"transactions"`

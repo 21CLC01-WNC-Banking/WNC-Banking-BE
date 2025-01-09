@@ -14,7 +14,7 @@ type TransactionService interface {
 	CancelDebtReminder(ctx *gin.Context, debtReminderId string, debtReply model.DebtReminderReplyRequest) error
 	GetReceivedDebtReminder(ctx *gin.Context) ([]model.DebtReminderResponse, error)
 	GetSentDebtReminder(ctx *gin.Context) ([]model.DebtReminderResponse, error)
-	GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error)
+	GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponseSum, error)
 	GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error)
 	PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error
 	ReceiveExternalTransfer(ctx *gin.Context, transferReq model.ExternalPayload, partnerBankId int64) error
