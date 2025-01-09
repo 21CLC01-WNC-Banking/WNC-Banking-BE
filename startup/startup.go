@@ -4,7 +4,6 @@ import (
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/controller"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/database"
-	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/gammazero/workerpool"
 )
 
@@ -19,7 +18,7 @@ func registerDependencies() *controller.ApiContainer {
 	// Open the database connection
 	db := database.Open()
 
-	return internal.InitializeContainer(db, model.KeyPath{RSAKey: "configs/rsa-private.pem", PGPKey: "configs/pgp-private.asc"})
+	return internal.InitializeContainer(db)
 }
 
 func Execute() {

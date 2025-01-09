@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	beanimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean/implement"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -25,14 +24,11 @@ var (
 
 type PGPMiddleware struct {
 	externalSearchMiddleware *ExternalSearchMiddleware
-	keyLoader                *beanimplement.KeyLoader
 }
 
-func NewPGPMiddleware(externalSearchMiddleware *ExternalSearchMiddleware,
-	keyLoader *beanimplement.KeyLoader) *PGPMiddleware {
+func NewPGPMiddleware(externalSearchMiddleware *ExternalSearchMiddleware) *PGPMiddleware {
 	return &PGPMiddleware{
 		externalSearchMiddleware: externalSearchMiddleware,
-		keyLoader:                keyLoader,
 	}
 }
 
