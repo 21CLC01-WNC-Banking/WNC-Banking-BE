@@ -24,7 +24,7 @@ services:
       - mysql
     ports:
       - "8080:8080"
-    restart: always  # Automatically restart the container if it stops
+    restart: unless-stopped  # Automatically restart the container if it stops
 
   frontend:
     image: qhuongng/wnc-banking-fe:local
@@ -33,6 +33,7 @@ services:
       - backend
     ports:
       - "3000:3000"
+    restart: unless-stopped
 
 volumes:
   mysql_data:
