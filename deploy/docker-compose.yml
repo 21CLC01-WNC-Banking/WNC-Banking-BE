@@ -1,21 +1,6 @@
 version: '3.8'
 
 services:
-  redis:
-    image: redis:latest
-    container_name: redis_container
-
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_container
-    ports:
-      - "3307:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: banking
-    volumes:
-      - mysql_data:/var/lib/mysql
-
   backend:
     image: vukhoa23/banking-be:local
     container_name: backend_container
@@ -34,6 +19,3 @@ services:
     ports:
       - "3000:3000"
     restart: unless-stopped
-
-volumes:
-  mysql_data:
