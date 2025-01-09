@@ -577,7 +577,7 @@ func (service *TransactionService) GetSentDebtReminder(ctx *gin.Context) ([]mode
 	return resList, nil
 }
 
-func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponse, error) {
+func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, customerId int64) ([]model.GetTransactionsResponseSum, error) {
 	//get account by customerId
 	sourceAccount, err := s.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
@@ -592,16 +592,31 @@ func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, custo
 		return nil, err
 	}
 
-	transactionResp := make([]model.GetTransactionsResponse, 0)
+	transactionResp := make([]model.GetTransactionsResponseSum, 0)
 
 	for _, transaction := range transactions {
-		transactionResp = append(transactionResp, service.TransactionUtilsEntityToResponse(transaction, sourceAccount.Number))
+		trans := service.TransactionUtilsEntityToResponse(transaction, sourceAccount.Number)
+		var bankInfo *entity.PartnerBank
+		if transaction.BankId != nil {
+			bankInfo, _ = s.partnerBankService.GetBankById(ctx, *transaction.BankId)
+			transactionResp = append(transactionResp, model.GetTransactionsResponseSum{
+				Transaction: trans,
+				BankCode:    &bankInfo.BankCode,
+				BankName:    &bankInfo.BankName,
+			})
+		} else {
+			transactionResp = append(transactionResp, model.GetTransactionsResponseSum{
+				Transaction: trans,
+				BankCode:    nil,
+				BankName:    nil,
+			})
+		}
 	}
 
 	return transactionResp, nil
 }
 
-func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponse, error) {
+func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, customerId int64, id string) (*model.GetTransactionsResponseSum, error) {
 	//get account by customerId
 	sourceAccount, err := s.accountService.GetAccountByCustomerId(ctx, customerId)
 	if err != nil {
@@ -615,10 +630,25 @@ func (s *TransactionService) GetTransactionByIdAndCustomerId(ctx *gin.Context, c
 	if err != nil {
 		return nil, err
 	}
-
 	transactionResp := service.TransactionUtilsEntityToResponse(*transaction, sourceAccount.Number)
+	var bankInfo *entity.PartnerBank
+	var transactionRes *model.GetTransactionsResponseSum
+	if transaction.BankId != nil {
+		bankInfo, _ = s.partnerBankService.GetBankById(ctx, *transaction.BankId)
+		transactionRes = &model.GetTransactionsResponseSum{
+			Transaction: transactionResp,
+			BankCode:    &bankInfo.BankCode,
+			BankName:    &bankInfo.BankName,
+		}
+	} else {
+		transactionRes = &model.GetTransactionsResponseSum{
+			Transaction: transactionResp,
+			BankCode:    nil,
+			BankName:    nil,
+		}
+	}
 
-	return &transactionResp, nil
+	return transactionRes, nil
 }
 
 func (service *TransactionService) PreDebtTransfer(ctx *gin.Context, transferReq model.PreDebtTransferRequest) error {
