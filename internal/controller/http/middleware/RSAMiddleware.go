@@ -15,10 +15,15 @@ import (
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/HMAC_signature"
+	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/env"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/utils/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+)
+
+var (
+	rsa_rpivate_key, _ = env.GetEnv("RSA_PRIVATE_KEY")
 )
 
 type RSAMiddleware struct {
@@ -33,7 +38,11 @@ func NewRSAMiddleware(externalSearchMiddleware *ExternalSearchMiddleware,
 }
 
 func (middleware *RSAMiddleware) loadRSAPrivateKey() (*rsa.PrivateKey, error) {
-	block, _ := pem.Decode(middleware.keyLoader.RSAKey)
+	rsaKey, err := base64.StdEncoding.DecodeString(rsa_rpivate_key)
+	if err != nil {
+		return nil, err
+	}
+	block, _ := pem.Decode(rsaKey)
 	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		return nil, errors.New("failed to parse private key")

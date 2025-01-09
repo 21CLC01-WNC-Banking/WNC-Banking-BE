@@ -18,7 +18,10 @@ import (
 	"time"
 )
 
-var passPhrase, _ = env.GetEnv("PGP_PASS_PHRASE")
+var (
+	passPhrase, _      = env.GetEnv("PGP_PASS_PHRASE")
+	pgp_private_key, _ = env.GetEnv("PGP_PRIVATE_KEY")
+)
 
 type PGPMiddleware struct {
 	externalSearchMiddleware *ExternalSearchMiddleware
@@ -34,7 +37,11 @@ func NewPGPMiddleware(externalSearchMiddleware *ExternalSearchMiddleware,
 }
 
 func (middleware *PGPMiddleware) loadPGPPrivateKey() (*crypto.Key, error) {
-	privateKey, err := crypto.NewPrivateKeyFromArmored(string(middleware.keyLoader.PGPKey), []byte(`12345`))
+	pgpKey, err := base64.StdEncoding.DecodeString(pgp_private_key)
+	if err != nil {
+		return nil, err
+	}
+	privateKey, err := crypto.NewPrivateKeyFromArmored(string(pgpKey), []byte(`12345`))
 	if err != nil {
 		return nil, errors.New("failed to parse private key")
 	}
