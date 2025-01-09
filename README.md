@@ -1,24 +1,10 @@
-## Makefile
-### Swagger
-```bash
-$ make swagger
-```
-### Swagger UI located at
-```link
-http://localhost:PORT/swagger/index.html
-```
----
-### Wire
-```bash
-$ make wire
-```
+# Các bước deploy dự án
 
-## Create migration files
-```bash
-$ make migration name=create_names_table
-```
+- Cài đặt docker và docker compose
+- Để trống port các 3000, 3636 và 8080
+- cd vào thư mục deploy bên trong src
+- Chạy lệnh start docker compose
 
-### Apply migration files
 ```bash
-$ make migrate-up
+$ docker compose up -d
 ```
