@@ -595,7 +595,6 @@ func (s *TransactionService) GetTransactionsByCustomerId(ctx *gin.Context, custo
 	transactionResp := make([]model.GetTransactionsResponseSum, 0)
 
 	for _, transaction := range transactions {
-		fmt.Print(transaction)
 		trans := service.TransactionUtilsEntityToResponse(transaction, sourceAccount.Number)
 		var bankInfo *entity.PartnerBank
 		if transaction.BankId != nil {
