@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
-	beanimplement "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/bean/implement"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/entity"
 	httpcommon "github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/http_common"
 	"github.com/21CLC01-WNC-Banking/WNC-Banking-BE/internal/domain/model"
@@ -28,13 +27,10 @@ var (
 
 type RSAMiddleware struct {
 	externalSearchMiddleware *ExternalSearchMiddleware
-	keyLoader                *beanimplement.KeyLoader
 }
 
-func NewRSAMiddleware(externalSearchMiddleware *ExternalSearchMiddleware,
-	keyLoader *beanimplement.KeyLoader) *RSAMiddleware {
-	return &RSAMiddleware{externalSearchMiddleware: externalSearchMiddleware,
-		keyLoader: keyLoader}
+func NewRSAMiddleware(externalSearchMiddleware *ExternalSearchMiddleware) *RSAMiddleware {
+	return &RSAMiddleware{externalSearchMiddleware: externalSearchMiddleware}
 }
 
 func (middleware *RSAMiddleware) loadRSAPrivateKey() (*rsa.PrivateKey, error) {
