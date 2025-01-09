@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend:
+    image: vukhoa23/banking-be:local
+    container_name: banking_backend
+    ports:
+      - "8080:8080"
+      - "3636:3636"
+    restart: unless-stopped  # Automatically restart the container if it stops
+
+  frontend:
+    image: qhuongng/wnc-banking-fe:local
+    container_name: banking_frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

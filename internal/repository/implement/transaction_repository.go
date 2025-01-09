@@ -121,7 +121,7 @@ func (repo *TransactionRepository) GetSentDebtReminderByCustomerIdQuery(ctx cont
 	FROM users u
 	JOIN accounts a ON u.id = a.customer_id
 	JOIN transactions t ON a.number = t.target_account_number
-	where u.id = ? AND t.type = 'debt_payment' AND t.status != 'success'
+	where u.id = ? AND t.type = 'debt_payment'
 	ORDER BY created_at DESC`
 	err := repo.db.SelectContext(ctx, &transactions, query, customerId)
 	if err != nil {
