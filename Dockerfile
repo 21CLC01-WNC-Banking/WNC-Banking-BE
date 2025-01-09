@@ -8,10 +8,14 @@ RUN go mod download
 RUN go build -o ./app
 
 # Stage 2: Runtime stage
-FROM gcr.io/distroless/base-debian12
+FROM alpine:3.18
 
 WORKDIR /app
 COPY --from=builder /build/app ./app
 COPY --from=builder /build/.env .env
+COPY --from=builder /build/migrations ./migrations
 
-CMD ["/app/app"]
+# Install bash or sh (if needed) in alpine
+RUN apk add --no-cache bash
+
+CMD ["/bin/sh", "-c", "/app/app migrate-up && /app/app"]
