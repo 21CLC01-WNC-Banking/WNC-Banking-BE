@@ -182,11 +182,7 @@ func (s *StaffService) GetTransactionsByAccountNumber(ctx *gin.Context, accountN
 		return nil, err
 	}
 
-	userId, exists := ctx.Get("userId")
-	if !exists {
-		return nil, errors.New("customer not exists")
-	}
-	customer, err := s.customerRepository.GetOneByIdQuery(ctx, userId.(int64))
+	customer, err := s.customerRepository.GetCustomerByAccountNumberQuery(ctx, accountNumber)
 	if err != nil {
 		return nil, err
 	}
